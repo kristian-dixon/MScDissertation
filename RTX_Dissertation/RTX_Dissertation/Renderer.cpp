@@ -1,5 +1,5 @@
 #include "Renderer.h"
-
+#include  "d3d12.h"
 
 void msgBox2(const std::string& msg)
 {
@@ -15,29 +15,7 @@ void d3dTraceHR(const std::string& msg, HRESULT hr)
 	msgBox2(error_msg);
 }
 
-void Renderer::Init(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
-{
-	initDXR(winHandle, winWidth, winHeight); // Tutorial 02
 
-}
-
-void Renderer::Render()
-{
-	uint32_t rtvIndex = beginFrame();
-	const float clearColor[4] = { 0.4f, 0.6f, 0.2f, 1.0f };
-	resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mpCmdList->ClearRenderTargetView(mFrameObjects[rtvIndex].rtvHandle, clearColor, 0, nullptr);
-	endFrame(rtvIndex);
-}
-
-void Renderer::Shutdown()
-{
-	// Wait for the command queue to finish execution
-	mFenceValue++;
-	mpCmdQueue->Signal(mpFence, mFenceValue);
-	mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
-	WaitForSingleObject(mFenceEvent, INFINITE);
-}
 
 void Renderer::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
@@ -48,14 +26,14 @@ void Renderer::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	// Initialize the debug layer for debug builds
 #ifdef _DEBUG
 	ID3D12DebugPtr pDebug;
-	/*if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDebug))))
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDebug))))
 	{
 		pDebug->EnableDebugLayer();
-	}*/
+	}
 #endif
 	// Create the DXGI factory
 	IDXGIFactory4Ptr pDxgiFactory;
-	//d3d_call(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory)));
+	d3d_call(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory)));
 	mpDevice = createDevice(pDxgiFactory);
 	mpCmdQueue = createCommandQueue(mpDevice);
 	mpSwapChain = createDxgiSwapChain(pDxgiFactory, mHwnd, winWidth, winHeight, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
@@ -77,32 +55,6 @@ void Renderer::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	// Create a fence and the event
 	d3d_call(mpDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mpFence)));
 	mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-}
-
-uint32_t Renderer::beginFrame()
-{
-	return mpSwapChain->GetCurrentBackBufferIndex();
-
-}
-
-void Renderer::endFrame(uint32_t rtvIndex)
-{
-	resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
-	mpSwapChain->Present(0, 0);
-
-	// Prepare the command list for the next frame
-	uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
-
-	// Make sure we have the new back-buffer is ready
-	if (mFenceValue > kDefaultSwapChainBuffers)
-	{
-		mpFence->SetEventOnCompletion(mFenceValue - kDefaultSwapChainBuffers + 1, mFenceEvent);
-		WaitForSingleObject(mFenceEvent, INFINITE);
-	}
-
-	mFrameObjects[bufferIndex].pCmdAllocator->Reset();
-	mpCmdList->Reset(mFrameObjects[bufferIndex].pCmdAllocator, nullptr);
 }
 
 IDXGISwapChain3Ptr Renderer::createDxgiSwapChain(IDXGIFactory4Ptr pFactory, HWND hwnd, uint32_t width, uint32_t height,
@@ -147,10 +99,10 @@ ID3D12Device5Ptr Renderer::createDevice(IDXGIFactory4Ptr pDxgiFactory)
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
 #ifdef _DEBUG
 		ID3D12DebugPtr pDx12Debug;
-		/*if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDx12Debug))))
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDx12Debug))))
 		{
 			pDx12Debug->EnableDebugLayer();
-		}*/
+		}
 #endif
 		// Create the device
 		ID3D12Device5Ptr pDevice;
@@ -229,3 +181,53 @@ uint64_t Renderer::submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3
 }
 
 
+uint32_t Renderer::beginFrame()
+{
+	return mpSwapChain->GetCurrentBackBufferIndex();
+
+}
+
+void Renderer::endFrame(uint32_t rtvIndex)
+{
+	resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	mFenceValue = submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
+	mpSwapChain->Present(0, 0);
+
+	// Prepare the command list for the next frame
+	uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
+
+	// Make sure we have the new back-buffer is ready
+	if (mFenceValue > kDefaultSwapChainBuffers)
+	{
+		mpFence->SetEventOnCompletion(mFenceValue - kDefaultSwapChainBuffers + 1, mFenceEvent);
+		WaitForSingleObject(mFenceEvent, INFINITE);
+	}
+
+	mFrameObjects[bufferIndex].pCmdAllocator->Reset();
+	mpCmdList->Reset(mFrameObjects[bufferIndex].pCmdAllocator, nullptr);
+}
+
+
+void Renderer::Init(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+{
+	initDXR(winHandle, winWidth, winHeight); // Tutorial 02
+
+}
+
+void Renderer::Render()
+{
+	uint32_t rtvIndex = beginFrame();
+	const float clearColor[4] = { 0.4f, 0.6f, 0.2f, 1.0f };
+	resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	mpCmdList->ClearRenderTargetView(mFrameObjects[rtvIndex].rtvHandle, clearColor, 0, nullptr);
+	endFrame(rtvIndex);
+}
+
+void Renderer::Shutdown()
+{
+	// Wait for the command queue to finish execution
+	mFenceValue++;
+	mpCmdQueue->Signal(mpFence, mFenceValue);
+	mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
+	WaitForSingleObject(mFenceEvent, INFINITE);
+}
