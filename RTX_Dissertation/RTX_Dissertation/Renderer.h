@@ -107,5 +107,17 @@ private:
 	};
 	HeapData mRtvHeap;
 	static const uint32_t kRtvHeapSize = 3;
+
+	ID3D12ResourcePtr CreateTriangleVB();
+
+	//TUT 3
+	void CreateAccelerationStructures();
+	ID3D12ResourcePtr mpVertexBuffer;
+	ID3D12ResourcePtr mpTopLevelAS;
+	ID3D12ResourcePtr mpBottomLevelAS;
+	uint64_t mTlasSize = 0;
+
+
+
 };
 
