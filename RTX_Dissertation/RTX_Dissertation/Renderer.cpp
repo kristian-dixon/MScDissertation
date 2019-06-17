@@ -1,9 +1,11 @@
 #include "Renderer.h"
 #include  "d3d12.h"
 
+HWND Renderer::gWinHandle2 = nullptr;
+
 void msgBox2(const std::string& msg)
 {
-	MessageBoxA(gWinHandle2, msg.c_str(), "Error", MB_OK);
+	MessageBoxA(Renderer::gWinHandle2, msg.c_str(), "Error", MB_OK);
 }
 
 void d3dTraceHR(const std::string& msg, HRESULT hr)

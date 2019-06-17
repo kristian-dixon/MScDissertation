@@ -22,7 +22,6 @@
 
 using namespace glm;
 
-HWND gWinHandle2 = nullptr;
 
 
 // Common DX12 definitions
@@ -62,6 +61,7 @@ public:
 	void Render();
 	void Shutdown();
 
+	static HWND gWinHandle2;
 
 private:
 	IDXGISwapChain3Ptr createDxgiSwapChain(IDXGIFactory4Ptr pFactory, HWND hwnd, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue);
