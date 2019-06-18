@@ -51,6 +51,15 @@ static const uint32_t kDefaultSwapChainBuffers = 3;
 
 
 void d3dTraceHR(const std::string& msg, HRESULT hr);
+// Convert a blob to at string
+template<class BlotType>
+std::string convertBlobToString(BlotType* pBlob)
+{
+	std::vector<char> infoLog(pBlob->GetBufferSize() + 1);
+	memcpy(infoLog.data(), pBlob->GetBufferPointer(), pBlob->GetBufferSize());
+	infoLog[pBlob->GetBufferSize()] = 0;
+	return std::string(infoLog.data());
+}
 
 
 
@@ -117,7 +126,9 @@ private:
 	ID3D12ResourcePtr mpBottomLevelAS;
 	uint64_t mTlasSize = 0;
 
-
-
+	//TUT 4
+	void CreateRtPipelineState();
+	ID3D12StateObjectPtr mpPipelineState;
+	ID3D12RootSignaturePtr mpEmptyRootSig;
 };
 

@@ -12,6 +12,6 @@ public:
 	void Render() override;
 
 private:
-	Renderer renderer;
+	Renderer renderer ={};
 };
 

@@ -2,6 +2,7 @@
 #include <codecvt>
 #include <windows.h>
 #include <d3d12.h>
+#include "TestGame.h"
 
 HWND gWinHandle = nullptr;
 
@@ -54,11 +55,14 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 		return nullptr;
 	}
 
-	RECT r{ 0,0, windowWidth, windowHeight };
+	RECT r{ 0,0, (LONG)windowWidth, (LONG)windowHeight };
 	AdjustWindowRect(&r, winStyle, false);
 
+	int width = r.right - r.left;
+	int height = r.bottom - r.top;
+
 	std::wstring wTitle = string_2_wstring("RTX Dissertation");
-	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight, nullptr, nullptr, wc.hInstance, nullptr);
+	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr, wc.hInstance, nullptr);
 
 	if(hWnd == nullptr)
 	{
@@ -71,6 +75,8 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 
 void msgLoop()
 {
+
+
 	MSG msg;
 	while (true)
 	{
@@ -89,15 +95,25 @@ void msgLoop()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-	const int windowWidth = 1280;
-	const int windowHeight = 720;
+	TestGame game;
+
+	int windowWidth = 1920;
+	int windowHeight = 1200;
 
 	gWinHandle = OpenWindow(windowWidth, windowHeight);
 
+	RECT r;
+	GetClientRect(gWinHandle, &r);
+	windowWidth = r.right - r.left;
+	windowHeight = r.bottom - r.top;
+
 	//Load things
+	game.OnLoad(gWinHandle, windowWidth, windowHeight);
 
 	//Show window
 	ShowWindow(gWinHandle, SW_SHOWNORMAL);
+
+	
 
 	//Start message loop
 	msgLoop();
