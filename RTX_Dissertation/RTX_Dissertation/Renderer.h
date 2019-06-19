@@ -130,5 +130,17 @@ private:
 	void CreateRtPipelineState();
 	ID3D12StateObjectPtr mpPipelineState;
 	ID3D12RootSignaturePtr mpEmptyRootSig;
+
+
+	//TUT 5
+	void createShaderTable();
+	ID3D12ResourcePtr mpShaderTable;
+	uint32_t mShaderTableEntrySize = 0;
+
+	//TUT 6
+	void createShaderResources();
+	ID3D12ResourcePtr mpOutputResource;
+	ID3D12DescriptorHeapPtr mpSrvUavHeap;
+	static const uint32_t kSrvUavHeapSize = 2;
 };
 

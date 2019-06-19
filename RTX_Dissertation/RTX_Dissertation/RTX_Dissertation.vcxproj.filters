@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Game">
       <UniqueIdentifier>{01fba058-e04e-47fd-a29f-e725b5c5d084}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{289784c7-1fd9-448c-94de-e600d2dabab0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,5 +53,10 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Data\04-Shaders.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

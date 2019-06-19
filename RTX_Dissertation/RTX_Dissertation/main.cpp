@@ -5,6 +5,7 @@
 #include "TestGame.h"
 
 HWND gWinHandle = nullptr;
+TestGame game;
 
 
 static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -89,13 +90,14 @@ void msgLoop()
 		else
 		{
 			//DO LOGIC AND RENDERING
+			//game.Update();
+			game.Render();
 		}
 	}
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-	TestGame game;
 
 	int windowWidth = 1920;
 	int windowHeight = 1200;
