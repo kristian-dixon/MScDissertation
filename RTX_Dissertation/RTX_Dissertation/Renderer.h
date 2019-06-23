@@ -87,9 +87,6 @@ private:
 	void endFrame(uint32_t rtvIndex);
 
 
-
-
-
 	HWND mHwnd = nullptr;
 	ID3D12Device5Ptr mpDevice;
 	ID3D12CommandQueuePtr mpCmdQueue;
@@ -130,7 +127,6 @@ private:
 	void CreateRtPipelineState();
 	ID3D12StateObjectPtr mpPipelineState;
 	ID3D12RootSignaturePtr mpEmptyRootSig;
-
 
 	//TUT 5
 	void createShaderTable();
