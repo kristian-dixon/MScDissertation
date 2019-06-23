@@ -19,3 +19,8 @@ void TestGame::Render()
 	//TODO::Draw things
 	renderer.Render();
 }
+
+void TestGame::Shutdown()
+{
+	renderer.Shutdown();
+}
