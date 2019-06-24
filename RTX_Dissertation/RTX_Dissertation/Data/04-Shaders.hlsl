@@ -28,6 +28,15 @@
 RaytracingAccelerationStructure gRtScene : register(t0);
 RWTexture2D<float4> gOutput : register(u0);
 
+cbuffer PerFrame : register(b0)
+{
+	float3 A[3];
+	float3 B[3];
+	float3 C[3];
+}
+
+
+
 float3 linearToSrgb(float3 c)
 {
 	// Based on http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
@@ -80,10 +89,12 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	uint instanceID = InstanceID();
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
-	const float3 A = float3(1, 0, 0);
-	const float3 B = float3(0, 1, 0);
-	const float3 C = float3(0, 0, 1);
+	//const float3 A = float3(1, 0, 0);
+	//const float3 B = float3(0, 1, 0);
+	//const float3 C = float3(0, 0, 1);
 
+	payload.color = A[instanceID] * barycentrics.x + B[instanceID] * barycentrics.y + C[instanceID] * barycentrics.z;
+	/*
 	payload.color = A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
 
 	switch (instanceID)
@@ -94,5 +105,5 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	case 2: 
 		payload.color = payload.color.grb;
 		break;
-	}
+	}*/
 }

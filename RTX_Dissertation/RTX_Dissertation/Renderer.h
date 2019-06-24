@@ -138,5 +138,8 @@ private:
 	ID3D12ResourcePtr mpOutputResource;
 	ID3D12DescriptorHeapPtr mpSrvUavHeap;
 	static const uint32_t kSrvUavHeapSize = 2;
+
+	void createConstantBuffer();
+	ID3D12ResourcePtr mpConstantBuffer;
 };
 
