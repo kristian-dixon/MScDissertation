@@ -30,9 +30,9 @@ RWTexture2D<float4> gOutput : register(u0);
 
 cbuffer PerFrame : register(b0)
 {
-	float3 A[3];
-	float3 B[3];
-	float3 C[3];
+	float3 A;
+	float3 B;
+	float3 C;
 }
 
 
@@ -93,7 +93,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	//const float3 B = float3(0, 1, 0);
 	//const float3 C = float3(0, 0, 1);
 
-	payload.color = A[instanceID] * barycentrics.x + B[instanceID] * barycentrics.y + C[instanceID] * barycentrics.z;
+	payload.color = A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
 	/*
 	payload.color = A * barycentrics.x + B * barycentrics.y + C * barycentrics.z;
 

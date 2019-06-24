@@ -370,7 +370,7 @@ AccelerationStructureBuffers createTopLevelAS(const ID3D12Device5Ptr pDevice, co
 	{
 		// Initialize the instance desc. We only have a single instance
 		pInstanceDescs[i].InstanceID = i;                            // This value will be exposed to the shader via InstanceID()
-		pInstanceDescs[i].InstanceContributionToHitGroupIndex = 0;   // This is the offset inside the shader-table. We only have a single geometry, so the offset 0
+		pInstanceDescs[i].InstanceContributionToHitGroupIndex = i;   // This is the offset inside the shader-table. We only have a single geometry, so the offset 0
 		pInstanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
 		mat4 m = transpose(transformation[i]); // Identity matrix
 		memcpy(pInstanceDescs[i].Transform, &m, sizeof(pInstanceDescs[i].Transform));
@@ -771,7 +771,7 @@ void Renderer::createShaderTable()
 	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 	mShaderTableEntrySize += 8; // The ray-gen's descriptor table
 	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-	uint32_t shaderTableSize = mShaderTableEntrySize * 3;
+	uint32_t shaderTableSize = mShaderTableEntrySize * 5;
 
 	// For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
 	mpShaderTable = CreateBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -792,12 +792,16 @@ void Renderer::createShaderTable()
 	// Entry 1 - miss program
 	memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
-	// Entry 2 - hit program. Program ID and one constant-buffer as root descriptor    
-	uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
-	memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-	uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;  // Adding `progIdSize` gets us to the location of the constant-buffer entry
-	assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-	*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mpConstantBuffer->GetGPUVirtualAddress();
+
+	// Entry 2 - 4 hit program. Program ID and one constant-buffer as root descriptor    
+	for (int i = 0; i < 3; i++)
+	{
+		uint8_t* pHitEntry = pData + mShaderTableEntrySize * (i + 2); // +2 skips the ray-gen and miss entries
+		memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;  // Adding `progIdSize` gets us to the location of the constant-buffer entry
+		assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+		*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mpConstantBuffer[i]->GetGPUVirtualAddress();
+	}
 
 	// Unmap
 	mpShaderTable->Unmap(0, nullptr);
@@ -842,27 +846,31 @@ void Renderer::createConstantBuffer()
 	// The shader declares the CB with 9 float3. However, due to HLSL packing rules, we create the CB with 9 float4 (each float3 needs to start on a 16-byte boundary)
 	vec4 bufferData[] =
 	{
-		// A
+		// Instance 0
 		vec4(1.0f, 0.0f, 0.0f, 1.0f),
-		vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		vec4(0.10f, 0.0f, 0.0f, 1.0f),
+		vec4(0.10f, 0.0f, 0.0f, 1.0f),
+
+		// Instance 1
+		vec4(0.0f, 0.10f, 0.0f, 1.0f),
+		vec4(0.0f, 0.1f, 0.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f),
+
+		// Instance 2
 		vec4(0.0f, 0.0f, 1.0f, 1.0f),
-
-		// B
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(0.0f, 1.0f, 1.0f, 1.0f),
 		vec4(1.0f, 0.0f, 1.0f, 1.0f),
-
-		// C
-		vec4(1.0f, 0.0f, 1.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
 		vec4(0.0f, 1.0f, 1.0f, 1.0f),
 	};
 
-	mpConstantBuffer = CreateBuffer(mpDevice, sizeof(bufferData), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-	uint8_t* pData;
-	d3d_call(mpConstantBuffer->Map(0, nullptr, (void**)& pData));
-	memcpy(pData, bufferData, sizeof(bufferData));
-	mpConstantBuffer->Unmap(0, nullptr);
+	for (uint32_t i = 0; i < 3; i++)
+	{
+		const uint32_t bufferSize = sizeof(vec4) * 3;
+		mpConstantBuffer[i] = CreateBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+		uint8_t* pData;
+		d3d_call(mpConstantBuffer[i]->Map(0, nullptr, (void**)& pData));
+		memcpy(pData, &bufferData[i * 3], sizeof(bufferData));
+		mpConstantBuffer[i]->Unmap(0, nullptr);
+	}
 }
 
 
@@ -904,7 +912,7 @@ void Renderer::Render()
     size_t hitOffset = 2 * mShaderTableEntrySize;
     raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
     raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-    raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;
+    raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * 3;
 
     // Bind the empty root signature
     mpCmdList->SetComputeRootSignature(mpEmptyRootSig);

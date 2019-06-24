@@ -140,6 +140,6 @@ private:
 	static const uint32_t kSrvUavHeapSize = 2;
 
 	void createConstantBuffer();
-	ID3D12ResourcePtr mpConstantBuffer;
+	ID3D12ResourcePtr mpConstantBuffer[3];
 };
 
