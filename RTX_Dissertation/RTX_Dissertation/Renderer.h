@@ -115,12 +115,13 @@ private:
 	static const uint32_t kRtvHeapSize = 3;
 
 	ID3D12ResourcePtr CreateTriangleVB();
+	ID3D12ResourcePtr CreatePlaneVB();
 
 	//TUT 3
 	void CreateAccelerationStructures();
-	ID3D12ResourcePtr mpVertexBuffer;
+	ID3D12ResourcePtr mpVertexBuffer[2];
 	ID3D12ResourcePtr mpTopLevelAS;
-	ID3D12ResourcePtr mpBottomLevelAS;
+	ID3D12ResourcePtr mpBottomLevelAS[2];
 	uint64_t mTlasSize = 0;
 
 	//TUT 4
