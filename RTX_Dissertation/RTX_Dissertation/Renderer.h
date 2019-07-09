@@ -19,7 +19,7 @@
 #include <vector>
 #include <array>
 #include <cstdint>
-
+#include "RendererUtil.h"
 
 using namespace glm;
 
@@ -44,7 +44,6 @@ MAKE_SMART_COM_PTR(ID3D12RootSignature);
 MAKE_SMART_COM_PTR(ID3DBlob);
 MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 
-#define d3d_call(a) {HRESULT hr_ = a; if(FAILED(hr_)) { d3dTraceHR( #a, hr_); }}
 #define arraysize(a) (sizeof(a)/sizeof(a[0]))
 #define align_to(_alignment, _val) (((_val + _alignment - 1) / _alignment) * _alignment)
 // - End of NVIDA's code
@@ -58,13 +57,19 @@ public:
 
 	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 
+	void D3DCall(HRESULT hr) { if (FAILED(hr)) { RendererUtil::ShowD3DErrorMessage(mWinHandle, hr); } }
 
 	void Render();
 	void Shutdown();
 
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
-	void Init(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
+	void InitDXR();
+
+//Properties
+private:
+	HWND mWinHandle;
+	uvec2 mSwapChainSize;
 
 };
 

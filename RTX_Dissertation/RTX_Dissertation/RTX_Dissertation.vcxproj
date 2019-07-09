@@ -144,11 +144,13 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RendererUtil.cpp" />
     <ClCompile Include="TestGame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RendererUtil.h" />
     <ClInclude Include="TestGame.h" />
   </ItemGroup>
   <ItemGroup>
