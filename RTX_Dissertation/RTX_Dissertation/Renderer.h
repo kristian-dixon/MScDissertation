@@ -57,7 +57,6 @@ public:
 
 	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 
-	void D3DCall(HRESULT hr) { if (FAILED(hr)) { RendererUtil::ShowD3DErrorMessage(mWinHandle, hr); } }
 
 	void Render();
 	void Shutdown();
@@ -66,10 +65,19 @@ private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 	void InitDXR();
 
+	ID3D12Device5Ptr CreateDevice(IDXGIFactory4Ptr pDxgiFactory);
+
+	ID3D12CommandQueuePtr CreateCommandQueue();
+	IDXGISwapChain3Ptr CreateDxgiSwapChain(IDXGIFactory4Ptr pFactory, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue);
+
 //Properties
 private:
 	HWND mWinHandle;
 	uvec2 mSwapChainSize;
+	ID3D12Device5Ptr mpDevice;
+	ID3D12CommandQueuePtr mpCmdQueue;
+	IDXGISwapChain3Ptr mpSwapChain;
+
 
 };
 

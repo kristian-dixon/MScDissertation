@@ -22,6 +22,7 @@ public:
 	}
 	static void ShowD3DErrorMessage(HWND hwnd, HRESULT hr);
 	static void DisplayMessage(HWND winHandle, const std::string& msg, const std::string& type = "Error") { MessageBoxA(winHandle, msg.c_str(), type.c_str(), MB_OK); }
+	static void D3DCall(HWND winHandle, HRESULT hr) { if (FAILED(hr)) { RendererUtil::ShowD3DErrorMessage(winHandle, hr); } }
 
 	
 
