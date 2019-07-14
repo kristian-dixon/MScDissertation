@@ -1,19 +1,37 @@
 #include "Renderer.h"
 
-Renderer* Renderer::m_instance = nullptr;
+Renderer* Renderer::mInstance = nullptr;
+
+const D3D12_HEAP_PROPERTIES Renderer::kUploadHeapProps =
+{
+	D3D12_HEAP_TYPE_UPLOAD,
+	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+	D3D12_MEMORY_POOL_UNKNOWN,
+	0,
+	0,
+};
+
+const D3D12_HEAP_PROPERTIES Renderer::kDefaultHeapProps =
+{
+	D3D12_HEAP_TYPE_DEFAULT,
+	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+	D3D12_MEMORY_POOL_UNKNOWN,
+	0,
+	0
+};
 
 Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
-	if (m_instance)
+	if (mInstance)
 	{
 		//Might not be a good idea but we need to have a way to say "DON'T TRY TO CREATE MULTIPLE RENDERERS"
 		throw;
 	}
 	else
 	{
-		m_instance = new Renderer(winHandle, winWidth, winHeight);
+		mInstance = new Renderer(winHandle, winWidth, winHeight);
 	}
-	return m_instance;
+	return mInstance;
 }
 
 
@@ -125,4 +143,35 @@ void Renderer::Render()
 
 void Renderer::Shutdown()
 {
+}
+
+ID3D12ResourcePtr Renderer::CreateBuffer(size_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
+{
+	D3D12_RESOURCE_DESC bufDesc = {};
+	bufDesc.Alignment = 0;
+	bufDesc.DepthOrArraySize = 1;
+	bufDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	bufDesc.Flags = flags;
+	bufDesc.Format = DXGI_FORMAT_UNKNOWN;
+	bufDesc.Height = 1;
+	bufDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	bufDesc.MipLevels = 1;
+	bufDesc.SampleDesc.Count = 1;
+	bufDesc.SampleDesc.Quality = 0;
+	bufDesc.Width = size;
+
+	ID3D12ResourcePtr pBuffer;
+	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &bufDesc, initState, nullptr, IID_PPV_ARGS(&pBuffer)));
+	return pBuffer;
+}
+
+ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
+{
+	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
+	ID3D12ResourcePtr pBuffer = CreateBuffer(verts.size(), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	uint8_t* pData;
+	pBuffer->Map(0, nullptr, (void**)& pData);
+	memcpy(pData, verts.data(), verts.size());
+	pBuffer->Unmap(0, nullptr);
+	return pBuffer;
 }

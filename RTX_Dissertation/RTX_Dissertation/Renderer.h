@@ -53,13 +53,14 @@ MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 class Renderer
 {
 public:
-	static Renderer* m_instance;
 
 	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
-
+	static Renderer* GetInstance() { return mInstance; };
 
 	void Render();
 	void Shutdown();
+	ID3D12ResourcePtr CreateBuffer(size_t size, enum D3D12_RESOURCE_FLAGS flags, enum D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps);
+	ID3D12ResourcePtr CreateVertexBuffer(const std::vector<vec3>& verts);
 
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
@@ -72,11 +73,16 @@ private:
 
 //Properties
 private:
+	static Renderer* mInstance;
+
 	HWND mWinHandle;
 	uvec2 mSwapChainSize;
 	ID3D12Device5Ptr mpDevice;
 	ID3D12CommandQueuePtr mpCmdQueue;
 	IDXGISwapChain3Ptr mpSwapChain;
+
+	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;
+	static const D3D12_HEAP_PROPERTIES kDefaultHeapProps;
 
 
 };
