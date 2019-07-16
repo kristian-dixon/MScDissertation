@@ -11,6 +11,13 @@ class ResourceManager
 public:
 	static shared_ptr<Mesh> RequestMesh(const string& key);
 
+	//Used to add new meshes to the mesh DB since hardcoding them into RequestMesh is dumb. 
+	static shared_ptr<Mesh> AddNewMesh(const string& key, const vector<glm::vec3> verts);
+
+	//Used to add new meshes to the mesh DB since hardcoding them into RequestMesh is dumb. 
+	static shared_ptr<Mesh> AddNewMesh(const string& key, ID3D12ResourcePtr vbo);
+
+
 private:
 	static std::map<string, shared_ptr<Mesh>> mMeshDB;
 

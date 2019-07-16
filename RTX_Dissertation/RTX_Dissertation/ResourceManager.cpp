@@ -78,3 +78,19 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 	}
 	return shared_ptr<Mesh>();
 }
+
+shared_ptr<Mesh> ResourceManager::AddNewMesh(const string& key, const vector<glm::vec3> verts)
+{
+	//TODO:: Check if mesh entry already exists
+	//TODO:: Create buffer on GPU
+	//TODO:: Add to DB
+	return shared_ptr<Mesh>();
+}
+
+shared_ptr<Mesh> ResourceManager::AddNewMesh(const string& key, ID3D12ResourcePtr vbo)
+{
+	//TODO:: Check if already exists.
+	//TODO:: ADD TO DB
+	return shared_ptr<Mesh>();
+}
+
