@@ -19,9 +19,10 @@
 #include <vector>
 #include <array>
 #include <cstdint>
+#include <memory>
 
 #include "RendererUtil.h"
-
+#include "Mesh.h"
 
 using namespace glm;
 
@@ -51,6 +52,8 @@ MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 
 //TODO:: REMOVE ME! ^^^
 
+class Mesh;
+
 class Renderer
 {
 public:
@@ -75,7 +78,7 @@ public:
 	void Render();
 	void Shutdown();
 	ID3D12ResourcePtr CreateBuffer(size_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps);
-	ID3D12ResourcePtr CreateVertexBuffer(const std::vector<vec3>& verts);
+	ID3D12Resource* CreateVertexBuffer(const std::vector<vec3>& verts);
 
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
@@ -96,7 +99,7 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CreateRTV(ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format);
 
-//AccelerationStructureBuffers CreateBLAS();
+	AccelerationStructureBuffers CreateBLAS(std::shared_ptr<Mesh> mesh);
 
 //Properties
 private:

@@ -29,7 +29,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if(inst)
 			{
-				auto mesh = std::make_shared<Mesh>(inst->CreateVertexBuffer(vertices));
+				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
+				
+				auto mesh = std::make_shared<Mesh>( vbos, vertCounts );
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}
@@ -50,7 +53,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if (inst)
 			{
-				auto mesh = std::make_shared<Mesh>(inst->CreateVertexBuffer(vertices));
+				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
+
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}

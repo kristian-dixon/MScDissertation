@@ -1,5 +1,6 @@
 #include "Renderer.h"
-
+#include <vector>
+#include "Mesh.h"
 Renderer* Renderer::mInstance = nullptr;
 
 const D3D12_HEAP_PROPERTIES Renderer::kUploadHeapProps =
@@ -182,6 +183,64 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::CreateRTV(ID3D12ResourcePtr pResource, ID3
 	return rtvHandle;
 }
 
+
+Renderer::AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
+{
+	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
+
+	auto vbos = mesh->GetVBOs();
+	uint32_t geometryCount = vbos.size();
+	geomDesc.resize(geometryCount);
+
+	//Setup descriptors for each geometry in the Mesh
+	auto vertexCount = mesh->GetVertexCounts();
+	for (uint32_t i = 0; i < geometryCount; i++)
+	{
+		geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+		geomDesc[i].Triangles.VertexBuffer.StartAddress = vbos[i]->GetGPUVirtualAddress();
+		geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
+		geomDesc[i].Triangles.VertexCount = vertexCount[i];
+		geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+		geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+	}
+
+
+	// Get the size requirements for the scratch and AS buffers
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+	inputs.NumDescs = geometryCount;
+	inputs.pGeometryDescs = geomDesc.data();
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
+	mpDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+
+	// Create the buffers. They need to support UAV, and since we are going to immediately use them, we create them with an unordered-access state
+	AccelerationStructureBuffers buffers;
+	buffers.pScratch = CreateBuffer(info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, kDefaultHeapProps);
+	buffers.pResult = CreateBuffer(info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
+
+	// Create the bottom-level AS
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
+	asDesc.Inputs = inputs;
+	asDesc.DestAccelerationStructureData = buffers.pResult->GetGPUVirtualAddress();
+	asDesc.ScratchAccelerationStructureData = buffers.pScratch->GetGPUVirtualAddress();
+
+	mpCmdList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
+
+	// We need to insert a UAV barrier before using the acceleration structures in a raytracing operation
+	D3D12_RESOURCE_BARRIER uavBarrier = {};
+	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	uavBarrier.UAV.pResource = buffers.pResult;
+	mpCmdList->ResourceBarrier(1, &uavBarrier);
+
+
+	return buffers;
+
+}
+
 void Renderer::Render()
 {
 }
@@ -210,7 +269,7 @@ ID3D12ResourcePtr Renderer::CreateBuffer(size_t size, D3D12_RESOURCE_FLAGS flags
 	return pBuffer;
 }
 
-ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
+ID3D12Resource* Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	ID3D12ResourcePtr pBuffer = CreateBuffer(verts.size(), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);

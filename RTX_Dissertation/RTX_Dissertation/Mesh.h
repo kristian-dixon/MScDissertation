@@ -1,12 +1,12 @@
 #pragma once
 #include "Renderer.h"
-
+#include <memory>
 using namespace glm;
 
 class Mesh
 {
 public:
-	Mesh(ID3D12ResourcePtr vbo);
+	Mesh(std::vector<ID3D12Resource*>& vbo, std::vector<uint32_t>& vertCounts);
 
 	//hmm pass by ref?
 	//**********************************************//
@@ -26,19 +26,24 @@ public:
 	//******************************************//
 	//Set the pointer to the BLAS buffer
 	//******************************************//
-	void SetBLAS(ID3D12ResourcePtr val) { mBLAS = val; };
+	void SetBLAS(ID3D12Resource* val) { mBLAS = val; };
 
-	auto GetVBO() { return mVBO; };
-	auto GetBLAS() { return mBLAS; };
-	auto& GetInstances() { return mInstances; };
+	std::vector<ID3D12Resource*>& GetVBOs() { return mVBOs; };
+	ID3D12Resource* GetBLAS() { return mBLAS; };
+	std::vector<mat4>& GetInstances() { return mInstances; };
+	std::vector<uint32_t> GetVertexCounts() { return mVertexCounts; };
 private:
 	//Ptr to the VBO
-	ID3D12ResourcePtr mVBO = nullptr;
+	std::vector<ID3D12Resource*> mVBOs;
+	std::vector<uint32_t>mVertexCounts;
+	
 	//Ptr to the BLAS
-	ID3D12ResourcePtr mBLAS = nullptr;
+	ID3D12Resource* mBLAS = nullptr;
 
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<mat4> mInstances;
+
+
 
 };
 
