@@ -65,6 +65,60 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		{
 			//TODO:LOAD CUBE
 
+			//Create verts
+			const vector<glm::vec3> vertices =
+			{
+				glm::vec3(-1.0f,-1.0f,-1.0f), // triangle 1 : begin
+				glm::vec3(-1.0f,-1.0f, 1.0f),
+				glm::vec3(-1.0f, 1.0f, 1.0f), // triangle 1 : end
+				glm::vec3(1.0f, 1.0f,-1.0f), // triangle 2 : begin
+				glm::vec3(-1.0f,-1.0f,-1.0f),
+				glm::vec3(-1.0f, 1.0f,-1.0f), // triangle 2 : end
+				glm::vec3(1.0f,-1.0f, 1.0f),
+				glm::vec3(-1.0f,-1.0f,-1.0f),
+				glm::vec3(1.0f,-1.0f,-1.0f),
+				glm::vec3(1.0f, 1.0f,-1.0f),
+				glm::vec3(1.0f,-1.0f,-1.0f),
+				glm::vec3(-1.0f,-1.0f,-1.0f),
+				glm::vec3(-1.0f,-1.0f,-1.0f),
+				glm::vec3(-1.0f, 1.0f, 1.0f),
+				glm::vec3(-1.0f, 1.0f,-1.0f),
+				glm::vec3(1.0f,-1.0f, 1.0f),
+				glm::vec3(-1.0f,-1.0f, 1.0f),
+				glm::vec3(-1.0f,-1.0f,-1.0f),
+				glm::vec3(-1.0f, 1.0f, 1.0f),
+				glm::vec3(-1.0f,-1.0f, 1.0f),
+				glm::vec3(1.0f,-1.0f, 1.0f),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec3(1.0f,-1.0f,-1.0f),
+				glm::vec3(1.0f, 1.0f,-1.0f),
+				glm::vec3(1.0f,-1.0f,-1.0f),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec3(1.0f,-1.0f, 1.0f),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec3(1.0f, 1.0f,-1.0f),
+				glm::vec3(-1.0f, 1.0f,-1.0f),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec3(-1.0f, 1.0f,-1.0f),
+				glm::vec3(-1.0f, 1.0f, 1.0f),
+				glm::vec3(1.0f, 1.0f, 1.0f),
+				glm::vec3(-1.0f, 1.0f, 1.0f),
+				glm::vec3(1.0f,-1.0f, 1.0f)
+			};
+
+			auto inst = Renderer::GetInstance();
+			if (inst)
+			{
+				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
+
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);
+				mMeshDB.insert({ key, mesh });
+				return mesh;
+			}
+
+
+
 		}
 		else if(key == "SPHERE")
 		{
