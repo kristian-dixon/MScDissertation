@@ -20,6 +20,8 @@ const D3D12_HEAP_PROPERTIES Renderer::kDefaultHeapProps =
 	0
 };
 
+const uint32_t Renderer::k_RtvHeapSize = 3;
+
 Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
 	if (mInstance)
@@ -59,8 +61,26 @@ void Renderer::InitDXR()
 	mpDevice = CreateDevice(pDxgiFactory);
 	mpCmdQueue = CreateCommandQueue();
 	mpSwapChain = CreateDxgiSwapChain(pDxgiFactory, mSwapChainSize.x, mSwapChainSize.y, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
-	
 
+
+
+	// Create a Render Target View descriptor heap
+	mRtvHeap.pHeap = CreateDescriptorHeap(k_RtvHeapSize, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
+
+	// Create the per-frame objects
+	for (uint32_t i = 0; i < arraysize(mFrameObjects); i++)
+	{
+		RendererUtil::D3DCall(mWinHandle,mpDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mFrameObjects[i].pCmdAllocator)));
+		RendererUtil::D3DCall(mWinHandle, mpSwapChain->GetBuffer(i, IID_PPV_ARGS(&mFrameObjects[i].pSwapChainBuffer)));
+		mFrameObjects[i].rtvHandle = CreateRTV(mFrameObjects[i].pSwapChainBuffer, mRtvHeap.pHeap, mRtvHeap.usedEntries, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	}
+
+	// Create the command-list
+	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mFrameObjects[0].pCmdAllocator, nullptr, IID_PPV_ARGS(&mpCmdList)));
+
+	// Create a fence and the event
+	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mpFence)));
+	mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
 }
 
@@ -113,7 +133,7 @@ ID3D12CommandQueuePtr Renderer::CreateCommandQueue()
 IDXGISwapChain3Ptr Renderer::CreateDxgiSwapChain(IDXGIFactory4Ptr pFactory, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue)
 {
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-	swapChainDesc.BufferCount = kDefaultSwapChainBuffers;
+	swapChainDesc.BufferCount = 3;
 	swapChainDesc.Width = width;
 	swapChainDesc.Height = height;
 	swapChainDesc.Format = format;
@@ -135,6 +155,31 @@ IDXGISwapChain3Ptr Renderer::CreateDxgiSwapChain(IDXGIFactory4Ptr pFactory, uint
 	IDXGISwapChain3Ptr pSwapChain3;
 	RendererUtil::D3DCall(mWinHandle, pSwapChain->QueryInterface(IID_PPV_ARGS(&pSwapChain3)));
 	return pSwapChain3;
+}
+
+ID3D12DescriptorHeapPtr Renderer::CreateDescriptorHeap(uint32_t count, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.NumDescriptors = count;
+	desc.Type = type;
+	desc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	ID3D12DescriptorHeapPtr pHeap;
+	RendererUtil::D3DCall( mWinHandle,mpDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pHeap)));
+	return pHeap;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE Renderer::CreateRTV(ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format)
+{
+	D3D12_RENDER_TARGET_VIEW_DESC desc = {};
+	desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	desc.Format = format;
+	desc.Texture2D.MipSlice = 0;
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = pHeap->GetCPUDescriptorHandleForHeapStart();
+	rtvHandle.ptr += usedHeapEntries * mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	usedHeapEntries++;
+	mpDevice->CreateRenderTargetView(pResource, &desc, rtvHandle);
+	return rtvHandle;
 }
 
 void Renderer::Render()
@@ -175,3 +220,4 @@ ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 	pBuffer->Unmap(0, nullptr);
 	return pBuffer;
 }
+

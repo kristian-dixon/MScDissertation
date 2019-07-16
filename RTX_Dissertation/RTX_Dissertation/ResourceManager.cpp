@@ -1,7 +1,7 @@
 #include "ResourceManager.h"
 #include <Externals/GLM/glm/vec3.hpp>
 #include <vector>
-#include <Renderer.cpp>
+#include "Renderer.h"
 
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 
