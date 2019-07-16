@@ -29,9 +29,9 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if(inst)
 			{
-				auto newMesh = std::make_shared<Mesh>();
-
-				inst->CreateVertexBuffer(vertices);
+				auto mesh = std::make_shared<Mesh>(inst->CreateVertexBuffer(vertices));
+				mMeshDB.insert({ key, mesh });
+				return mesh;
 			}
 		}
 		else if(key == "QUAD")
@@ -50,7 +50,9 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if (inst)
 			{
-				inst->CreateVertexBuffer(vertices);
+				auto mesh = std::make_shared<Mesh>(inst->CreateVertexBuffer(vertices));
+				mMeshDB.insert({ key, mesh });
+				return mesh;
 			}
 		}
 		else if(key == "CUBE")

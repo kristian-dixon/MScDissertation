@@ -13,15 +13,15 @@ public:
 	//Adds an instance to be uploaded into the TLAS
 	//Returns: index of instance entry
 	//**********************************************//
-	int AddInstance(mat4& transform);
+	size_t AddInstance(mat4& transform);
 
 	//******************************************//
 	//Removes an instance from the TLAS
 	//id: index of instance to be removed.
 	//******************************************//
-	void RemoveInstance(int id);
+	void RemoveInstance(size_t id);
 
-	void UpdateInstance(int id, mat4& transform) { mInstances[id] = transform; };
+	void UpdateInstance(size_t id, mat4& transform) { mInstances[id] = transform; };
 
 	//******************************************//
 	//Set the pointer to the BLAS buffer

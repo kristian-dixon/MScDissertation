@@ -1,8 +1,8 @@
 #include <map>
 #include <string>
 #include <memory>
+#include "Mesh.h"
 
-class Mesh;
 
 using namespace std;
 #pragma once
