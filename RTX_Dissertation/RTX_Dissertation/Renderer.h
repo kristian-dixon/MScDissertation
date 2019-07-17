@@ -11,18 +11,7 @@ class Mesh;
 class Renderer
 {
 public:
-	struct AccelerationStructureBuffers
-	{
-		ID3D12ResourcePtr pScratch;
-		ID3D12ResourcePtr pResult;
-		ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
-	};
-
-	struct HeapData
-	{
-		ID3D12DescriptorHeapPtr pHeap;
-		uint32_t usedEntries;
-	};
+	
 
 
 
@@ -51,6 +40,8 @@ private:
 	void BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>&, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers);
 	void CreateAccelerationStructures();
 
+	void CreateRTPipelineState();
+
 	//Properties
 private:
 	static Renderer* mInstance;
@@ -72,6 +63,10 @@ private:
 
 	AccelerationStructureBuffers mTopLevelBuffers;
 	uint64_t mTlasSize = 0;
+
+
+	ID3D12RootSignaturePtr mpEmptyRootSig;
+	ID3D12StateObjectPtr mpPipelineState;
 
 
 	//CONSTANTS

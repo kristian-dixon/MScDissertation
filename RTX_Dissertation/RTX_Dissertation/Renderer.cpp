@@ -87,12 +87,6 @@ void Renderer::InitDXR()
 
 }
 
-
-
-
-
-
-
 ID3D12Resource* Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
@@ -104,8 +98,7 @@ ID3D12Resource* Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 	return pBuffer;
 }
 
-
-Renderer::AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
+AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 {
 	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
 
@@ -279,6 +272,78 @@ void Renderer::CreateAccelerationStructures()
 	mpCmdList->Reset(mFrameObjects[0].pCmdAllocator, nullptr);
 }
 
+void Renderer::CreateRTPipelineState()
+{
+	// Need 10 subobjects:
+	//  1 for the DXIL library
+	//  1 for hit-group
+	//  2 for RayGen root-signature (root-signature and the subobject association)
+	//  2 for the root-signature shared between miss and hit shaders (signature and association)
+	//  2 for shader config (shared between all programs. 1 for the config, 1 for association)
+	//  1 for pipeline config
+	//  1 for the global root signature
+	std::array<D3D12_STATE_SUBOBJECT, 10> subobjects;
+	uint32_t index = 0;
+
+	const WCHAR* kRayGenShader = L"rayGen";
+	const WCHAR* kMissShader = L"miss";
+	const WCHAR* kClosestHitShader = L"chs";
+	const WCHAR* kHitGroup = L"HitGroup";
+
+	const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+
+	// Create the DXIL library
+	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(mWinHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
+	subobjects[index++] = dxilLib.stateSubobject; // 0 Library
+
+	HitProgram hitProgram(nullptr, L"ClosestHitShader", L"HitGroup");
+	subobjects[index++] = hitProgram.subObject; // 1 Hit Group
+
+	// Create the ray-gen root-signature and association
+	LocalRootSignature rgsRootSignature(mWinHandle, mpDevice, RendererUtil::CreateRayGenRootDesc().desc);
+	subobjects[index] = rgsRootSignature.subobject; // 2 RayGen Root Sig
+
+	uint32_t rgsRootIndex = index++; // 2
+	ExportAssociation rgsRootAssociation(&kRayGenShader, 1, &(subobjects[rgsRootIndex]));
+	subobjects[index++] = rgsRootAssociation.subobject; // 3 Associate Root Sig to RGS
+
+	// Create the miss- and hit-programs root-signature and association
+	D3D12_ROOT_SIGNATURE_DESC emptyDesc = {};
+	emptyDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+	LocalRootSignature hitMissRootSignature(mWinHandle, mpDevice, emptyDesc);
+	subobjects[index] = hitMissRootSignature.subobject; // 4 Root Sig to be shared between Miss and CHS
+
+	uint32_t hitMissRootIndex = index++; // 4
+	const WCHAR* missHitExportName[] = { kMissShader, kClosestHitShader };
+	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(subobjects[hitMissRootIndex]));
+	subobjects[index++] = missHitRootAssociation.subobject; // 5 Associate Root Sig to Miss and CHS
+
+	// Bind the payload size to the programs
+	ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 1);
+	subobjects[index] = shaderConfig.subobject; // 6 Shader Config
+
+	uint32_t shaderConfigIndex = index++; // 6
+	const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader };
+	ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
+	subobjects[index++] = configAssociation.subobject; // 7 Associate Shader Config to Miss, CHS, RGS
+
+	// Create the pipeline config
+	PipelineConfig config(0);
+	subobjects[index++] = config.subobject; // 8
+
+	// Create the global root signature and store the empty signature
+	GlobalRootSignature root(mWinHandle, mpDevice, {});
+	mpEmptyRootSig = root.pRootSig;
+	subobjects[index++] = root.subobject; // 9
+
+	// Create the state
+	D3D12_STATE_OBJECT_DESC desc;
+	desc.NumSubobjects = index; // 10
+	desc.pSubobjects = subobjects.data();
+	desc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
+
+	RendererUtil::D3DCall(mWinHandle ,mpDevice->CreateStateObject(&desc, IID_PPV_ARGS(&mpPipelineState)));
+}
 
 
 void Renderer::Render()

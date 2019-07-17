@@ -22,6 +22,8 @@
 #include <memory>
 #include <locale>
 #include <codecvt>
+#include <sstream>
+
 
 // Common DX12 definitions -- These are taken from NVIDIA's DXR Tutorials -- CRITICAL TODO:: INCLUDE LINK TO GITHUB
 #define MAKE_SMART_COM_PTR(_a) _COM_SMARTPTR_TYPEDEF(_a, __uuidof(_a))
@@ -41,14 +43,155 @@ MAKE_SMART_COM_PTR(ID3D12RootSignature);
 MAKE_SMART_COM_PTR(ID3DBlob);
 MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 
+static dxc::DxcDllSupport gDxcDllHelper;
+MAKE_SMART_COM_PTR(IDxcCompiler);
+MAKE_SMART_COM_PTR(IDxcLibrary);
+MAKE_SMART_COM_PTR(IDxcBlobEncoding);
+MAKE_SMART_COM_PTR(IDxcOperationResult);
+
 #define arraysize(a) (sizeof(a)/sizeof(a[0])) 
 #define align_to(_alignment, _val) (((_val + _alignment - 1) / _alignment) * _alignment) 
+
+
+struct AccelerationStructureBuffers
+{
+	ID3D12ResourcePtr pScratch;
+	ID3D12ResourcePtr pResult;
+	ID3D12ResourcePtr pInstanceDesc;    // Used only for top-level AS
+};
+
+struct HeapData
+{
+	ID3D12DescriptorHeapPtr pHeap;
+	uint32_t usedEntries;
+};
+
+struct DxilLibrary
+{
+	DxilLibrary(ID3DBlobPtr pBlob, const WCHAR* entryPoint[], uint32_t entryPointCount) : pShaderBlob(pBlob)
+	{
+		stateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+		stateSubobject.pDesc = &dxilLibDesc;
+
+		dxilLibDesc = {};
+		exportDesc.resize(entryPointCount);
+		exportName.resize(entryPointCount);
+		if (pBlob)
+		{
+			dxilLibDesc.DXILLibrary.pShaderBytecode = pBlob->GetBufferPointer();
+			dxilLibDesc.DXILLibrary.BytecodeLength = pBlob->GetBufferSize();
+			dxilLibDesc.NumExports = entryPointCount;
+			dxilLibDesc.pExports = exportDesc.data();
+
+			for (uint32_t i = 0; i < entryPointCount; i++)
+			{
+				exportName[i] = entryPoint[i];
+				exportDesc[i].Name = exportName[i].c_str();
+				exportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
+				exportDesc[i].ExportToRename = nullptr;
+			}
+		}
+	};
+
+	DxilLibrary() : DxilLibrary(nullptr, nullptr, 0) {}
+
+	D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
+	D3D12_STATE_SUBOBJECT stateSubobject{};
+	ID3DBlobPtr pShaderBlob;
+	std::vector<D3D12_EXPORT_DESC> exportDesc;
+	std::vector<std::wstring> exportName;
+};
+
+struct HitProgram
+{
+	HitProgram(LPCWSTR ahsExport, LPCWSTR chsExport, const std::wstring& name) : exportName(name)
+	{
+		desc = {};
+		desc.AnyHitShaderImport = ahsExport;
+		desc.ClosestHitShaderImport = chsExport;
+		desc.HitGroupExport = exportName.c_str();
+
+		subObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+		subObject.pDesc = &desc;
+	}
+
+	std::wstring exportName;
+	D3D12_HIT_GROUP_DESC desc;
+	D3D12_STATE_SUBOBJECT subObject;
+};
+
+struct RootSignatureDesc
+{
+	D3D12_ROOT_SIGNATURE_DESC desc = {};
+	std::vector<D3D12_DESCRIPTOR_RANGE> range;
+	std::vector<D3D12_ROOT_PARAMETER> rootParams;
+};
+
+
+struct ExportAssociation
+{
+	ExportAssociation(const WCHAR* exportNames[], uint32_t exportCount, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
+	{
+		association.NumExports = exportCount;
+		association.pExports = exportNames;
+		association.pSubobjectToAssociate = pSubobjectToAssociate;
+
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
+		subobject.pDesc = &association;
+	}
+
+	D3D12_STATE_SUBOBJECT subobject = {};
+	D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION association = {};
+};
+
+struct ShaderConfig
+{
+	ShaderConfig(uint32_t maxAttributeSizeInBytes, uint32_t maxPayloadSizeInBytes)
+	{
+		shaderConfig.MaxAttributeSizeInBytes = maxAttributeSizeInBytes;
+		shaderConfig.MaxPayloadSizeInBytes = maxPayloadSizeInBytes;
+
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
+		subobject.pDesc = &shaderConfig;
+	}
+
+	D3D12_RAYTRACING_SHADER_CONFIG shaderConfig = {};
+	D3D12_STATE_SUBOBJECT subobject = {};
+};
+
+
+struct PipelineConfig
+{
+	PipelineConfig(uint32_t maxTraceRecursionDepth)
+	{
+		config.MaxTraceRecursionDepth = maxTraceRecursionDepth;
+
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
+		subobject.pDesc = &config;
+	}
+
+	D3D12_RAYTRACING_PIPELINE_CONFIG config = {};
+	D3D12_STATE_SUBOBJECT subobject = {};
+};
+
+
 
 
 #pragma once
 class RendererUtil
 {
 public:
+
+	// Convert a blob to at string
+	template<class BlotType>
+	static std::string convertBlobToString(BlotType* pBlob)
+	{
+		std::vector<char> infoLog(pBlob->GetBufferSize() + 1);
+		memcpy(infoLog.data(), pBlob->GetBufferPointer(), pBlob->GetBufferSize());
+		infoLog[pBlob->GetBufferSize()] = 0;
+		return std::string(infoLog.data());
+	}
+
 	static std::wstring string_2_wstring(const std::string& s)
 	{
 		std::wstring_convert<std::codecvt_utf8<WCHAR>> cvt;
@@ -80,6 +223,37 @@ public:
 
 	static uint64_t SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue);
 
-	
+	static DxilLibrary CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const WCHAR* entryPoints[]);
+
+	static ID3DBlobPtr CompileLibrary(HWND mWinHandle, const WCHAR* filename, const WCHAR* targetString);
+	static ID3D12RootSignaturePtr CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc);
+	static RootSignatureDesc CreateRayGenRootDesc();
 };
 
+struct LocalRootSignature
+{
+	LocalRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc)
+	{
+		pRootSig = RendererUtil::CreateRootSignature(mWinHandle, pDevice, desc);
+		pInterface = pRootSig.GetInterfacePtr();
+		subobject.pDesc = &pInterface;
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
+	}
+	ID3D12RootSignaturePtr pRootSig;
+	ID3D12RootSignature* pInterface = nullptr;
+	D3D12_STATE_SUBOBJECT subobject = {};
+};
+
+struct GlobalRootSignature
+{
+	GlobalRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc)
+	{
+		pRootSig = RendererUtil::CreateRootSignature(mWinHandle, pDevice, desc);
+		pInterface = pRootSig.GetInterfacePtr();
+		subobject.pDesc = &pInterface;
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
+	}
+	ID3D12RootSignaturePtr pRootSig;
+	ID3D12RootSignature* pInterface = nullptr;
+	D3D12_STATE_SUBOBJECT subobject = {};
+};

@@ -1,6 +1,5 @@
 #include "RendererUtil.h"
 #include <comdef.h>
-
 void RendererUtil::ShowD3DErrorMessage(HWND hwnd, HRESULT hr)
 {
 	auto message = _com_error(hr).ErrorMessage();
@@ -141,4 +140,109 @@ uint64_t RendererUtil::SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList,
 	fenceValue++;
 	pCmdQueue->Signal(pFence, fenceValue);
 	return fenceValue;
+}
+
+
+DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const WCHAR* entryPoints[])
+{
+	// Compile the shader
+	ID3DBlobPtr pDxilLib = CompileLibrary(mWinHandle, shaderFilename.c_str(), L"lib_6_3");
+	//const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+	return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
+}
+
+ID3DBlobPtr RendererUtil::CompileLibrary(HWND winHandle, const WCHAR* filename, const WCHAR* targetString)
+{
+	// Initialize the helper
+	D3DCall(winHandle, gDxcDllHelper.Initialize());
+	IDxcCompilerPtr pCompiler;
+	IDxcLibraryPtr pLibrary;
+	D3DCall(winHandle, gDxcDllHelper.CreateInstance(CLSID_DxcCompiler, &pCompiler));
+	D3DCall(winHandle, gDxcDllHelper.CreateInstance(CLSID_DxcLibrary, &pLibrary));
+
+	// Open and read the file
+	std::ifstream shaderFile(filename);
+	if (shaderFile.good() == false)
+	{
+		DisplayMessage(winHandle, "Can't open file " + wstring_2_string(std::wstring(filename)));
+		return nullptr;
+	}
+	std::stringstream strStream;
+	strStream << shaderFile.rdbuf();
+	std::string shader = strStream.str();
+
+	// Create blob from the string
+	IDxcBlobEncodingPtr pTextBlob;
+	D3DCall(winHandle, pLibrary->CreateBlobWithEncodingFromPinned((LPBYTE)shader.c_str(), (uint32_t)shader.size(), 0, &pTextBlob));
+
+	// Compile
+	IDxcOperationResultPtr pResult;
+	D3DCall(winHandle, pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, nullptr, &pResult));
+
+	// Verify the result
+	HRESULT resultCode;
+	D3DCall(winHandle, pResult->GetStatus(&resultCode));
+	if (FAILED(resultCode))
+	{
+		IDxcBlobEncodingPtr pError;
+		D3DCall(winHandle, pResult->GetErrorBuffer(&pError));
+		std::string log = convertBlobToString(pError.GetInterfacePtr());
+		DisplayMessage(winHandle, "Compiler error:\n" + log);
+		return nullptr;
+	}
+
+	MAKE_SMART_COM_PTR(IDxcBlob);
+	IDxcBlobPtr pBlob;
+	D3DCall(winHandle,pResult->GetResult(&pBlob));
+	return pBlob;
+}
+
+
+ID3D12RootSignaturePtr RendererUtil::CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc)
+{
+	ID3DBlobPtr pSigBlob;
+	ID3DBlobPtr pErrorBlob;
+	HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSigBlob, &pErrorBlob);
+	if (FAILED(hr))
+	{
+		std::string msg = convertBlobToString(pErrorBlob.GetInterfacePtr());
+		DisplayMessage(mWinHandle, msg);
+		return nullptr;
+	}
+
+	ID3D12RootSignaturePtr pRootSig;
+	D3DCall(mWinHandle,pDevice->CreateRootSignature(0, pSigBlob->GetBufferPointer(), pSigBlob->GetBufferSize(), IID_PPV_ARGS(&pRootSig)));
+	return pRootSig;
+}
+
+RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
+{
+	// Create the root-signature
+	RootSignatureDesc desc;
+	desc.range.resize(2);
+	// gOutput
+	desc.range[0].BaseShaderRegister = 0;
+	desc.range[0].NumDescriptors = 1;
+	desc.range[0].RegisterSpace = 0;
+	desc.range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	desc.range[0].OffsetInDescriptorsFromTableStart = 0;
+
+	// gRtScene
+	desc.range[1].BaseShaderRegister = 0;
+	desc.range[1].NumDescriptors = 1;
+	desc.range[1].RegisterSpace = 0;
+	desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	desc.range[1].OffsetInDescriptorsFromTableStart = 1;
+
+	desc.rootParams.resize(1);
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+	desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
+
+	// Create the desc
+	desc.desc.NumParameters = 1;
+	desc.desc.pParameters = desc.rootParams.data();
+	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+	return desc;
 }
