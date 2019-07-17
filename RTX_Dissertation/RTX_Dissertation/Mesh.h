@@ -22,6 +22,9 @@ public:
 	void RemoveInstance(size_t id);
 
 	void UpdateInstance(size_t id, mat4& transform) { mInstances[id] = transform; };
+	int GetInstanceCount() const { return mInstanceCount; };
+
+
 
 	//******************************************//
 	//Set the pointer to the BLAS buffer
@@ -29,9 +32,9 @@ public:
 	void SetBLAS(ID3D12Resource* val) { mBLAS = val; };
 
 	std::vector<ID3D12Resource*>& GetVBOs() { return mVBOs; };
-	ID3D12Resource* GetBLAS() { return mBLAS; };
+	ID3D12Resource* GetBLAS() const { return mBLAS; };
 	std::vector<mat4>& GetInstances() { return mInstances; };
-	std::vector<uint32_t> GetVertexCounts() { return mVertexCounts; };
+	std::vector<uint32_t> GetVertexCounts() const { return mVertexCounts; };
 private:
 	//Ptr to the VBO
 	std::vector<ID3D12Resource*> mVBOs;
@@ -43,7 +46,7 @@ private:
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<mat4> mInstances;
 
-
+	int mInstanceCount = 0;
 
 };
 

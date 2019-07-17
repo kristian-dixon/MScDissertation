@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include <vector>
 #include "Mesh.h"
+#include <map>
 Renderer* Renderer::mInstance = nullptr;
 
 const D3D12_HEAP_PROPERTIES Renderer::kUploadHeapProps =
@@ -240,6 +241,102 @@ Renderer::AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh
 	return buffers;
 
 }
+
+void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& meshDB, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers)
+{
+	// First, get the size of the TLAS buffers and create them
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+	inputs.NumDescs = 3;
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+	//This will be used to find out the potential size of the memory that we can make use of on the GPU
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
+	mpDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+	if (update)
+	{
+		// If this a request for an update, then the TLAS was already used in a DispatchRay() call. We need a UAV barrier to make sure the read operation ends before updating the buffer
+		D3D12_RESOURCE_BARRIER uavBarrier = {};
+		uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		uavBarrier.UAV.pResource = buffers.pResult;
+		mpCmdList->ResourceBarrier(1, &uavBarrier);
+	}
+	else
+	{
+		// If this is not an update operation then we need to create the buffers, otherwise we will refit in-place
+		buffers.pScratch = CreateBuffer(info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, kDefaultHeapProps);
+		buffers.pResult = CreateBuffer(info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
+		buffers.pInstanceDesc = CreateBuffer(sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+		tlasSize = info.ResultDataMaxSizeInBytes;
+	}
+
+
+	//Get instance count
+	int totalInstanceCount = 0;
+
+	for (auto mesh : meshDB) 
+	{
+		totalInstanceCount += mesh.second->GetInstanceCount();
+	}
+
+	// Map the instance desc buffer
+	D3D12_RAYTRACING_INSTANCE_DESC* instanceDescs;
+	buffers.pInstanceDesc->Map(0, nullptr, (void**)& instanceDescs);
+	ZeroMemory(instanceDescs, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * totalInstanceCount);
+
+
+	// The InstanceContributionToHitGroupIndex is set based on the shader-table layout specified in createShaderTable()
+
+	int i = 0;
+	for(auto mesh : meshDB)
+	{
+		auto& instances = mesh.second->GetInstances();
+		auto blas = mesh.second->GetBLAS();
+
+		for (const auto& instance : instances)
+		{
+			//A lot of this could be switched into a instance class...
+			instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
+			instanceDescs[i].InstanceContributionToHitGroupIndex = 0; //TODO:: UPDATE ME LATER FOR INTERESTING STUFF
+			instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+			mat4 m = transpose(instance); // GLM is column major, the INSTANCE_DESC is row major
+			memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
+			instanceDescs[i].AccelerationStructure = blas->GetGPUVirtualAddress();
+			instanceDescs[i].InstanceMask = 0xFF;
+			i++;
+		}
+		
+	}
+
+	// Unmap
+	buffers.pInstanceDesc->Unmap(0, nullptr);
+
+
+	// Create the TLAS
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
+	asDesc.Inputs = inputs;
+	asDesc.Inputs.InstanceDescs = buffers.pInstanceDesc->GetGPUVirtualAddress();
+	asDesc.DestAccelerationStructureData = buffers.pResult->GetGPUVirtualAddress();
+	asDesc.ScratchAccelerationStructureData = buffers.pScratch->GetGPUVirtualAddress();
+
+	// If this is an update operation, set the source buffer and the perform_update flag
+	if (update)
+	{
+		asDesc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
+		asDesc.SourceAccelerationStructureData = buffers.pResult->GetGPUVirtualAddress();
+	}
+
+	mpCmdList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
+
+	// We need to insert a UAV barrier before using the acceleration structures in a raytracing operation
+	D3D12_RESOURCE_BARRIER uavBarrier = {};
+	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	uavBarrier.UAV.pResource = buffers.pResult;
+	mpCmdList->ResourceBarrier(1, &uavBarrier);
+}
+
 
 void Renderer::Render()
 {

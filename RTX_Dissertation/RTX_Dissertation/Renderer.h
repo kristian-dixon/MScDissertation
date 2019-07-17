@@ -23,6 +23,7 @@
 
 #include "RendererUtil.h"
 #include "Mesh.h"
+#include <map>
 
 using namespace glm;
 
@@ -100,6 +101,8 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE CreateRTV(ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format);
 
 	AccelerationStructureBuffers CreateBLAS(std::shared_ptr<Mesh> mesh);
+
+	void BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>&, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers);
 
 //Properties
 private:
