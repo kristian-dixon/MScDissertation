@@ -2,6 +2,7 @@
 #include <vector>
 #include "Mesh.h"
 #include <map>
+#include "ResourceManager.h"
 Renderer* Renderer::mInstance = nullptr;
 
 const D3D12_HEAP_PROPERTIES Renderer::kUploadHeapProps =
@@ -184,6 +185,16 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::CreateRTV(ID3D12ResourcePtr pResource, ID3
 	return rtvHandle;
 }
 
+uint64_t Renderer::SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue)
+{
+	pCmdList->Close();
+	ID3D12CommandList* pGraphicsList = pCmdList.GetInterfacePtr();
+	pCmdQueue->ExecuteCommandLists(1, &pGraphicsList);
+	fenceValue++;
+	pCmdQueue->Signal(pFence, fenceValue);
+	return fenceValue;
+}
+
 
 Renderer::AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 {
@@ -337,6 +348,25 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	mpCmdList->ResourceBarrier(1, &uavBarrier);
 }
 
+void Renderer::CreateAccelerationStructures()
+{
+	auto& db = ResourceManager::GetMeshDB();
+
+	for( auto mesh : db)
+	{
+		mesh.second->SetBLAS(CreateBLAS(mesh.second).pResult);
+	}
+
+	BuildTLAS(db, mTlasSize, false, mTopLevelBuffers);
+	
+	//TODO:: Think about below. 
+	// The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
+	mFenceValue = SubmitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
+	mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
+	WaitForSingleObject(mFenceEvent, INFINITE);
+	uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
+	mpCmdList->Reset(mFrameObjects[0].pCmdAllocator, nullptr);
+}
 
 void Renderer::Render()
 {

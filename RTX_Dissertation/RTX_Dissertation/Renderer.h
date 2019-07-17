@@ -100,11 +100,13 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CreateRTV(ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format);
 
+	uint64_t SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue);
+
 	AccelerationStructureBuffers CreateBLAS(std::shared_ptr<Mesh> mesh);
-
 	void BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>&, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers);
+	void CreateAccelerationStructures();
 
-//Properties
+	//Properties
 private:
 	static Renderer* mInstance;
 
@@ -120,6 +122,12 @@ private:
 
 	ID3D12FencePtr mpFence;
 	HANDLE mFenceEvent;
+	uint64_t mFenceValue = 0;
+
+
+	AccelerationStructureBuffers mTopLevelBuffers;
+	uint64_t mTlasSize = 0;
+
 
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;
