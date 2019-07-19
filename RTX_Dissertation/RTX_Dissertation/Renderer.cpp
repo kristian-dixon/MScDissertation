@@ -252,6 +252,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	mpCmdList->ResourceBarrier(1, &uavBarrier);
 }
 
+
 void Renderer::CreateAccelerationStructures()
 {
 	auto& db = ResourceManager::GetMeshDB();
@@ -261,7 +262,7 @@ void Renderer::CreateAccelerationStructures()
 		mesh.second->SetBLAS(CreateBLAS(mesh.second).pResult);
 	}
 
-	BuildTLAS(db, mTlasSize, false, mTopLevelBuffers);
+	BuildTLAS(db, mTlasSize, false, mTLAS);
 	
 	//TODO:: Think about below. 
 	// The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
@@ -345,9 +346,168 @@ void Renderer::CreateRTPipelineState()
 	RendererUtil::D3DCall(mWinHandle ,mpDevice->CreateStateObject(&desc, IID_PPV_ARGS(&mpPipelineState)));
 }
 
+void Renderer::CreateShaderResources()
+{
+	// Create the output resource. The dimensions and format should match the swap-chain
+	D3D12_RESOURCE_DESC resDesc = {};
+	resDesc.DepthOrArraySize = 1;
+	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // The backbuffer is actually DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, but sRGB formats can't be used with UAVs. We will convert to sRGB ourselves in the shader
+	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	resDesc.Width = mSwapChainSize.x;
+	resDesc.Height = mSwapChainSize.y;
+	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	resDesc.MipLevels = 1;
+	resDesc.SampleDesc.Count = 1;
+	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
+
+	// Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
+	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+
+	// Create the UAV. Based on the root signature we created it should be the first entry
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	mpDevice->CreateUnorderedAccessView(mpOutputResource, nullptr, &uavDesc, mpSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
+
+	// Create the TLAS SRV right after the UAV. Note that we are using a different SRV desc here
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.RaytracingAccelerationStructure.Location = mTLAS.pResult->GetGPUVirtualAddress();
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mpSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
+	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
+}
+
+
+void Renderer::CreateShaderTable()
+{
+	/** The shader-table layout is as follows:
+		Entry 0 - Ray-gen program
+		Entry 1 - Miss program
+		Entry 2 - Hit program
+		All entries in the shader-table must have the same size, so we will choose it base on the largest required entry.
+		The ray-gen program requires the largest entry - sizeof(program identifier) + 8 bytes for a descriptor-table.
+		The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
+	*/
+	const WCHAR* kRayGenShader = L"rayGen";
+	const WCHAR* kMissShader = L"miss";
+	const WCHAR* kClosestHitShader = L"chs";
+	const WCHAR* kHitGroup = L"HitGroup";
+
+	// Calculate the size and create the buffer
+	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+	mShaderTableEntrySize += 8; // The ray-gen's descriptor table
+	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
+	uint32_t shaderTableSize = mShaderTableEntrySize * 3;
+
+	// For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
+	mpShaderTable = RendererUtil::CreateBuffer(mWinHandle, mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+
+	// Map the buffer
+	uint8_t* pData;
+	RendererUtil::D3DCall(mWinHandle, mpShaderTable->Map(0, nullptr, (void**)& pData));
+
+	MAKE_SMART_COM_PTR(ID3D12StateObjectProperties);
+	ID3D12StateObjectPropertiesPtr pRtsoProps;
+	mpPipelineState->QueryInterface(IID_PPV_ARGS(&pRtsoProps));
+
+	// Entry 0 - ray-gen program ID and descriptor data
+	memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+	// This is where we need to set the descriptor data for the ray-gen shader. We'll get to it in the next tutorial
+
+	// Entry 1 - miss program
+	memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+	// Entry 2 - hit program
+	uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
+	memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+	// Unmap
+	mpShaderTable->Unmap(0, nullptr);
+}
+
+
+void Renderer::CreateDXRResources()
+{
+	CreateAccelerationStructures();   
+	CreateRTPipelineState();                   
+	CreateShaderResources();                    
+	CreateShaderTable();
+}
+
+
+
+uint32_t Renderer::BeginFrame()
+{
+	// Bind the descriptor heaps
+	ID3D12DescriptorHeap* heaps[] = { mpSrvUavHeap };
+	mpCmdList->SetDescriptorHeaps(arraysize(heaps), heaps);
+	return mpSwapChain->GetCurrentBackBufferIndex();
+}
+
+void Renderer::EndFrame(uint32_t rtvIndex)
+{
+	RendererUtil::ResourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
+	mFenceValue = RendererUtil::SubmitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
+	mpSwapChain->Present(0, 0);
+
+	// Prepare the command list for the next frame
+	uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
+
+	// Make sure we have the new back-buffer is ready
+	if (mFenceValue > 3) //Default swap chain buffer.     v too
+	{
+		mpFence->SetEventOnCompletion(mFenceValue - 3 + 1, mFenceEvent);
+		WaitForSingleObject(mFenceEvent, INFINITE);
+	}
+
+	mFrameObjects[bufferIndex].pCmdAllocator->Reset();
+	mpCmdList->Reset(mFrameObjects[bufferIndex].pCmdAllocator, nullptr);
+}
+
 
 void Renderer::Render()
 {
+	uint32_t rtvIndex = BeginFrame();
+
+	// Let's raytrace
+	RendererUtil::ResourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	D3D12_DISPATCH_RAYS_DESC raytraceDesc = {};
+	raytraceDesc.Width = mSwapChainSize.x;
+	raytraceDesc.Height = mSwapChainSize.y;
+	raytraceDesc.Depth = 1;
+
+	// RayGen is the first entry in the shader-table
+	raytraceDesc.RayGenerationShaderRecord.StartAddress = mpShaderTable->GetGPUVirtualAddress() + 0 * mShaderTableEntrySize;
+	raytraceDesc.RayGenerationShaderRecord.SizeInBytes = mShaderTableEntrySize;
+
+	// Miss is the second entry in the shader-table
+	size_t missOffset = 1 * mShaderTableEntrySize;
+	raytraceDesc.MissShaderTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + missOffset;
+	raytraceDesc.MissShaderTable.StrideInBytes = mShaderTableEntrySize;
+	raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize;   // Only a s single miss-entry
+
+	// Hit is the third entry in the shader-table
+	size_t hitOffset = 2 * mShaderTableEntrySize;
+	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
+	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
+	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;
+
+	// Bind the empty root signature
+	mpCmdList->SetComputeRootSignature(mpEmptyRootSig);
+
+	// Dispatch
+	mpCmdList->SetPipelineState1(mpPipelineState.GetInterfacePtr());
+	mpCmdList->DispatchRays(&raytraceDesc);
+
+	// Copy the results to the back-buffer
+	RendererUtil::ResourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	RendererUtil::ResourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
+	mpCmdList->CopyResource(mFrameObjects[rtvIndex].pSwapChainBuffer, mpOutputResource);
+
+	EndFrame(rtvIndex);
 }
 
 void Renderer::Shutdown()

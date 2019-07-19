@@ -41,6 +41,12 @@ private:
 	void CreateAccelerationStructures();
 
 	void CreateRTPipelineState();
+	void CreateShaderResources();
+	void CreateShaderTable();
+	void CreateDXRResources();
+	uint32_t BeginFrame();
+
+	void EndFrame(uint32_t rtvIndex);
 
 	//Properties
 private:
@@ -61,17 +67,24 @@ private:
 	uint64_t mFenceValue = 0;
 
 
-	AccelerationStructureBuffers mTopLevelBuffers;
+	AccelerationStructureBuffers mTLAS;
 	uint64_t mTlasSize = 0;
 
 
 	ID3D12RootSignaturePtr mpEmptyRootSig;
 	ID3D12StateObjectPtr mpPipelineState;
 
+	ID3D12ResourcePtr mpOutputResource;
+	ID3D12DescriptorHeapPtr mpSrvUavHeap;
+
+	ID3D12ResourcePtr mpShaderTable;
+	uint32_t mShaderTableEntrySize = 0;
+
 
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;
 	static const D3D12_HEAP_PROPERTIES kDefaultHeapProps;
+	static const uint32_t kSrvUavHeapSize = 2;
 	static const uint32_t k_RtvHeapSize;
 	//static const uint32_t kDefaultSwapChainBuffers ;
 
