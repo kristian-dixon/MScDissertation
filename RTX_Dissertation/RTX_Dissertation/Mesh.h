@@ -6,7 +6,7 @@ using namespace glm;
 class Mesh
 {
 public:
-	Mesh(std::vector<ID3D12Resource*>& vbo, std::vector<uint32_t>& vertCounts);
+	Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts);
 
 	//hmm pass by ref?
 	//**********************************************//
@@ -29,19 +29,19 @@ public:
 	//******************************************//
 	//Set the pointer to the BLAS buffer
 	//******************************************//
-	void SetBLAS(ID3D12Resource* val) { mBLAS = val; };
+	void SetBLAS(ID3D12ResourcePtr val) { mBLAS = val; };
 
-	std::vector<ID3D12Resource*>& GetVBOs() { return mVBOs; };
-	ID3D12Resource* GetBLAS() const { return mBLAS; };
+	std::vector<ID3D12ResourcePtr>& GetVBOs() { return mVBOs; };
+	ID3D12ResourcePtr GetBLAS() const { return mBLAS; };
 	std::vector<mat4>& GetInstances() { return mInstances; };
 	std::vector<uint32_t> GetVertexCounts() const { return mVertexCounts; };
 private:
 	//Ptr to the VBO
-	std::vector<ID3D12Resource*> mVBOs;
+	std::vector<ID3D12ResourcePtr> mVBOs;
 	std::vector<uint32_t>mVertexCounts;
 	
 	//Ptr to the BLAS
-	ID3D12Resource* mBLAS = nullptr;
+	ID3D12ResourcePtr mBLAS = nullptr;
 
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<mat4> mInstances;

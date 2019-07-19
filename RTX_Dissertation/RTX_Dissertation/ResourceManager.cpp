@@ -11,7 +11,7 @@ std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 {
 	const auto mesh = mMeshDB.find(key);
-	if(mesh != mMeshDB.end())
+	if(mesh == mMeshDB.end())
 	{
 		//Mesh isn't in the database, load mesh and add to DB. 
 
@@ -29,7 +29,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if(inst)
 			{
-				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 				
 				auto mesh = std::make_shared<Mesh>( vbos, vertCounts );
@@ -53,7 +53,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if (inst)
 			{
-				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 
 				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);
@@ -109,7 +109,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			auto inst = Renderer::GetInstance();
 			if (inst)
 			{
-				vector<ID3D12Resource*> vbos = { inst->CreateVertexBuffer(vertices) };
+				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 
 				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);

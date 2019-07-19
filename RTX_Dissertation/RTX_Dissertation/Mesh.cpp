@@ -1,5 +1,5 @@
 #include "Mesh.h"
-Mesh::Mesh(std::vector<ID3D12Resource*>& vbo, std::vector<uint32_t>& vertCounts) : mVBOs(vbo), mVertexCounts(vertCounts)
+Mesh::Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts) : mVBOs(vbo), mVertexCounts(vertCounts)
 {
 	//Load BLAS?
 }

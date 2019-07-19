@@ -20,7 +20,7 @@ public:
 
 	void Render();
 	void Shutdown();
-	ID3D12Resource* CreateVertexBuffer(const std::vector<vec3>& verts);
+	ID3D12ResourcePtr CreateVertexBuffer(const std::vector<vec3>& verts);
 
 	void InitDXR();
 

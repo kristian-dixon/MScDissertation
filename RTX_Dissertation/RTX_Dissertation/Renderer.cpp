@@ -88,13 +88,14 @@ void Renderer::InitDXR()
 
 }
 
-ID3D12Resource* Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
+ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size(), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	auto test = sizeof(*verts.data());
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * 3 * 4, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
-	memcpy(pData, verts.data(), verts.size());
+	memcpy(pData, &verts[0], verts.size() * 3 * 4);
 	pBuffer->Unmap(0, nullptr);
 	return pBuffer;
 }
@@ -103,7 +104,7 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 {
 	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
 
-	auto vbos = mesh->GetVBOs();
+	auto& vbos = mesh->GetVBOs();
 	uint32_t geometryCount = vbos.size();
 	geomDesc.resize(geometryCount);
 
