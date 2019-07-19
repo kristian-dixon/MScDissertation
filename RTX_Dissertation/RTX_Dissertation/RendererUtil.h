@@ -63,7 +63,7 @@ struct AccelerationStructureBuffers
 struct HeapData
 {
 	ID3D12DescriptorHeapPtr pHeap;
-	uint32_t usedEntries;
+	uint32_t usedEntries = 0;
 };
 
 struct DxilLibrary

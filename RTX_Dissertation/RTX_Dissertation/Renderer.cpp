@@ -45,6 +45,7 @@ Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight) : mWin
 {
 }
 
+
 void Renderer::InitDXR()
 {
 	//Initialize the debug layer
@@ -69,7 +70,7 @@ void Renderer::InitDXR()
 
 	// Create a Render Target View descriptor heap
 	mRtvHeap.pHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, k_RtvHeapSize, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
-
+	mRtvHeap.usedEntries = 0;
 	// Create the per-frame objects
 	for (uint32_t i = 0; i < arraysize(mFrameObjects); i++)
 	{

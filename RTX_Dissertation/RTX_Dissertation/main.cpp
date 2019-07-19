@@ -39,6 +39,7 @@ std::wstring string_2_wstring(const std::string& s)
 	return ws;
 }
 
+//MOVE TO RENDERERUTIL
 HWND OpenWindow(int windowWidth, int windowHeight)
 {
 	//Create window

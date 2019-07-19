@@ -11,7 +11,5 @@ public:
 	void Update() override;
 	void Render() override;
 	void Shutdown() override;
-private:
-	Renderer* renderer;
 };
 

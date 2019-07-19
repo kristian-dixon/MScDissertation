@@ -22,9 +22,12 @@ public:
 	void Shutdown();
 	ID3D12Resource* CreateVertexBuffer(const std::vector<vec3>& verts);
 
+	void InitDXR();
+
+	void CreateDXRResources();
+
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
-	void InitDXR();
 
 
 	struct
@@ -43,7 +46,6 @@ private:
 	void CreateRTPipelineState();
 	void CreateShaderResources();
 	void CreateShaderTable();
-	void CreateDXRResources();
 	uint32_t BeginFrame();
 
 	void EndFrame(uint32_t rtvIndex);
