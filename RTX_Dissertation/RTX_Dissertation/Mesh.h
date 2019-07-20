@@ -25,14 +25,13 @@ public:
 	int GetInstanceCount() const { return mInstanceCount; };
 
 
-
 	//******************************************//
 	//Set the pointer to the BLAS buffer
 	//******************************************//
-	void SetBLAS(ID3D12ResourcePtr val) { mBLAS = val; };
+	void SetBLAS(AccelerationStructureBuffers val) { mBLAS = val; };
 
 	std::vector<ID3D12ResourcePtr>& GetVBOs() { return mVBOs; };
-	ID3D12ResourcePtr GetBLAS() const { return mBLAS; };
+	AccelerationStructureBuffers GetBLAS() const { return mBLAS; };
 	std::vector<mat4>& GetInstances() { return mInstances; };
 	std::vector<uint32_t> GetVertexCounts() const { return mVertexCounts; };
 private:
@@ -41,7 +40,7 @@ private:
 	std::vector<uint32_t>mVertexCounts;
 	
 	//Ptr to the BLAS
-	ID3D12ResourcePtr mBLAS = nullptr;
+	AccelerationStructureBuffers mBLAS;
 
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<mat4> mInstances;

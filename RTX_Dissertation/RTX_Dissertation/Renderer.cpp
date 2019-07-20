@@ -70,7 +70,6 @@ void Renderer::InitDXR()
 
 	// Create a Render Target View descriptor heap
 	mRtvHeap.pHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, k_RtvHeapSize, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
-	mRtvHeap.usedEntries = 0;
 	// Create the per-frame objects
 	for (uint32_t i = 0; i < arraysize(mFrameObjects); i++)
 	{
@@ -85,6 +84,10 @@ void Renderer::InitDXR()
 	// Create a fence and the event
 	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mpFence)));
 	mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+
+
+	
 
 }
 
@@ -152,6 +155,7 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 	uavBarrier.UAV.pResource = buffers.pResult;
 	mpCmdList->ResourceBarrier(1, &uavBarrier);
 
+	
 
 	return buffers;
 
@@ -163,7 +167,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
-	inputs.NumDescs = 3;
+	inputs.NumDescs = 1; //TODO:: UPDATE ME!
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
 	//This will be used to find out the potential size of the memory that we can make use of on the GPU
@@ -220,7 +224,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 			instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
 			mat4 m = transpose(instance); // GLM is column major, the INSTANCE_DESC is row major
 			memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
-			instanceDescs[i].AccelerationStructure = blas->GetGPUVirtualAddress();
+			instanceDescs[i].AccelerationStructure = blas.pResult->GetGPUVirtualAddress();
 			instanceDescs[i].InstanceMask = 0xFF;
 			i++;
 		}
@@ -252,6 +256,8 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
 	uavBarrier.UAV.pResource = buffers.pResult;
 	mpCmdList->ResourceBarrier(1, &uavBarrier);
+
+	
 }
 
 
@@ -261,8 +267,10 @@ void Renderer::CreateAccelerationStructures()
 
 	for( auto mesh : db)
 	{
-		mesh.second->SetBLAS(CreateBLAS(mesh.second).pResult);
+		mesh.second->SetBLAS(CreateBLAS(mesh.second));
 	}
+
+	
 
 	BuildTLAS(db, mTlasSize, false, mTLAS);
 	
@@ -299,7 +307,7 @@ void Renderer::CreateRTPipelineState()
 	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(mWinHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
 	subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
-	HitProgram hitProgram(nullptr, L"ClosestHitShader", L"HitGroup");
+	HitProgram hitProgram(nullptr, kClosestHitShader, kHitGroup);
 	subobjects[index++] = hitProgram.subObject; // 1 Hit Group
 
 	// Create the ray-gen root-signature and association
@@ -331,7 +339,7 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index++] = configAssociation.subobject; // 7 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config
-	PipelineConfig config(0);
+	PipelineConfig config(1);
 	subobjects[index++] = config.subobject; // 8
 
 	// Create the global root signature and store the empty signature
@@ -433,7 +441,7 @@ void Renderer::CreateShaderTable()
 
 void Renderer::CreateDXRResources()
 {
-	CreateAccelerationStructures();   
+	//CreateAccelerationStructures();   
 	CreateRTPipelineState();                   
 	CreateShaderResources();                    
 	CreateShaderTable();
