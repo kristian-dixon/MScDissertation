@@ -12,11 +12,28 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	mat4 transformMat = mat4();
 	mesh->AddInstance(transformMat);
 
-	/*transformMat = translate(mat4(), vec3(2, 0, 0));
+	transformMat = translate(mat4(), vec3(2, 0, 0));
 	mesh->AddInstance(transformMat);
-	*/
+	
+	transformMat = translate(mat4(), vec3(2, 0, 5));
+	mesh->AddInstance(transformMat);
+
+	transformMat = translate(mat4(), vec3(-4, 0, 3));
+	transformMat = glm::rotate(transformMat, 1.f, vec3(0, 0, 1));
+	mesh->AddInstance(transformMat);
+
+	mesh = ResourceManager::RequestMesh("CUBE");
+
+	transformMat = translate(mat4(), vec3(-10, 5, 10));
+	mesh->AddInstance(transformMat);
 
 
+	
+	/*
+	mesh = ResourceManager::RequestMesh("SPHERE");
+	transformMat = translate(mat4(), vec3(-10, -5, 10));
+
+	mesh->AddInstance(transformMat);*/
 
 	//Create final renderer resources
 	renderer->CreateDXRResources();

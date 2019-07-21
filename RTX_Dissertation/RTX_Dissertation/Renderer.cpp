@@ -163,17 +163,6 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 
 void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& meshDB, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers)
 {
-	// First, get the size of the TLAS buffers and create them
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
-	inputs.NumDescs = 1; //TODO:: UPDATE ME!
-	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
-
-	//This will be used to find out the potential size of the memory that we can make use of on the GPU
-	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
-	mpDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
-
 	//Get instance count
 	int totalInstanceCount = 0;
 
@@ -181,6 +170,19 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	{
 		totalInstanceCount += mesh.second->GetInstanceCount();
 	}
+
+	// First, get the size of the TLAS buffers and create them
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+	inputs.NumDescs = totalInstanceCount; 
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+	//This will be used to find out the potential size of the memory that we can make use of on the GPU
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
+	mpDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+	
 
 	if (update)
 	{
