@@ -330,7 +330,7 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index++] = missHitRootAssociation.subobject; // 5 Associate Root Sig to Miss and CHS
 
 	// Bind the payload size to the programs
-	ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 1);
+	ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 3);
 	subobjects[index] = shaderConfig.subobject; // 6 Shader Config
 
 	uint32_t shaderConfigIndex = index++; // 6
@@ -441,7 +441,7 @@ void Renderer::CreateShaderTable()
 
 void Renderer::CreateDXRResources()
 {
-	//CreateAccelerationStructures();   
+	CreateAccelerationStructures();   
 	CreateRTPipelineState();                   
 	CreateShaderResources();                    
 	CreateShaderTable();
