@@ -32,7 +32,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 				
-				auto mesh = std::make_shared<Mesh>( vbos, vertCounts );
+				auto mesh = std::make_shared<Mesh>( vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}
@@ -45,10 +45,18 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 				glm::vec3(-1, 1,  0),
 				glm::vec3( 1, 1, 0),
 				glm::vec3( 1,-1, 0),
+				glm::vec3(-1,-1, 0),
+			};
+
+
+			const vector<glm::vec3> indices =
+			{
+				glm::vec3(-1, 1,  0),
+				glm::vec3(1, 1, 0),
 				glm::vec3(1,-1, 0),
 				glm::vec3(-1,-1, 0),
-				glm::vec3(-1, 1,  0),
 			};
+
 
 			auto inst = Renderer::GetInstance();
 			if (inst)
@@ -56,7 +64,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 
-				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);
+				
+
+
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}
@@ -112,7 +123,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 
-				auto mesh = std::make_shared<Mesh>(vbos, vertCounts);
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}

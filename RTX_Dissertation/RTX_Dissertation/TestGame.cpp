@@ -12,9 +12,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	mat4 transformMat = mat4();
 	mesh->AddInstance(transformMat);
 
-	transformMat = translate(mat4(), vec3(2, 0, 0));
+	/*transformMat = translate(mat4(), vec3(2, 0, 0));
 	mesh->AddInstance(transformMat);
-	
+	*/
 	transformMat = translate(mat4(), vec3(2, 0, 5));
 	mesh->AddInstance(transformMat);
 
@@ -25,6 +25,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	mesh = ResourceManager::RequestMesh("CUBE");
 
 	transformMat = translate(mat4(), vec3(-10, 5, 10));
+	mesh->AddInstance(transformMat);
+
+	mesh = ResourceManager::RequestMesh("QUAD");
+	transformMat = translate(mat4(), vec3(2, 0, 0.25f));
 	mesh->AddInstance(transformMat);
 
 

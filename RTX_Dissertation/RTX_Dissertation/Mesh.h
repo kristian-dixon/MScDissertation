@@ -6,7 +6,7 @@ using namespace glm;
 class Mesh
 {
 public:
-	Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts);
+	Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts, std::vector<ID3D12ResourcePtr> &indexPtrs, std::vector<uint32_t>& indexCounts);
 
 	//hmm pass by ref?
 	//**********************************************//
@@ -33,12 +33,20 @@ public:
 	std::vector<ID3D12ResourcePtr>& GetVBOs() { return mVBOs; };
 	AccelerationStructureBuffers GetBLAS() const { return mBLAS; };
 	std::vector<mat4>& GetInstances() { return mInstances; };
-	std::vector<uint32_t> GetVertexCounts() const { return mVertexCounts; };
+	const std::vector<uint32_t>& GetVertexCounts() const { return mVertexCounts; };
+	
+	std::vector<ID3D12ResourcePtr>& GetIndices() { return mIndices; };
+	const std::vector<uint32_t>& GetIndexCounts() const { return mIndicesCounts; };
+
 private:
 	//Ptr to the VBO
 	std::vector<ID3D12ResourcePtr> mVBOs;
 	std::vector<uint32_t>mVertexCounts;
-	
+
+	//Index data
+	std::vector<ID3D12ResourcePtr> mIndices;
+	std::vector<uint32_t> mIndicesCounts;
+
 	//Ptr to the BLAS
 	AccelerationStructureBuffers mBLAS;
 

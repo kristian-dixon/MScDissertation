@@ -108,11 +108,16 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
 
 	auto& vbos = mesh->GetVBOs();
+	auto& vertexCount = mesh->GetVertexCounts();
+
+	auto& indices = mesh->GetIndices();
+	auto& indexCounts = mesh->GetIndexCounts();
+
+	auto indicesSize = indices.size();
 	uint32_t geometryCount = vbos.size();
 	geomDesc.resize(geometryCount);
 
 	//Setup descriptors for each geometry in the Mesh
-	auto vertexCount = mesh->GetVertexCounts();
 	for (uint32_t i = 0; i < geometryCount; i++)
 	{
 		geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -120,6 +125,14 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 		geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
 		geomDesc[i].Triangles.VertexCount = vertexCount[i];
 		geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+
+		if(i < indicesSize)
+		{
+			geomDesc[i].Triangles.IndexBuffer = indices[i]->GetGPUVirtualAddress();
+			geomDesc[i].Triangles.IndexCount = mesh->GetIndexCounts()[i];
+			geomDesc[i].Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+		}
+
 		geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 	}
 
