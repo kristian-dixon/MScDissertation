@@ -49,12 +49,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			};
 
 
-			const vector<glm::vec3> indices =
+			const vector<uint32_t> indices =
 			{
-				glm::vec3(-1, 1,  0),
-				glm::vec3(1, 1, 0),
-				glm::vec3(1,-1, 0),
-				glm::vec3(-1,-1, 0),
+				0,1,2,
+				2,3,0
 			};
 
 
@@ -63,11 +61,12 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			{
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
-
+				vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
+				vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
 				
 
 
-				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}

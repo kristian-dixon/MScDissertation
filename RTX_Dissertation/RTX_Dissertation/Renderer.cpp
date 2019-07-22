@@ -95,10 +95,23 @@ ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * 3 * 4, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
 	memcpy(pData, &verts[0], verts.size() * 3 * 4);
+	pBuffer->Unmap(0, nullptr);
+	return pBuffer;
+}
+
+
+ID3D12ResourcePtr Renderer::CreateIndexBuffer(const std::vector<uint32_t>& verts)
+{
+	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
+	auto test = sizeof(*verts.data());
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(uint32_t), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	uint8_t* pData;
+	pBuffer->Map(0, nullptr, (void**)& pData);
+	memcpy(pData, &verts[0], verts.size() * sizeof(uint32_t));
 	pBuffer->Unmap(0, nullptr);
 	return pBuffer;
 }
