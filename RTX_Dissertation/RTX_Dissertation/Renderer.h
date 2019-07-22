@@ -54,6 +54,9 @@ private:
 
 	//Properties
 private:
+	ID3D12ResourcePtr mTestCbuffer;
+
+
 	static Renderer* mInstance;
 
 	HWND mWinHandle;

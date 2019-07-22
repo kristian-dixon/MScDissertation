@@ -204,6 +204,7 @@ public:
 		std::string s = cvt.to_bytes(ws);
 		return s;
 	}
+
 	static void DisplayMessage(HWND winHandle, const std::string& msg, const std::string& type = "Error") { MessageBoxA(winHandle, msg.c_str(), type.c_str(), MB_OK); }
 	static void D3DCall(HWND winHandle, HRESULT hr) { if (FAILED(hr)) { RendererUtil::ShowD3DErrorMessage(winHandle, hr); } }
 
@@ -228,7 +229,16 @@ public:
 	static ID3DBlobPtr CompileLibrary(HWND mWinHandle, const WCHAR* filename, const WCHAR* targetString);
 	static ID3D12RootSignaturePtr CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc);
 	static RootSignatureDesc CreateRayGenRootDesc();
+	static RootSignatureDesc CreateHitRootDesc();
+
+	static ID3D12ResourcePtr CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::mat4x4& matrix);
+
 	static void ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter);
+
+
+	static const D3D12_HEAP_PROPERTIES kUploadHeapProps; 
+	static const D3D12_HEAP_PROPERTIES kDefaultHeapProps;
+
 };
 
 struct LocalRootSignature

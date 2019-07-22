@@ -5,23 +5,7 @@
 #include "ResourceManager.h"
 Renderer* Renderer::mInstance = nullptr;
 
-const D3D12_HEAP_PROPERTIES Renderer::kUploadHeapProps =
-{
-	D3D12_HEAP_TYPE_UPLOAD,
-	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-	D3D12_MEMORY_POOL_UNKNOWN,
-	0,
-	0,
-};
 
-const D3D12_HEAP_PROPERTIES Renderer::kDefaultHeapProps =
-{
-	D3D12_HEAP_TYPE_DEFAULT,
-	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-	D3D12_MEMORY_POOL_UNKNOWN,
-	0,
-	0
-};
 
 const uint32_t Renderer::k_RtvHeapSize = 3;
 
@@ -95,7 +79,7 @@ ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
 	memcpy(pData, &verts[0], verts.size() * 3 * 4);
@@ -108,7 +92,7 @@ ID3D12ResourcePtr Renderer::CreateIndexBuffer(const std::vector<uint32_t>& verts
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(uint32_t), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(uint32_t), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
 	memcpy(pData, &verts[0], verts.size() * sizeof(uint32_t));
@@ -164,8 +148,8 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 
 	// Create the buffers. They need to support UAV, and since we are going to immediately use them, we create them with an unordered-access state
 	AccelerationStructureBuffers buffers;
-	buffers.pScratch = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, kDefaultHeapProps);
-	buffers.pResult = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
+	buffers.pScratch = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, RendererUtil::kDefaultHeapProps);
+	buffers.pResult = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, RendererUtil::kDefaultHeapProps);
 
 	// Create the bottom-level AS
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
@@ -221,9 +205,9 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	else
 	{
 		// If this is not an update operation then we need to create the buffers, otherwise we will refit in-place
-		buffers.pScratch = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, kDefaultHeapProps);
-		buffers.pResult = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
-		buffers.pInstanceDesc = RendererUtil::CreateBuffer(mWinHandle, mpDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * totalInstanceCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+		buffers.pScratch = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, RendererUtil::kDefaultHeapProps);
+		buffers.pResult = RendererUtil::CreateBuffer(mWinHandle, mpDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, RendererUtil::kDefaultHeapProps);
+		buffers.pInstanceDesc = RendererUtil::CreateBuffer(mWinHandle, mpDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * totalInstanceCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 		tlasSize = info.ResultDataMaxSizeInBytes;
 	}
 
@@ -321,7 +305,7 @@ void Renderer::CreateRTPipelineState()
 	//  2 for shader config (shared between all programs. 1 for the config, 1 for association)
 	//  1 for pipeline config
 	//  1 for the global root signature
-	std::array<D3D12_STATE_SUBOBJECT, 10> subobjects;
+	std::array<D3D12_STATE_SUBOBJECT, 12> subobjects;
 	uint32_t index = 0;
 
 	const WCHAR* kRayGenShader = L"rayGen";
@@ -397,7 +381,7 @@ void Renderer::CreateShaderResources()
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
-	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
+	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&RendererUtil::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
 	// Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
 	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
@@ -440,7 +424,7 @@ void Renderer::CreateShaderTable()
 	uint32_t shaderTableSize = mShaderTableEntrySize * 3;
 
 	// For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
-	mpShaderTable = RendererUtil::CreateBuffer(mWinHandle, mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	mpShaderTable = RendererUtil::CreateBuffer(mWinHandle, mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 
 	// Map the buffer
 	uint8_t* pData;
@@ -471,7 +455,11 @@ void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
 	CreateRTPipelineState();                   
-	CreateShaderResources();                    
+	CreateShaderResources();
+
+	auto mat = glm::lookAtRH(vec3(0, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0));
+
+	mTestCbuffer = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice, mat);
 	CreateShaderTable();
 }
 

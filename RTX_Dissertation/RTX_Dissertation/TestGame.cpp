@@ -35,6 +35,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
 	transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 	mesh->AddInstance(transformMat);
+
+
 	
 	/*
 	mesh = ResourceManager::RequestMesh("SPHERE");
@@ -60,5 +62,7 @@ void TestGame::Render()
 
 void TestGame::Shutdown()
 {
+	ResourceManager::ClearResources();
+
 	Renderer::GetInstance()->Shutdown();
 }

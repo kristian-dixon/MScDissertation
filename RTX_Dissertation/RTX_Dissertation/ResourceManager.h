@@ -20,6 +20,8 @@ public:
 
 	static const std::map<string, shared_ptr<Mesh>>& GetMeshDB() {return mMeshDB; };
 
+	static void ClearResources() { mMeshDB.clear(); }
+
 private:
 	static std::map<string, shared_ptr<Mesh>> mMeshDB;
 

@@ -1,5 +1,25 @@
 #include "RendererUtil.h"
 #include <comdef.h>
+
+const D3D12_HEAP_PROPERTIES RendererUtil::kUploadHeapProps =
+{
+	D3D12_HEAP_TYPE_UPLOAD,
+	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+	D3D12_MEMORY_POOL_UNKNOWN,
+	0,
+	0,
+};
+
+
+const D3D12_HEAP_PROPERTIES RendererUtil::kDefaultHeapProps =
+{
+	D3D12_HEAP_TYPE_DEFAULT,
+	D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+	D3D12_MEMORY_POOL_UNKNOWN,
+	0,
+	0
+};
+
 void RendererUtil::ShowD3DErrorMessage(HWND hwnd, HRESULT hr)
 {
 	auto message = _com_error(hr).ErrorMessage();
@@ -252,6 +272,31 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
 	return desc;
+}
+
+RootSignatureDesc RendererUtil::CreateHitRootDesc()
+{
+	RootSignatureDesc desc;
+	desc.rootParams.resize(1);
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	desc.rootParams[0].Descriptor.RegisterSpace = 0;
+	desc.rootParams[0].Descriptor.ShaderRegister = 0;
+
+	desc.desc.NumParameters = 1;
+	desc.desc.pParameters = desc.rootParams.data();
+	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+	return desc;
+}
+
+ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::mat4x4& matrix)
+{
+	auto constantBuffer = CreateBuffer(winHandle, device, sizeof(matrix), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	uint8_t* pData;
+	D3DCall(winHandle, constantBuffer->Map(0, nullptr, (void**)& pData));
+	memcpy(pData, &matrix, sizeof(matrix));
+	constantBuffer->Unmap(0, nullptr);
+	return constantBuffer;
 }
 
 void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
