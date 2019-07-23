@@ -12,6 +12,7 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 {
 	switch (msg)
 	{
+	
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		return 0;
@@ -20,6 +21,10 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		return 0;
 	case WM_KEYDOWN:
 		if (wParam == VK_ESCAPE) PostQuitMessage(0);
+		else
+		{
+			game.Input(wParam);
+		}
 		return 0;
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);

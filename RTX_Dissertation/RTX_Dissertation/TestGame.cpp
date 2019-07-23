@@ -66,3 +66,17 @@ void TestGame::Shutdown()
 
 	Renderer::GetInstance()->Shutdown();
 }
+
+void TestGame::Input(int key)
+{
+	if(key == 65)
+	{
+		//MOVE LEFT
+		Renderer::GetInstance()->x -= 1;
+	}
+	else if(key == 68)
+	{
+		Renderer::GetInstance()->x += 1;
+	}
+
+}

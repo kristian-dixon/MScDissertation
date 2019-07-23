@@ -188,7 +188,6 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
 	inputs.NumDescs = totalInstanceCount; 
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
-
 	//This will be used to find out the potential size of the memory that we can make use of on the GPU
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
 	mpDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
@@ -286,7 +285,6 @@ void Renderer::CreateAccelerationStructures()
 	
 
 	BuildTLAS(db, mTlasSize, false, mTLAS);
-	
 	//TODO:: Think about below. 
 	// The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
 	mFenceValue = RendererUtil::SubmitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
@@ -484,7 +482,6 @@ void Renderer::CreateDXRResources()
 
 uint32_t Renderer::BeginFrame()
 {
-	x+=0.004f;
 	DirectX::XMVECTOR Eye = DirectX::XMVectorSet(x, 0.0f, -10.5f, 0.0f);
 	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);

@@ -11,10 +11,6 @@ class Mesh;
 class Renderer
 {
 public:
-	
-
-
-
 	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 	static Renderer* GetInstance() { return mInstance; };
 
@@ -27,6 +23,7 @@ public:
 
 	void CreateDXRResources();
 
+	float x = 0;
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 
@@ -89,7 +86,7 @@ private:
 
 
 	Camera mCamera;
-	float x = 0;
+	
 
 
 	//CONSTANTS

@@ -11,5 +11,7 @@ public:
 	void Update() override;
 	void Render() override;
 	void Shutdown() override;
+
+	void Input(int key) override;
 };
 
