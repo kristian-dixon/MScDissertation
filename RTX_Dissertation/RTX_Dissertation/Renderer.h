@@ -88,6 +88,10 @@ private:
 	uint32_t mShaderTableEntrySize = 0;
 
 
+	Camera mCamera;
+	float x = 0;
+
+
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;
 	static const D3D12_HEAP_PROPERTIES kDefaultHeapProps;

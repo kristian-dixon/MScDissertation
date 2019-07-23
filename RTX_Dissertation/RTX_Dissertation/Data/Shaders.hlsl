@@ -30,9 +30,14 @@
 RaytracingAccelerationStructure gRtScene : register(t0);
 RWTexture2D<float4> gOutput : register(u0);
 
-cbuffer ViewMatrix : register(b0)
+
+// #DXR Extra: Perspective Camera
+cbuffer CameraParams : register(b0)
 {
-	matrix View;
+	float4x4 view;
+	float4x4 projection;
+	float4x4 viewI;
+	float4x4 projectionI;
 }
 
 float3 linearToSrgb(float3 c)
@@ -62,10 +67,18 @@ void rayGen()
 	float2 d = ((crd / dims) * 2.f - 1.f);
 	float aspectRatio = dims.x / dims.y;
 
+	// #DXR Extra: Perspective Camera
+	// Perspective
+	RayDesc ray;
+	ray.Origin = mul(viewI, float4(0, 0, 0, 1));
+	float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
+	ray.Direction = mul(viewI, float4(target.xyz, 0));
+	
+	/*
 	RayDesc ray;
 	ray.Origin = float3(0, 0, -2);
 	ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
-
+	*/
 	ray.TMin = 0;
 	ray.TMax = 100000;
 

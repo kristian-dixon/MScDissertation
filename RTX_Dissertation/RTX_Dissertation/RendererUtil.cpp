@@ -1,5 +1,6 @@
 #include "RendererUtil.h"
 #include <comdef.h>
+#include "DirectXMath.h"
 
 const D3D12_HEAP_PROPERTIES RendererUtil::kUploadHeapProps =
 {
@@ -246,7 +247,7 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 {
 	// Create the root-signature
 	RootSignatureDesc desc;
-	desc.range.resize(2);
+	desc.range.resize(3);
 	// gOutput
 	desc.range[0].BaseShaderRegister = 0;
 	desc.range[0].NumDescriptors = 1;
@@ -261,15 +262,25 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 	desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	desc.range[1].OffsetInDescriptorsFromTableStart = 1;
 
+	//CBV
+	desc.range[2].BaseShaderRegister = 0;
+	desc.range[2].NumDescriptors = 1;
+	desc.range[2].RegisterSpace = 0;
+	desc.range[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	desc.range[2].OffsetInDescriptorsFromTableStart = 2;
+
 	desc.rootParams.resize(1);
 	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 3;
 	desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
 	// Create the desc
 	desc.desc.NumParameters = 1;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+	//{0 /*b0*/, 1, 0, D3D12_DESCRIPTOR_RANGE_TYPE_CBV /*Camera parameters*/, 2}});
+
 
 	return desc;
 }
@@ -289,15 +300,7 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	return desc;
 }
 
-ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::mat4x4& matrix)
-{
-	auto constantBuffer = CreateBuffer(winHandle, device, sizeof(matrix), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-	uint8_t* pData;
-	D3DCall(winHandle, constantBuffer->Map(0, nullptr, (void**)& pData));
-	memcpy(pData, &matrix, sizeof(matrix));
-	constantBuffer->Unmap(0, nullptr);
-	return constantBuffer;
-}
+
 
 void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
 {
@@ -308,4 +311,51 @@ void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D1
 	barrier.Transition.StateBefore = stateBefore;
 	barrier.Transition.StateAfter = stateAfter;
 	pCmdList->ResourceBarrier(1, &barrier);
+}
+
+void Camera::CreateCamera(HWND winHandle, ID3D12Device5Ptr device)
+{
+	uint32_t nbMatrix = 4; // view, perspective, viewInv, perspectiveInv
+	mCameraBufferSize = nbMatrix * sizeof(DirectX::XMMATRIX);
+
+	// Create the constant buffer for all matrices
+	mCameraBuffer = RendererUtil::CreateBuffer(winHandle, device, mCameraBufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
+
+	// Create a descriptor heap that will be used by the rasterization shaders
+	mConstHeap = RendererUtil::CreateDescriptorHeap(winHandle, device, 1, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+
+	// Describe and create the constant buffer view.
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+	cbvDesc.BufferLocation = mCameraBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = mCameraBufferSize;
+
+	// Get a handle to the heap memory on the CPU side, to be able to write the descriptors directly
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mConstHeap->GetCPUDescriptorHandleForHeapStart();
+	device->CreateConstantBufferView(&cbvDesc, srvHandle);
+}
+
+void Camera::UpdateCamera(DirectX::XMVECTOR Eye, DirectX::XMVECTOR At, DirectX::XMVECTOR Up)
+{
+	std::vector<DirectX::XMMATRIX > matrices(4);
+
+	// Initialize the view matrix, ideally this should be based on user interactions
+	// The lookat and perspective matrices used for rasterization are defined to transform world-space
+	// vertices into a [0,1]x[0,1]x[0,1] camera space
+	
+	matrices[0] = DirectX::XMMatrixLookAtRH(Eye, At, Up);
+
+	float fovAngleY = 45.0f * DirectX::XM_PI / 180.0f;
+	matrices[1] = DirectX::XMMatrixPerspectiveFovRH(fovAngleY, 2.07f, 0.1f, 1000.0f);
+
+	// Raytracing has to do the contrary of rasterization: rays are defined in camera space, and are
+	// transformed into world space. To do this, we need to store the inverse matrices as well.
+	DirectX::XMVECTOR det;
+	matrices[2] = XMMatrixInverse(&det, matrices[0]);
+	matrices[3] = XMMatrixInverse(&det, matrices[1]);
+
+	// Copy the matrix contents
+	uint8_t* pData;
+	(mCameraBuffer->Map(0, nullptr, (void**)& pData));
+	memcpy(pData, matrices.data(), mCameraBufferSize);
+	mCameraBuffer->Unmap(0, nullptr);
 }

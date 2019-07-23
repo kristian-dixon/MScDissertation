@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include <map>
 #include "ResourceManager.h"
+#include <DirectXMath.h>
 Renderer* Renderer::mInstance = nullptr;
 
 
@@ -305,7 +306,7 @@ void Renderer::CreateRTPipelineState()
 	//  2 for shader config (shared between all programs. 1 for the config, 1 for association)
 	//  1 for pipeline config
 	//  1 for the global root signature
-	std::array<D3D12_STATE_SUBOBJECT, 12> subobjects;
+	std::array<D3D12_STATE_SUBOBJECT, 10> subobjects;
 	uint32_t index = 0;
 
 	const WCHAR* kRayGenShader = L"rayGen";
@@ -383,8 +384,8 @@ void Renderer::CreateShaderResources()
 	resDesc.SampleDesc.Count = 1;
 	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&RendererUtil::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
-	// Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
-	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+	// Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output and 1 for the camera cbv
+	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 3, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
 	// Create the UAV. Based on the root signature we created it should be the first entry
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -396,9 +397,19 @@ void Renderer::CreateShaderResources()
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.RaytracingAccelerationStructure.Location = mTLAS.pResult->GetGPUVirtualAddress();
+	
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mpSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
 	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
+
+	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// Describe and create a constant buffer view for the camera
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+	cbvDesc.BufferLocation = mCamera.mCameraBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = mCamera.mCameraBufferSize;
+	mpDevice->CreateConstantBufferView(&cbvDesc, srvHandle);
+
 }
 
 
@@ -455,11 +466,17 @@ void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
 	CreateRTPipelineState();                   
+	
+	DirectX::XMVECTOR Eye = DirectX::XMVectorSet(0.0f, 0.0f, -10.5f, 0.0f);
+	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+	mCamera.CreateCamera(mWinHandle, mpDevice);
+	mCamera.UpdateCamera(Eye, At, Up);
+
 	CreateShaderResources();
-
-	auto mat = glm::lookAtRH(vec3(0, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0));
-
-	mTestCbuffer = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice, mat);
+	
 	CreateShaderTable();
 }
 
@@ -467,6 +484,13 @@ void Renderer::CreateDXRResources()
 
 uint32_t Renderer::BeginFrame()
 {
+	x+=0.004f;
+	DirectX::XMVECTOR Eye = DirectX::XMVectorSet(x, 0.0f, -10.5f, 0.0f);
+	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	mCamera.UpdateCamera(Eye, At, Up);
+
 	// Bind the descriptor heaps
 	ID3D12DescriptorHeap* heaps[] = { mpSrvUavHeap };
 	mpCmdList->SetDescriptorHeaps(arraysize(heaps), heaps);

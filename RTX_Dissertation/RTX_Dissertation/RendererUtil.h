@@ -23,6 +23,7 @@
 #include <locale>
 #include <codecvt>
 #include <sstream>
+#include <DirectXMath.h>
 
 
 // Common DX12 definitions -- These are taken from NVIDIA's DXR Tutorials -- CRITICAL TODO:: INCLUDE LINK TO GITHUB
@@ -176,7 +177,6 @@ struct PipelineConfig
 
 
 
-
 #pragma once
 class RendererUtil
 {
@@ -231,7 +231,6 @@ public:
 	static RootSignatureDesc CreateRayGenRootDesc();
 	static RootSignatureDesc CreateHitRootDesc();
 
-	static ID3D12ResourcePtr CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::mat4x4& matrix);
 
 	static void ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter);
 
@@ -267,4 +266,14 @@ struct GlobalRootSignature
 	ID3D12RootSignaturePtr pRootSig;
 	ID3D12RootSignature* pInterface = nullptr;
 	D3D12_STATE_SUBOBJECT subobject = {};
+};
+
+struct Camera
+{
+	void CreateCamera(HWND winHandle, ID3D12Device5Ptr device);
+	void UpdateCamera(DirectX::XMVECTOR Eye, DirectX::XMVECTOR At, DirectX::XMVECTOR Up);
+
+	ID3D12ResourcePtr mCameraBuffer;
+	ID3D12DescriptorHeapPtr mConstHeap;
+	uint32_t mCameraBufferSize;
 };
