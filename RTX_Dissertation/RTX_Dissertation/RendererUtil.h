@@ -271,9 +271,13 @@ struct GlobalRootSignature
 struct Camera
 {
 	void CreateCamera(HWND winHandle, ID3D12Device5Ptr device);
-	void UpdateCamera(DirectX::XMVECTOR Eye, DirectX::XMVECTOR At, DirectX::XMVECTOR Up);
+	void UpdateCamera();
 
 	ID3D12ResourcePtr mCameraBuffer;
 	ID3D12DescriptorHeapPtr mConstHeap;
 	uint32_t mCameraBufferSize;
+
+	glm::vec3 Eye; 
+	glm::vec3 Dir;
+	glm::vec3 Up;
 };

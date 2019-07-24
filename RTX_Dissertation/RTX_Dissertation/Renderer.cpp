@@ -465,13 +465,9 @@ void Renderer::CreateDXRResources()
 	CreateAccelerationStructures();   
 	CreateRTPipelineState();                   
 	
-	DirectX::XMVECTOR Eye = DirectX::XMVectorSet(0.0f, 0.0f, -10.5f, 0.0f);
-	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-
+	
 	mCamera.CreateCamera(mWinHandle, mpDevice);
-	mCamera.UpdateCamera(Eye, At, Up);
+	mCamera.UpdateCamera();
 
 	CreateShaderResources();
 	
@@ -482,11 +478,7 @@ void Renderer::CreateDXRResources()
 
 uint32_t Renderer::BeginFrame()
 {
-	DirectX::XMVECTOR Eye = DirectX::XMVectorSet(x, 0.0f, -10.5f, 0.0f);
-	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	mCamera.UpdateCamera(Eye, At, Up);
+	mCamera.UpdateCamera();
 
 	// Bind the descriptor heaps
 	ID3D12DescriptorHeap* heaps[] = { mpSrvUavHeap };

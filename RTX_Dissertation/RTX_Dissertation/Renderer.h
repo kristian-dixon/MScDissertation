@@ -23,7 +23,8 @@ public:
 
 	void CreateDXRResources();
 
-	float x = 0;
+	Camera& GetCamera() { return mCamera; };
+
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 
@@ -86,7 +87,6 @@ private:
 
 
 	Camera mCamera;
-	
 
 
 	//CONSTANTS

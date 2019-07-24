@@ -1,5 +1,6 @@
 #include "TestGame.h"
 #include "ResourceManager.h"
+#include "RendererUtil.h"
 
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
@@ -56,6 +57,7 @@ void TestGame::Update()
 
 void TestGame::Render()
 {
+	Sleep(1);
 	//TODO::Draw things
 	Renderer::GetInstance()->Render();
 }
@@ -69,14 +71,33 @@ void TestGame::Shutdown()
 
 void TestGame::Input(int key)
 {
-	if(key == 65)
+	auto& camera = Renderer::GetInstance()->GetCamera();
+
+	//TODO:: FACTOR IN DT
+
+	if(key == 'A')
 	{
 		//MOVE LEFT
-		Renderer::GetInstance()->x -= 1;
+		camera.Eye += glm::vec3(1, 0, 0) * mMovSpeed;
 	}
-	else if(key == 68)
+	else if(key == 'D')
 	{
-		Renderer::GetInstance()->x += 1;
+		camera.Eye += glm::vec3(-1, 0, 0) * mMovSpeed;
 	}
-
+	else if(key == 'W')
+	{
+		camera.Eye += glm::vec3(0, 0, 1) * mMovSpeed;
+	}
+	else if (key == 'S')
+	{
+		camera.Eye += glm::vec3(0, 0, -1) * mMovSpeed;
+	}
+	else if (key == 'R')
+	{
+		camera.Eye += glm::vec3(0, 1, 0) * mMovSpeed;
+	}
+	else if (key == 'F')
+	{
+		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
+	}
 }

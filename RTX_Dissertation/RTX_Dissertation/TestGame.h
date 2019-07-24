@@ -13,5 +13,8 @@ public:
 	void Shutdown() override;
 
 	void Input(int key) override;
+
+private:
+	float mMovSpeed = 0.2f;
 };
 

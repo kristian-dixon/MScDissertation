@@ -11,6 +11,6 @@ public:
 	virtual void Render() = 0;
 	virtual void Shutdown() = 0;
 
-	virtual void Input(int key) = 0;
+	virtual void Input(int key) = 0; 
 };
 

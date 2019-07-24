@@ -315,6 +315,10 @@ void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D1
 
 void Camera::CreateCamera(HWND winHandle, ID3D12Device5Ptr device)
 {
+	Eye = glm::vec3(0, 0, -10.5); //DirectX::XMVectorSet(0.0f, 0.0f, -10.5f, 0.0f);
+	Dir = glm::vec3(0, 0, 1);//DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	Up = glm::vec3(0, 1, 0);// DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
 	uint32_t nbMatrix = 4; // view, perspective, viewInv, perspectiveInv
 	mCameraBufferSize = nbMatrix * sizeof(DirectX::XMMATRIX);
 
@@ -334,15 +338,23 @@ void Camera::CreateCamera(HWND winHandle, ID3D12Device5Ptr device)
 	device->CreateConstantBufferView(&cbvDesc, srvHandle);
 }
 
-void Camera::UpdateCamera(DirectX::XMVECTOR Eye, DirectX::XMVECTOR At, DirectX::XMVECTOR Up)
+void Camera::UpdateCamera()
 {
+
 	std::vector<DirectX::XMMATRIX > matrices(4);
 
 	// Initialize the view matrix, ideally this should be based on user interactions
 	// The lookat and perspective matrices used for rasterization are defined to transform world-space
 	// vertices into a [0,1]x[0,1]x[0,1] camera space
-	
-	matrices[0] = DirectX::XMMatrixLookAtRH(Eye, At, Up);
+
+	const auto focusPosition = Dir + Eye;
+
+	const auto DXEye = DirectX::XMVectorSet(Eye.x, Eye.y, Eye.z, 0.0f);
+	const auto DXAt = DirectX::XMVectorSet(focusPosition.x, focusPosition.y, focusPosition.z, 0.0f);
+	const auto DXUp = DirectX::XMVectorSet(Up.x, Up.y, Up.z, 0.0f);
+
+
+	matrices[0] = DirectX::XMMatrixLookAtRH(DXEye, DXAt, DXUp);
 
 	float fovAngleY = 45.0f * DirectX::XM_PI / 180.0f;
 	matrices[1] = DirectX::XMMatrixPerspectiveFovRH(fovAngleY, 2.07f, 0.1f, 1000.0f);
