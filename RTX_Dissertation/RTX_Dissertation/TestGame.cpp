@@ -69,7 +69,7 @@ void TestGame::Shutdown()
 	Renderer::GetInstance()->Shutdown();
 }
 
-void TestGame::Input(int key)
+void TestGame::KeyboardInput(int key)
 {
 	auto& camera = Renderer::GetInstance()->GetCamera();
 
@@ -100,4 +100,15 @@ void TestGame::Input(int key)
 	{
 		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
 	}
+}
+
+void TestGame::MouseInput(float x, float y)
+{
+	auto mousePos = glm::vec3(x, y,0);
+
+
+	auto& camera = Renderer::GetInstance()->GetCamera();
+	camera.Eye += (mousePos - lastMousePos) * mMovSpeed * 0.001f;
+
+	lastMousePos = mousePos;
 }

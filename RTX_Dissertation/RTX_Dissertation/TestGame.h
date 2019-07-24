@@ -12,9 +12,12 @@ public:
 	void Render() override;
 	void Shutdown() override;
 
-	void Input(int key) override;
+	void KeyboardInput(int key) override;
+
+	void MouseInput(float x, float y) override;
 
 private:
+	glm::vec3 lastMousePos;
 	float mMovSpeed = 0.2f;
 };
 

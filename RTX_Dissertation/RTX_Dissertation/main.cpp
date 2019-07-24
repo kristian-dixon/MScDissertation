@@ -1,6 +1,7 @@
 #include <locale>
 #include <codecvt>
 #include <windows.h>
+#include "windowsx.h"
 #include <d3d12.h>
 #include "TestGame.h"
 
@@ -23,8 +24,11 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		if (wParam == VK_ESCAPE) PostQuitMessage(0);
 		else
 		{
-			game.Input(wParam);
+			game.KeyboardInput(wParam);
 		}
+		return 0;
+	case WM_MOUSEMOVE:
+		game.MouseInput(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);

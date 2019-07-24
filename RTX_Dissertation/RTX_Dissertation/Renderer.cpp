@@ -479,7 +479,7 @@ void Renderer::CreateDXRResources()
 uint32_t Renderer::BeginFrame()
 {
 	mCamera.UpdateCamera();
-
+	
 	// Bind the descriptor heaps
 	ID3D12DescriptorHeap* heaps[] = { mpSrvUavHeap };
 	mpCmdList->SetDescriptorHeaps(arraysize(heaps), heaps);
