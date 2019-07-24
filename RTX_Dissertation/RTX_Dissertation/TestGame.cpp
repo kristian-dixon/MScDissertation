@@ -4,6 +4,8 @@
 
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
+	SetMouse(winHandle);
+
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
@@ -102,13 +104,34 @@ void TestGame::KeyboardInput(int key)
 	}
 }
 
-void TestGame::MouseInput(float x, float y)
+void TestGame::MouseInput()
 {
-	auto mousePos = glm::vec3(x, y,0);
+	if (mMouse)
+	{
+		mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
+
+		auto state = mMouse->GetState();
+		yaw += state.x * 0.001f;
+		pitch += state.y * 0.001f;
+
+	
+		auto forward = glm::vec3(0, 0, 1);
+		auto up = glm::vec3(0, 1, 0);
+
+		mat4 yawRot = glm::rotate(-yaw, vec3(0, 1, 0));
+		mat4 pitchRot = glm::rotate(pitch, vec3(1, 0, 0));
+
+		forward = mat3(pitchRot) * forward;
+		forward = mat3(yawRot) * forward;
+		//up = mat3(yawRot) * up;
+		//up = mat3(pitchRot) * up;
 
 
-	auto& camera = Renderer::GetInstance()->GetCamera();
-	camera.Eye += (mousePos - lastMousePos) * mMovSpeed * 0.001f;
+		auto& camera = Renderer::GetInstance()->GetCamera();
+		camera.Dir = (forward);
+		//camera.Up = up;
 
-	lastMousePos = mousePos;
+		mForward = forward;
+		mUp = up;
+	}
 }

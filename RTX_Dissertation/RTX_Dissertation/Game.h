@@ -13,6 +13,6 @@ public:
 
 	virtual void KeyboardInput(int key) = 0;
 
-	virtual void MouseInput(float x, float y) = 0;
+	virtual void MouseInput() = 0;
 };
 

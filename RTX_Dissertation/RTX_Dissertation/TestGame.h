@@ -1,5 +1,6 @@
 #pragma once
 #include "Game.h"
+#include <Mouse.h>
 
 
 class TestGame :
@@ -14,10 +15,22 @@ public:
 
 	void KeyboardInput(int key) override;
 
-	void MouseInput(float x, float y) override;
+	void SetMouse(HWND winHandle) { mMouse = std::make_unique<DirectX::Mouse>(); mMouse->SetWindow(winHandle); };// mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
+
+	void MouseInput() override;
 
 private:
-	glm::vec3 lastMousePos;
 	float mMovSpeed = 0.2f;
+	float yaw = 0;
+	float pitch = 0;
+
+
+	glm::vec3 mForward;
+	glm::vec3 mUp;
+	
+
+	std::unique_ptr<DirectX::Mouse> mMouse;
+
+
 };
 

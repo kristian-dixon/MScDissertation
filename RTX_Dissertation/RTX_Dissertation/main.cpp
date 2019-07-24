@@ -4,6 +4,7 @@
 #include "windowsx.h"
 #include <d3d12.h>
 #include "TestGame.h"
+#include <Mouse.h>
 
 HWND gWinHandle = nullptr;
 TestGame game;
@@ -27,8 +28,21 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 			game.KeyboardInput(wParam);
 		}
 		return 0;
+	case WM_ACTIVATEAPP:
+	case WM_INPUT:
 	case WM_MOUSEMOVE:
-		game.MouseInput(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_XBUTTONDOWN:
+	case WM_XBUTTONUP:
+	case WM_MOUSEHOVER:
+		DirectX::Mouse::ProcessMessage(msg, wParam, lParam);
+		game.MouseInput();
 		return 0;
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -106,6 +120,8 @@ void msgLoop()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
+	
+
 	//Minor TODO:: Make this a part of the config file
 	int windowWidth = 1920;
 	int windowHeight = 1080;
@@ -124,7 +140,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	ShowWindow(gWinHandle, SW_SHOWNORMAL);
 
 	
-
 	//Start message loop
 	msgLoop();
 
