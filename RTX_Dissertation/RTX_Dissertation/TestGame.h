@@ -26,7 +26,6 @@ private:
 
 
 	glm::vec3 mForward;
-	glm::vec3 mUp;
 	
 
 	std::unique_ptr<DirectX::Mouse> mMouse;

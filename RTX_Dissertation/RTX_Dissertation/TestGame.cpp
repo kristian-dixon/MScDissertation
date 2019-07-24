@@ -79,20 +79,22 @@ void TestGame::KeyboardInput(int key)
 
 	if(key == 'A')
 	{
+		
+
 		//MOVE LEFT
-		camera.Eye += glm::vec3(1, 0, 0) * mMovSpeed;
+		camera.Eye += glm::cross(mForward, vec3(0, 1, 0)) * (mMovSpeed * -1);
 	}
 	else if(key == 'D')
 	{
-		camera.Eye += glm::vec3(-1, 0, 0) * mMovSpeed;
+		camera.Eye += glm::cross(mForward, vec3(0, 1, 0)) * mMovSpeed;
 	}
 	else if(key == 'W')
 	{
-		camera.Eye += glm::vec3(0, 0, 1) * mMovSpeed;
+		camera.Eye += mForward * mMovSpeed;
 	}
 	else if (key == 'S')
 	{
-		camera.Eye += glm::vec3(0, 0, -1) * mMovSpeed;
+		camera.Eye += mForward * (mMovSpeed * -1);
 	}
 	else if (key == 'R')
 	{
@@ -123,15 +125,12 @@ void TestGame::MouseInput()
 
 		forward = mat3(pitchRot) * forward;
 		forward = mat3(yawRot) * forward;
-		//up = mat3(yawRot) * up;
-		//up = mat3(pitchRot) * up;
+	
 
 
 		auto& camera = Renderer::GetInstance()->GetCamera();
 		camera.Dir = (forward);
-		//camera.Up = up;
 
 		mForward = forward;
-		mUp = up;
 	}
 }
