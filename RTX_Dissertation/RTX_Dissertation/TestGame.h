@@ -19,6 +19,8 @@ public:
 
 	void MouseInput() override;
 
+	
+
 private:
 	float mMovSpeed = 0.2f;
 	float yaw = 0;

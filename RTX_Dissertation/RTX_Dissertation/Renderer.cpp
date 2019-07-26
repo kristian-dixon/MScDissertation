@@ -80,7 +80,8 @@ ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), 
+		D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
 	memcpy(pData, &verts[0], verts.size() * 3 * 4);
@@ -296,6 +297,20 @@ void Renderer::CreateAccelerationStructures()
 
 void Renderer::CreateRTPipelineState()
 {
+	//TODO::
+	// Create Subobject vector
+	// Create DXIL library -> Add to vector
+	
+	// Create hit groups -> Add to vector
+	// RayGen Root Signature and association
+	// Hit programs root and association
+	// Miss programs root and association
+
+	//Shader config
+	//pipeline config
+	//global root signature
+
+
 	// Need 10 subobjects:
 	//  1 for the DXIL library
 	//  1 for hit-group
@@ -413,6 +428,19 @@ void Renderer::CreateShaderResources()
 
 void Renderer::CreateShaderTable()
 {
+	//Here's how we're going to do this
+	/*
+	 * Entry 0 - Ray-Gen Program
+	 * Entry 1 to MissShaderCount + 1 - Miss Shaders
+	 
+	 * Then for each object
+	 *	- For Each Instance
+	 *		- Bind Shaders
+	 *		
+	 * Profit.
+	 */
+
+
 	/** The shader-table layout is as follows:
 		Entry 0 - Ray-gen program
 		Entry 1 - Miss program
@@ -551,6 +579,10 @@ void Renderer::Render()
 
 void Renderer::Shutdown()
 {
+	mFenceValue++;
+	mpCmdQueue->Signal(mpFence, mFenceValue);
+	mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
+	WaitForSingleObject(mFenceEvent, INFINITE);
 }
 
 

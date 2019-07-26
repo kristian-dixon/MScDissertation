@@ -4,6 +4,9 @@
 
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
+
+	auto sizeTest = sizeof(glm::vec3);
+
 	SetMouse(winHandle);
 
 	//Initialise renderer

@@ -21,7 +21,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<glm::vec3> vertices =
 			{
-				glm::vec3(0,          1,  0),
+				glm::vec3(0,   1, 0),
 				glm::vec3(1,  -1, 0),
 				glm::vec3(-1, -1, 0),
 			};
@@ -42,7 +42,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<glm::vec3> vertices =
 			{
-				glm::vec3(-1, 1,  0),
+				glm::vec3(-1, 1, 0),
 				glm::vec3( 1, 1, 0),
 				glm::vec3( 1,-1, 0),
 				glm::vec3(-1,-1, 0),
@@ -135,8 +135,8 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//TODO:LOAD SPHERE
 
 			float radius = 2.5f;
-			uint32 sliceCount = 6;
-			uint32 stackCount = 6;
+			uint32 sliceCount = 20;
+			uint32 stackCount = 20;
 			/*GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
 			{*/
 			std::vector<vec3> verts;
