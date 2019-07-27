@@ -2,9 +2,9 @@
 #include <Externals/GLM/glm/vec3.hpp>
 #include <vector>
 #include "Renderer.h"
+#include "Vertex.h"
 
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
-
 
 
 
@@ -19,11 +19,11 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		if(key == "TRIANGLE")
 		{
 			//Create verts
-			const vector<glm::vec3> vertices =
+			const vector<Vertex> vertices =
 			{
-				glm::vec3(0,   1, 0),
-				glm::vec3(1,  -1, 0),
-				glm::vec3(-1, -1, 0),
+				{glm::vec4(0,   1, 0,0),  glm::vec3(0,0,1) },
+				{glm::vec4(1,  -1, 0,0),  glm::vec3(0,0,1) },
+				{glm::vec4(-1,  -1, 0,0),  glm::vec3(0,0,1) }
 			};
 
 			auto inst = Renderer::GetInstance();
@@ -40,12 +40,12 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		else if(key == "QUAD")
 		{
 			//Create verts
-			const vector<glm::vec3> vertices =
+			const vector<Vertex> vertices =
 			{
-				glm::vec3(-1, 1, 0),
-				glm::vec3( 1, 1, 0),
-				glm::vec3( 1,-1, 0),
-				glm::vec3(-1,-1, 0),
+				{glm::vec4(-1, 1, 0,0), glm::vec3(0, 0, 1)},
+				{glm::vec4(1, 1, 0,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(1, -1, 0,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(-1,-1, 0,0),  glm::vec3(0, 0, 1)},
 			};
 
 
@@ -76,44 +76,44 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//TODO:LOAD CUBE
 
 			//Create verts
-			const vector<glm::vec3> vertices =
+			const vector<Vertex> vertices =
 			{
-				glm::vec3(-1.0f,-1.0f,-1.0f), // triangle 1 : begin
-				glm::vec3(-1.0f,-1.0f, 1.0f),
-				glm::vec3(-1.0f, 1.0f, 1.0f), // triangle 1 : end
-				glm::vec3(1.0f, 1.0f,-1.0f), // triangle 2 : begin
-				glm::vec3(-1.0f,-1.0f,-1.0f),
-				glm::vec3(-1.0f, 1.0f,-1.0f), // triangle 2 : end
-				glm::vec3(1.0f,-1.0f, 1.0f),
-				glm::vec3(-1.0f,-1.0f,-1.0f),
-				glm::vec3(1.0f,-1.0f,-1.0f),
-				glm::vec3(1.0f, 1.0f,-1.0f),
-				glm::vec3(1.0f,-1.0f,-1.0f),
-				glm::vec3(-1.0f,-1.0f,-1.0f),
-				glm::vec3(-1.0f,-1.0f,-1.0f),
-				glm::vec3(-1.0f, 1.0f, 1.0f),
-				glm::vec3(-1.0f, 1.0f,-1.0f),
-				glm::vec3(1.0f,-1.0f, 1.0f),
-				glm::vec3(-1.0f,-1.0f, 1.0f),
-				glm::vec3(-1.0f,-1.0f,-1.0f),
-				glm::vec3(-1.0f, 1.0f, 1.0f),
-				glm::vec3(-1.0f,-1.0f, 1.0f),
-				glm::vec3(1.0f,-1.0f, 1.0f),
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				glm::vec3(1.0f,-1.0f,-1.0f),
-				glm::vec3(1.0f, 1.0f,-1.0f),
-				glm::vec3(1.0f,-1.0f,-1.0f),
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				glm::vec3(1.0f,-1.0f, 1.0f),
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				glm::vec3(1.0f, 1.0f,-1.0f),
-				glm::vec3(-1.0f, 1.0f,-1.0f),
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				glm::vec3(-1.0f, 1.0f,-1.0f),
-				glm::vec3(-1.0f, 1.0f, 1.0f),
-				glm::vec3(1.0f, 1.0f, 1.0f),
-				glm::vec3(-1.0f, 1.0f, 1.0f),
-				glm::vec3(1.0f,-1.0f, 1.0f)
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0), glm::vec3(1, 0, 0)}, // triangle 1 : begin
+				{glm::vec4(-1.0f,-1.0f, 1.0f, 0), glm::vec3(1, 0, 0)},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0), glm::vec3(1, 0, 0)}, // triangle 1 : end
+				{glm::vec4(1.0f, 1.0f,-1.0f,0), glm::vec3(0, 0, -1) }, // triangle 2 : begin
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0), glm::vec3(0, 0, -1)},
+				{glm::vec4(-1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 0, -1)}, // triangle 2 : end
+				{glm::vec4(1.0f,-1.0f, 1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(1.0f,-1.0f,-1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 0, -1)},
+				{glm::vec4(1.0f,-1.0f,-1.0f,0),  glm::vec3(0, 0, -1)},
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0),  glm::vec3(0, 0, -1)},
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0),  glm::vec3(-0, 0, 0)},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0),  glm::vec3(-0, 0, 0)},
+				{glm::vec4(-1.0f, 1.0f,-1.0f,0),  glm::vec3(-0, 0, 0)},
+				{glm::vec4(1.0f,-1.0f, 1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(-1.0f,-1.0f, 1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0),  glm::vec3(0, -1, 0)},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(-1.0f,-1.0f, 1.0f,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(1.0f,-1.0f, 1.0f,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(1.0f, 1.0f, 1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f,-1.0f,-1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f, 1.0f,-1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f,-1.0f,-1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f, 1.0f, 1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f,-1.0f, 1.0f,0),  glm::vec3(1, 0, 0)},
+				{glm::vec4(1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(-1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(-1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 1, 0)},
+				{glm::vec4(1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(1.0f,-1.0f, 1.0f,0), glm::vec3(0, 0, 1)}
 			};
 
 			auto inst = Renderer::GetInstance();
@@ -139,7 +139,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			uint32 stackCount = 20;
 			/*GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
 			{*/
-			std::vector<vec3> verts;
+			std::vector<Vertex> verts;
 			std::vector<uint32_t> inds;
 
 			//
@@ -149,8 +149,8 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			// Poles: note that there will be texture coordinate distortion as there is
 			// not a unique point on the texture map to assign to the pole when mapping
 			// a rectangular texture onto a sphere.
-			vec3 topVertex = vec3(0.0f, +radius, 0.0f); 
-			vec3 bottomVertex = vec3(0.0f, -radius, 0.0f); 
+			Vertex topVertex = Vertex{ vec4(0.0f, +radius, 0.0f, 0),  vec3(1,1,1) };
+			Vertex bottomVertex = Vertex{ vec4(0.0f, -radius, 0.0f,0),  vec3(0,1,0) };
 
 			verts.push_back(topVertex);
 
@@ -174,7 +174,8 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 					y = radius * cosf(phi);
 					z = radius * sinf(phi) * sinf(theta);
 					
-					vec3 v = vec3(x,y,z);
+					Vertex v = { vec4(x,y,z,0),  normalize(vec3(x, y, z))
+				};;
 
 				
 					/*

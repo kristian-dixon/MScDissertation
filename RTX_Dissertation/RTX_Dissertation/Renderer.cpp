@@ -76,15 +76,15 @@ void Renderer::InitDXR()
 
 }
 
-ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<vec3>& verts)
+ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<Vertex>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice, verts.size() * sizeof(vec3), 
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice,  sizeof(Vertex), 
 		D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
-	memcpy(pData, &verts[0], verts.size() * 3 * 4);
+	memcpy(pData, &verts[0], verts.size() * sizeof(Vertex));
 	pBuffer->Unmap(0, nullptr);
 	return pBuffer;
 }
@@ -121,7 +121,7 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 	{
 		geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geomDesc[i].Triangles.VertexBuffer.StartAddress = vbos[i]->GetGPUVirtualAddress();
-		geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
+		geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
 		geomDesc[i].Triangles.VertexCount = vertexCount[i];
 		geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 
@@ -495,9 +495,14 @@ void Renderer::CreateShaderTable()
 	// Entry 2 - hit program
 	uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
 	memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+	
+	
 	uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 	assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-	*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = testCB->GetGPUVirtualAddress();
+	//*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = testCB->GetGPUVirtualAddress();
+
+	*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = ResourceManager::RequestMesh("CUBE")->GetVBOs()[0]->GetGPUVirtualAddress();
+
 
 	// Unmap
 	mpShaderTable->Unmap(0, nullptr);

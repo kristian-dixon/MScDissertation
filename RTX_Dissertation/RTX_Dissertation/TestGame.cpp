@@ -13,35 +13,30 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	auto mesh = ResourceManager::RequestMesh("TRIANGLE");
+	/*auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
 	mat4 transformMat = mat4();
 	mesh->AddInstance(transformMat);
 
-	/*transformMat = translate(mat4(), vec3(2, 0, 0));
-	mesh->AddInstance(transformMat);
-	*/
 	transformMat = translate(mat4(), vec3(2, 0, 5));
 	mesh->AddInstance(transformMat);
-
-	/*transformMat = translate(mat4(), vec3(-4, 0, 3));
-	transformMat = glm::rotate(transformMat, 1.f, vec3(0, 0, 1));
-	mesh->AddInstance(transformMat);
 	*/
-	mesh = ResourceManager::RequestMesh("CUBE");
+	
+	auto mesh = ResourceManager::RequestMesh("CUBE");
 
-	transformMat = translate(mat4(), vec3(-10, 5, 10));
+	auto transformMat = translate(mat4(), vec3(-10, 5, 10));
 	mesh->AddInstance(transformMat);
-
+	/*
 	mesh = ResourceManager::RequestMesh("QUAD");
 	transformMat = translate(mat4(), vec3(2, 0, 0.25f));
 	mesh->AddInstance(transformMat);
+	*/
 
-	mesh = ResourceManager::RequestMesh("SPHERE");
-	transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
+	/*auto mesh = ResourceManager::RequestMesh("SPHERE");
+	auto transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
 	transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 	mesh->AddInstance(transformMat);
-
+	*/
 
 	
 	/*

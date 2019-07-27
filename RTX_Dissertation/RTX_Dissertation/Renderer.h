@@ -3,6 +3,7 @@
 #include "RendererUtil.h"
 #include "Mesh.h"
 #include <map>
+#include "Vertex.h"
 
 using namespace glm;
 
@@ -16,7 +17,7 @@ public:
 
 	void Render();
 	void Shutdown();
-	ID3D12ResourcePtr CreateVertexBuffer(const std::vector<vec3>& verts);
+	ID3D12ResourcePtr CreateVertexBuffer(const std::vector<Vertex>& verts);
 	ID3D12ResourcePtr CreateIndexBuffer(const std::vector<uint32_t>& verts);
 
 	void InitDXR();

@@ -156,6 +156,7 @@
     <ClInclude Include="RendererUtil.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="TestGame.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\Shaders.hlsl">

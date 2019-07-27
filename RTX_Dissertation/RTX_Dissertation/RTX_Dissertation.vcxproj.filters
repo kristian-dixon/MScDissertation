@@ -77,6 +77,9 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\Shaders.hlsl">

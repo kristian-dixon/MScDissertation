@@ -289,9 +289,16 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 {
 	RootSignatureDesc desc;
 	desc.rootParams.resize(1);
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	/*desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
 	desc.rootParams[0].Descriptor.ShaderRegister = 1;
+	*/
+	
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[0].Descriptor.RegisterSpace = 0;
+	desc.rootParams[0].Descriptor.ShaderRegister = 1;
+	
+	
 
 	desc.desc.NumParameters = 1;
 	desc.desc.pParameters = desc.rootParams.data();
