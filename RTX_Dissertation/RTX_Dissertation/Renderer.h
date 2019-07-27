@@ -88,6 +88,8 @@ private:
 
 	Camera mCamera;
 
+	ID3D12ResourcePtr testCB;
+
 
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;

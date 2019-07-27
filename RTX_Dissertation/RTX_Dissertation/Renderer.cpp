@@ -315,11 +315,12 @@ void Renderer::CreateRTPipelineState()
 	//  1 for the DXIL library
 	//  1 for hit-group
 	//  2 for RayGen root-signature (root-signature and the subobject association)
-	//  2 for the root-signature shared between miss and hit shaders (signature and association)
+	//	2 for the hit shader
+	//  2 for the empty root-signature shared between miss and hit shaders (signature and association)
 	//  2 for shader config (shared between all programs. 1 for the config, 1 for association)
 	//  1 for pipeline config
 	//  1 for the global root signature
-	std::array<D3D12_STATE_SUBOBJECT, 10> subobjects;
+	std::array<D3D12_STATE_SUBOBJECT, 12> subobjects;
 	uint32_t index = 0;
 
 	const WCHAR* kRayGenShader = L"rayGen";
@@ -344,6 +345,18 @@ void Renderer::CreateRTPipelineState()
 	ExportAssociation rgsRootAssociation(&kRayGenShader, 1, &(subobjects[rgsRootIndex]));
 	subobjects[index++] = rgsRootAssociation.subobject; // 3 Associate Root Sig to RGS
 
+	///
+
+	// Create the tri hit root-signature and association
+	LocalRootSignature hitRootSignature(mWinHandle, mpDevice, RendererUtil::CreateHitRootDesc().desc);
+	subobjects[index] = hitRootSignature.subobject; // 6 Triangle Hit Root Sig
+
+	uint32_t hitRootIndex = index++; // 6
+	ExportAssociation hitRootAssociation(&kClosestHitShader, 1, &(subobjects[hitRootIndex]));
+	subobjects[index++] = hitRootAssociation.subobject; // 7 Associate Triangle Root Sig to Triangle Hit Group
+
+	///
+
 	// Create the miss- and hit-programs root-signature and association
 	D3D12_ROOT_SIGNATURE_DESC emptyDesc = {};
 	emptyDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
@@ -351,8 +364,8 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = hitMissRootSignature.subobject; // 4 Root Sig to be shared between Miss and CHS
 
 	uint32_t hitMissRootIndex = index++; // 4
-	const WCHAR* missHitExportName[] = { kMissShader, kClosestHitShader };
-	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(subobjects[hitMissRootIndex]));
+	const WCHAR* missHitExportName[] = { kMissShader };
+	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(hitMissRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 5 Associate Root Sig to Miss and CHS
 
 	// Bind the payload size to the programs
@@ -482,6 +495,9 @@ void Renderer::CreateShaderTable()
 	// Entry 2 - hit program
 	uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
 	memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+	uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+	assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+	*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = testCB->GetGPUVirtualAddress();
 
 	// Unmap
 	mpShaderTable->Unmap(0, nullptr);
@@ -498,7 +514,9 @@ void Renderer::CreateDXRResources()
 	mCamera.UpdateCamera();
 
 	CreateShaderResources();
-	
+
+	testCB = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice);
+
 	CreateShaderTable();
 }
 

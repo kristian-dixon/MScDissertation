@@ -40,6 +40,12 @@ cbuffer CameraParams : register(b0)
 	float4x4 projectionI;
 }
 
+
+cbuffer ColourBuffer : register(b1)
+{
+	float3 testColor;
+}
+
 float3 linearToSrgb(float3 c)
 {
 	// Based on http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
@@ -157,4 +163,5 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	const float3 C = float3(0, 0, 1);
 
 	payload.color = float3(r,g,b);
+	payload.color = testColor;
 }

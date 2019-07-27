@@ -291,7 +291,7 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	desc.rootParams.resize(1);
 	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 0;
+	desc.rootParams[0].Descriptor.ShaderRegister = 1;
 
 	desc.desc.NumParameters = 1;
 	desc.desc.pParameters = desc.rootParams.data();
@@ -300,6 +300,19 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	return desc;
 }
 
+ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device)
+{
+	using namespace glm;
+	auto data = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	const uint32_t bufferSize = sizeof(vec4);
+	ID3D12ResourcePtr result = CreateBuffer(winHandle, device, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+	uint8_t* pData;
+	D3DCall(winHandle, result->Map(0, nullptr, (void**)& pData));
+	memcpy(pData, &data, sizeof(data));
+	result->Unmap(0, nullptr);
+	return result;
+}
 
 
 void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
