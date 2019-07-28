@@ -149,8 +149,8 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			// Poles: note that there will be texture coordinate distortion as there is
 			// not a unique point on the texture map to assign to the pole when mapping
 			// a rectangular texture onto a sphere.
-			Vertex topVertex = Vertex{ vec4(0.0f, +radius, 0.0f, 0),  vec3(1,1,1) };
-			Vertex bottomVertex = Vertex{ vec4(0.0f, -radius, 0.0f,0),  vec3(0,1,0) };
+			Vertex topVertex = Vertex{ vec4(0.0f, +radius, 0.0f, 0),  vec3(1,1,1), 1 };
+			Vertex bottomVertex = Vertex{ vec4(0.0f, -radius, 0.0f,0),  vec3(0,1,0), 1 };
 
 			verts.push_back(topVertex);
 
@@ -174,8 +174,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 					y = radius * cosf(phi);
 					z = radius * sinf(phi) * sinf(theta);
 					
-					Vertex v = { vec4(x,y,z,0),  normalize(vec3(x, y, z))
-				};;
+					Vertex v = { vec4(x,y,z,0),  normalize(vec3(x, y, z)), 1 };
 
 				
 					/*

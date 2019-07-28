@@ -24,7 +24,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	
 	auto mesh = ResourceManager::RequestMesh("CUBE");
 
-	auto transformMat = translate(mat4(), vec3(-10, 5, 10));
+	auto transformMat = translate(mat4(), vec3(0, 0, 10));
 	mesh->AddInstance(transformMat);
 	/*
 	mesh = ResourceManager::RequestMesh("QUAD");

@@ -76,7 +76,7 @@ ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<Vertex>& verts)
 {
 	// For simplicity, we create the vertex buffer on the upload heap, but that's not required
 	auto test = sizeof(*verts.data());
-	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice,  sizeof(Vertex), 
+	ID3D12ResourcePtr pBuffer = RendererUtil::CreateBuffer(mWinHandle, mpDevice,  sizeof(Vertex) * verts.size(), 
 		D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
 	uint8_t* pData;
 	pBuffer->Map(0, nullptr, (void**)& pData);
