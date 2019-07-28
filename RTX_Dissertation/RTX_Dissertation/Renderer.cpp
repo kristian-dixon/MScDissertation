@@ -220,6 +220,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	// The InstanceContributionToHitGroupIndex is set based on the shader-table layout specified in createShaderTable()
 
 	int i = 0;
+	int b = 0;
 	for(auto mesh : meshDB)
 	{
 		auto& instances = mesh.second->GetInstances();
@@ -229,7 +230,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 		{
 			//A lot of this could be switched into a instance class...
 			instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
-			instanceDescs[i].InstanceContributionToHitGroupIndex = 0; //TODO:: UPDATE ME LATER FOR INTERESTING STUFF
+			instanceDescs[i].InstanceContributionToHitGroupIndex = b; //TODO:: UPDATE ME LATER FOR INTERESTING STUFF
 			instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
 			mat4 m = transpose(instance); // GLM is column major, the INSTANCE_DESC is row major
 			memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
@@ -237,6 +238,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 			instanceDescs[i].InstanceMask = 0xFF;
 			i++;
 		}
+		b++;
 		
 	}
 
@@ -467,7 +469,16 @@ void Renderer::CreateShaderTable()
 	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 	mShaderTableEntrySize += 8; // The ray-gen's descriptor table
 	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-	uint32_t shaderTableSize = mShaderTableEntrySize * 3;
+	
+	int vboCount = 0;
+	auto meshDB = ResourceManager::GetMeshDB();
+	for(auto& mesh : meshDB)
+	{
+		vboCount += mesh.second->GetVBOs().size();
+	}
+
+
+	uint32_t shaderTableSize = mShaderTableEntrySize * (2 + vboCount);
 
 	// For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
 	mpShaderTable = RendererUtil::CreateBuffer(mWinHandle, mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
@@ -488,16 +499,35 @@ void Renderer::CreateShaderTable()
 	// Entry 1 - miss program
 	memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
+	//Bind each VBO to a shader entry
+	int counter = 0;
+	//TODO:: Get all meshes
+	for (auto& mesh : meshDB)
+	{
+		auto vbos = mesh.second->GetVBOs();
+		for(int i = 0; i < vbos.size(); ++i)
+		{
+			// Entry 2 - hit program
+			uint8_t* pHitEntry = pData + mShaderTableEntrySize * (2 + counter); // +2 skips the ray-gen and miss entries
+			memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+			uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+			assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
+			counter++;
+		}
+	}
+
+	/*
 	// Entry 2 - hit program
 	uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
 	memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	
-	
 	uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 	assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-	//*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = testCB->GetGPUVirtualAddress();
-
 	*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = ResourceManager::RequestMesh("CUBE")->GetVBOs()[0]->GetGPUVirtualAddress();
+	*/
+
 
 
 	// Unmap
@@ -579,7 +609,14 @@ void Renderer::Render()
 	size_t hitOffset = 2 * mShaderTableEntrySize;
 	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
 	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;
+
+	int vboCount = 0;
+	auto meshDB = ResourceManager::GetMeshDB();
+	for (auto& mesh : meshDB)
+	{
+		vboCount += mesh.second->GetVBOs().size();
+	}
+	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * vboCount;
 
 	// Bind the empty root signature
 	mpCmdList->SetComputeRootSignature(mpEmptyRootSig);

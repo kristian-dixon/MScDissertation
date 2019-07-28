@@ -13,18 +13,18 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	/*auto mesh = ResourceManager::RequestMesh("TRIANGLE");
+	auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
 	mat4 transformMat = mat4();
 	mesh->AddInstance(transformMat);
 
 	transformMat = translate(mat4(), vec3(2, 0, 5));
 	mesh->AddInstance(transformMat);
-	*/
 	
-	auto mesh = ResourceManager::RequestMesh("CUBE");
+	
+	mesh = ResourceManager::RequestMesh("CUBE");
 
-	auto transformMat = translate(mat4(), vec3(0, 0, 10));
+	transformMat = translate(mat4(), vec3(0, 0, 10));
 	mesh->AddInstance(transformMat);
 	/*
 	mesh = ResourceManager::RequestMesh("QUAD");

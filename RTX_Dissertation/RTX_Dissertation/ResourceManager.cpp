@@ -21,9 +21,9 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<Vertex> vertices =
 			{
-				{glm::vec4(0,   1, 0,0),  glm::vec3(0,0,1) },
-				{glm::vec4(1,  -1, 0,0),  glm::vec3(0,0,1) },
-				{glm::vec4(-1,  -1, 0,0),  glm::vec3(0,0,1) }
+				{glm::vec4(0,   1, 0,0),  glm::vec3(1,0,1) },
+				{glm::vec4(1,  -1, 0,0),  glm::vec3(1,0,1) },
+				{glm::vec4(-1,  -1, 0,0),  glm::vec3(1,0,1) }
 			};
 
 			auto inst = Renderer::GetInstance();

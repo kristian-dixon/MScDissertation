@@ -99,7 +99,7 @@ void rayGen()
 	ray.TMax = 100000;
 
 	RayPayload payload;
-	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
+	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 1, 0, ray, payload);
 	float3 col = linearToSrgb(payload.color);
 	gOutput[launchIndex.xy] = float4(col, 1);
 }
@@ -161,45 +161,16 @@ float fbm(in float2 st) {
 [shader("closesthit")]
 void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-	float r = fbm(float2(length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).xy), length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).xz))); // WorldRayOrigin();// + RayTCurrent();// *WorldRayDirection();
-	float g = fbm(float2(length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).zy), length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).xy))); // WorldRayOrigin();// + RayTCurrent();// *WorldRayDirection();
-	float b = fbm(float2(length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).yz), length((WorldRayOrigin() + RayTCurrent() * WorldRayDirection()).zz))); // WorldRayOrigin();// + RayTCurrent();// *WorldRayDirection();
-
-
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-
-	const float3 A = float3(1, 0, 0);
-	const float3 B = float3(0, 1, 0);
-	const float3 C = float3(0, 0, 1);
-
-	payload.color = float3(r, g, b);
 
 	uint vertId = PrimitiveIndex() * 3;
 	float3 hitnormal = BTriVertex[vertId + 0].normal.xyz * barycentrics.x +
 		BTriVertex[vertId + 1].normal.xyz * barycentrics.y +
 		BTriVertex[vertId + 2].normal.xyz * barycentrics.z;
 
-	float3 hitvertex = BTriVertex[vertId + 0].vertex.xyz * barycentrics.x +
-		BTriVertex[vertId + 1].vertex.xyz * barycentrics.y +
-		BTriVertex[vertId + 2].vertex.xyz * barycentrics.z;
-
-	//float3 colour = (1 / 3.f) * barycentrics.x + ((2) / 3.f) * barycentrics.y + (3 / 3.f) * barycentrics.z;
-
-	if (BTriVertex[3].padding == 1)
-	{
-		//payload.color = BTriVertex[vertId].vertex.xyz * barycentrics.x;// +BTriVertex[vertId + 1].normal.xyz * barycentrics.y;
-		payload.color = barycentrics;
-
-	}
-
-	else
-		payload.color = abs(BTriVertex[24].normal.xyz);
-
-	//payload.color = barycentrics;
-
-
-	//float tester = PrimitiveIndex() / 1000.f;
-
 	payload.color = abs(hitnormal);
-	//payload.color = testColor;
 }
+
+
+//FOR WHEN WE IMPLEMENT INDEX BASED 
+//https://developer.nvidia.com/rtx/raytracing/dxr/DX12-Raytracing-tutorial/Extra/dxr_tutorial_extra_indexed_geometry
