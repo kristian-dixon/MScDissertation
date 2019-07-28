@@ -51,6 +51,7 @@ struct STriVertex
 {
 	float4 vertex;
 	float3 normal;
+	float padding;
 };
 
 StructuredBuffer<STriVertex> BTriVertex : register(t1);
@@ -171,8 +172,8 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	const float3 B = float3(0, 1, 0);
 	const float3 C = float3(0, 0, 1);
 
-	payload.color = float3(r,g,b);
-	
+	payload.color = float3(r, g, b);
+
 	uint vertId = PrimitiveIndex() * 3;
 	float3 hitnormal = BTriVertex[vertId + 0].normal.xyz * barycentrics.x +
 		BTriVertex[vertId + 1].normal.xyz * barycentrics.y +
@@ -181,10 +182,10 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	float3 hitvertex = BTriVertex[vertId + 0].vertex.xyz * barycentrics.x +
 		BTriVertex[vertId + 1].vertex.xyz * barycentrics.y +
 		BTriVertex[vertId + 2].vertex.xyz * barycentrics.z;
-	
+
 	//float3 colour = (1 / 3.f) * barycentrics.x + ((2) / 3.f) * barycentrics.y + (3 / 3.f) * barycentrics.z;
 
-	if ( PrimitiveIndex() == 12)
+	if (BTriVertex[3].padding == 1)
 	{
 		//payload.color = BTriVertex[vertId].vertex.xyz * barycentrics.x;// +BTriVertex[vertId + 1].normal.xyz * barycentrics.y;
 		payload.color = barycentrics;
@@ -199,6 +200,6 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	//float tester = PrimitiveIndex() / 1000.f;
 
-	//payload.color = abs(hitnormal);
+	payload.color = abs(hitnormal);
 	//payload.color = testColor;
 }

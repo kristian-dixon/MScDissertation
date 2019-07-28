@@ -70,10 +70,6 @@ void Renderer::InitDXR()
 	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mpFence)));
 	mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-
-
-	
-
 }
 
 ID3D12ResourcePtr Renderer::CreateVertexBuffer(const std::vector<Vertex>& verts)
