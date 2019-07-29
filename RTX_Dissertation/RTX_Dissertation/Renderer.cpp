@@ -493,7 +493,8 @@ void Renderer::CreateShaderTable()
 
 	// Entry 0 - ray-gen program ID and descriptor data
 	memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
+	uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+	*(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
 	// This is where we need to set the descriptor data for the ray-gen shader. We'll get to it in the next tutorial
 
 	// Entry 1 - miss program
