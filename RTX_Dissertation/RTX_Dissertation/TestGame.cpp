@@ -13,7 +13,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	auto mesh = ResourceManager::RequestMesh("TRIANGLE");
+	/*auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
 	mat4 transformMat = mat4();
 	mesh->AddInstance(transformMat);
@@ -32,11 +32,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	mesh->AddInstance(transformMat);
 	*/
 
-	/*auto mesh = ResourceManager::RequestMesh("SPHERE");
+	auto mesh = ResourceManager::RequestMesh("SPHERE");
 	auto transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
 	transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 	mesh->AddInstance(transformMat);
-	*/
+	
 
 	
 	/*

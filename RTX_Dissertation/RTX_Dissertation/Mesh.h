@@ -21,7 +21,7 @@ public:
 	//******************************************//
 	void RemoveInstance(size_t id);
 
-	void UpdateInstance(size_t id, mat4& transform) { mInstances[id] = transform; };
+	void UpdateInstance(size_t id, mat4& transform) { mInstances[id] = transform; }
 	int GetInstanceCount() const { return mInstanceCount; };
 
 
@@ -38,6 +38,10 @@ public:
 	std::vector<ID3D12ResourcePtr>& GetIndices() { return mIndices; };
 	const std::vector<uint32_t>& GetIndexCounts() const { return mIndicesCounts; };
 
+
+	ID3D12DescriptorHeapPtr GetDescriptorHeap(); 
+
+
 private:
 	//Ptr to the VBO
 	std::vector<ID3D12ResourcePtr> mVBOs;
@@ -49,6 +53,9 @@ private:
 
 	//Ptr to the BLAS
 	AccelerationStructureBuffers mBLAS;
+
+	ID3D12DescriptorHeapPtr mDescriptorHeap = nullptr;
+
 
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<mat4> mInstances;

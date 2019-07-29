@@ -288,18 +288,29 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 RootSignatureDesc RendererUtil::CreateHitRootDesc()
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(1);
-	/*desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 1;
-	*/
-	
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 1;
-	
-	
+	desc.range.resize(2);
 
+	//Vertex Buffer
+	desc.range[0].BaseShaderRegister = 1;
+	desc.range[0].NumDescriptors = 1; //2?
+	desc.range[0].RegisterSpace = 0;
+	desc.range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	desc.range[0].OffsetInDescriptorsFromTableStart = 0;
+
+	//Index Buffer
+	desc.range[1].BaseShaderRegister = 2;
+	desc.range[1].NumDescriptors = 1; //2?
+	desc.range[1].RegisterSpace = 0;
+	desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	desc.range[1].OffsetInDescriptorsFromTableStart = 1;
+
+
+	desc.rootParams.resize(1);
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+	desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
+
+	// Create the desc
 	desc.desc.NumParameters = 1;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;

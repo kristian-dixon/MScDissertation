@@ -2,7 +2,6 @@
 Mesh::Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts, std::vector<ID3D12ResourcePtr>& indexPtrs, std::vector<uint32_t>& indexCounts) 
 : mVBOs(vbo), mVertexCounts(vertCounts), mIndices(indexPtrs), mIndicesCounts(indexCounts)
 {
-	//Load BLAS?
 }
 
 size_t Mesh::AddInstance(mat4& transform)
@@ -19,4 +18,13 @@ void Mesh::RemoveInstance(size_t id)
 		mInstances.erase(mInstances.begin() + id);
 		mInstanceCount--;
 	}
+}
+
+ID3D12DescriptorHeapPtr Mesh::GetDescriptorHeap()
+{
+	if (!mDescriptorHeap)
+	{
+		mDescriptorHeap = Renderer::GetInstance()->CreateDescriptorHeap(mVBOs[0], mIndices[0]);
+	}
+	return mDescriptorHeap;
 }

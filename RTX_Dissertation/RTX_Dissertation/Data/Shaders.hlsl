@@ -55,6 +55,7 @@ struct STriVertex
 };
 
 StructuredBuffer<STriVertex> BTriVertex : register(t1);
+StructuredBuffer<int> indices: register(t2);
 
 float3 linearToSrgb(float3 c)
 {
@@ -163,10 +164,10 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 {
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
-	uint vertId = PrimitiveIndex() * 3;
+	uint vertId = 1;// PrimitiveIndex() * 3;
 	float3 hitnormal = BTriVertex[vertId + 0].normal.xyz * barycentrics.x +
 		BTriVertex[vertId + 1].normal.xyz * barycentrics.y +
-		BTriVertex[vertId + 2].normal.xyz * barycentrics.z;
+		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
 	payload.color = abs(hitnormal);
 }

@@ -26,6 +26,9 @@ public:
 
 	Camera& GetCamera() { return mCamera; };
 
+	ID3D12DescriptorHeapPtr CreateDescriptorHeap(ID3D12ResourcePtr vertexBuffer, ID3D12ResourcePtr indexBuffer);
+
+
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
 

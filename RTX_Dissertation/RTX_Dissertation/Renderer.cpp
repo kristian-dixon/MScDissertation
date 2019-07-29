@@ -393,6 +393,35 @@ void Renderer::CreateRTPipelineState()
 	RendererUtil::D3DCall(mWinHandle ,mpDevice->CreateStateObject(&desc, IID_PPV_ARGS(&mpPipelineState)));
 }
 
+ID3D12DescriptorHeapPtr Renderer::CreateDescriptorHeap(ID3D12ResourcePtr vertexBuffer, ID3D12ResourcePtr indexBuffer)
+{
+	auto heap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = heap->GetCPUDescriptorHandleForHeapStart();
+
+	/*D3D12_VERTEX_BUFFER_VIEW vbo;
+	vbo.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+	vbo.SizeInBytes
+	*/
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format =  DXGI_FORMAT_R32G32B32A32_FLOAT;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	mpDevice->CreateShaderResourceView(vertexBuffer, &srvDesc, srvHandle);
+
+
+	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc1 = {};
+	srvDesc1.Format = DXGI_FORMAT_R32_UINT;
+	srvDesc1.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	srvDesc1.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	mpDevice->CreateShaderResourceView(indexBuffer, &srvDesc1, srvHandle);
+	
+
+	return heap;
+}
+
+
 void Renderer::CreateShaderResources()
 {
 	// Create the output resource. The dimensions and format should match the swap-chain
@@ -514,8 +543,9 @@ void Renderer::CreateShaderTable()
 
 			uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 			assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
-			counter++;
+			
+			uint64_t heapStart = mesh.second->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart().ptr;
+			*(D3D12_GPU_VIRTUAL_ADDRESS*)(pCbDesc) = heapStart;
 		}
 	}
 
