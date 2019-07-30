@@ -21,9 +21,15 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<Vertex> vertices =
 			{
-				{glm::vec4(0,   1, 0,0),  glm::vec3(1,0,1) },
-				{glm::vec4(1,  -1, 0,0),  glm::vec3(1,0,1) },
-				{glm::vec4(-1,  -1, 0,0),  glm::vec3(1,0,1) }
+				{glm::vec4(0,   1, 0,0),  glm::vec3(0,0,1) },
+				{glm::vec4(1,  -1, 0,0),  glm::vec3(0,0,1) },
+				{glm::vec4(-1,  -1, 0,0),  glm::vec3(0,0,1) }
+			};
+
+			const vector<uint32_t> indices =
+			{
+				0,1,2,
+				2,3,0
 			};
 
 			auto inst = Renderer::GetInstance();
@@ -31,8 +37,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			{
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
-				
-				auto mesh = std::make_shared<Mesh>( vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
+				vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
+				vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
+
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}
@@ -73,8 +81,6 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		}
 		else if(key == "CUBE")
 		{
-			//TODO:LOAD CUBE
-
 			//Create verts
 			const vector<Vertex> vertices =
 			{
@@ -116,13 +122,25 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 				{glm::vec4(1.0f,-1.0f, 1.0f,0), glm::vec3(0, 0, 1)}
 			};
 
+			//Bad but from now on indexed buffers are more important
+			vector<uint32_t> indices;
+			indices.resize(vertices.size());
+			for(int i = 0; i < vertices.size(); i++)
+			{
+				indices[i] = i;
+			}
+
+
 			auto inst = Renderer::GetInstance();
 			if (inst)
 			{
 				vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertices) };
 				vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertices.size()) };
 
-				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, vector<ID3D12ResourcePtr>(), vector<uint32_t>());
+				vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
+				vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
+
+				auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
 				mMeshDB.insert({ key, mesh });
 				return mesh;
 			}

@@ -546,7 +546,7 @@ void Renderer::CreateShaderTable()
 			
 			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
 
-			pCbDesc += 8;
+			pCbDesc += 8; //Wow this actually worked
 			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[i]->GetGPUVirtualAddress();
 
 			counter++;
