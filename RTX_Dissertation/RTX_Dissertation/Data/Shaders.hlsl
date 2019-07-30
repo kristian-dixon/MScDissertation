@@ -108,7 +108,7 @@ void rayGen()
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-	payload.color = float3(0.4, 0.6, 0.2);
+	payload.color = float3(1, 0, 1) * 0.25;
 }
 
 
@@ -164,9 +164,9 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 {
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
-	uint vertId = 1;// PrimitiveIndex() * 3;
-	float3 hitnormal = BTriVertex[vertId + 0].normal.xyz * barycentrics.x +
-		BTriVertex[vertId + 1].normal.xyz * barycentrics.y +
+	uint vertId = PrimitiveIndex() * 3;
+	float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
+		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
 	payload.color = abs(hitnormal);

@@ -415,7 +415,7 @@ ID3D12DescriptorHeapPtr Renderer::CreateDescriptorHeap(ID3D12ResourcePtr vertexB
 	srvDesc1.Format = DXGI_FORMAT_R32_UINT;
 	srvDesc1.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srvDesc1.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	mpDevice->CreateShaderResourceView(indexBuffer, &srvDesc1, srvHandle);
+	mpDevice->CreateShaderResourceView(nullptr, &srvDesc1, srvHandle);
 	
 
 	return heap;
@@ -496,7 +496,7 @@ void Renderer::CreateShaderTable()
 
 	// Calculate the size and create the buffer
 	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-	mShaderTableEntrySize += 8; // The ray-gen's descriptor table
+	mShaderTableEntrySize += 16; // The ray-gen's descriptor table
 	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
 	
 	int vboCount = 0;
@@ -544,8 +544,12 @@ void Renderer::CreateShaderTable()
 			uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 			assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
 			
-			uint64_t heapStart = mesh.second->GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart().ptr;
-			*(D3D12_GPU_VIRTUAL_ADDRESS*)(pCbDesc) = heapStart;
+			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
+
+			pCbDesc += 8;
+			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[i]->GetGPUVirtualAddress();
+
+			counter++;
 		}
 	}
 
