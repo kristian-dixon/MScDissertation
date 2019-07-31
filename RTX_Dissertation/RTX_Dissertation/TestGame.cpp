@@ -26,7 +26,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	transformMat = translate(mat4(), vec3(0, 0, 10));
 	mesh->AddInstance(transformMat);
-	
+
+	transformMat = translate(mat4(), vec3(0, -10, 0));
+	transformMat = scale(transformMat, vec3(100, 1, 100));
+	mesh->AddInstance(transformMat);
+
 	mesh = ResourceManager::RequestMesh("QUAD");
 	transformMat = translate(mat4(), vec3(2, 0, 0.25f));
 	mesh->AddInstance(transformMat);
@@ -37,9 +41,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 	mesh->AddInstance(transformMat);
 	
-	mesh = ResourceManager::RequestMesh("SPHERE");
 	transformMat = translate(mat4(), vec3(-10, -5, 10));
+	mesh->AddInstance(transformMat);
 
+	transformMat = translate(mat4(), vec3(-8, 3, 14.25));
 	mesh->AddInstance(transformMat);
 
 	//Create final renderer resources

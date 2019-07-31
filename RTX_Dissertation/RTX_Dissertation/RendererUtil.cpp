@@ -166,14 +166,17 @@ uint64_t RendererUtil::SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList,
 
 DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const WCHAR* entryPoints[])
 {
+	// Compile the shader
+	//BUG:: THIS DOESN'T WORK WHEN PASSED AS A PARAMETER
+
 	const WCHAR* kRayGenShader = L"rayGen";
 	const WCHAR* kMissShader = L"miss";
 	const WCHAR* kClosestHitShader = L"chs";
-	const WCHAR* kHitGroup = L"HitGroup";
+	const WCHAR* kShadowChs = L"shadowChs";
+	const WCHAR* kShadowMiss = L"shadowMiss";
 
-	const WCHAR* ebntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+	const WCHAR* ebntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
 
-	// Compile the shader
 	ID3DBlobPtr pDxilLib = CompileLibrary(mWinHandle, shaderFilename.c_str(), L"lib_6_3");
 	//const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
 	return DxilLibrary(pDxilLib, ebntryPoints, arraysize(ebntryPoints));
@@ -288,7 +291,7 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 RootSignatureDesc RendererUtil::CreateHitRootDesc()
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(2);
+	desc.rootParams.resize(3);
 
 	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
@@ -298,8 +301,11 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	desc.rootParams[1].Descriptor.RegisterSpace = 0;
 	desc.rootParams[1].Descriptor.ShaderRegister = 2;
 
-
-	desc.desc.NumParameters = 2;
+	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[2].Descriptor.RegisterSpace = 0;
+	desc.rootParams[2].Descriptor.ShaderRegister = 0;
+	
+	desc.desc.NumParameters = 3;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 

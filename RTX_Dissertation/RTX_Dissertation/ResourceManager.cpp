@@ -21,15 +21,14 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<Vertex> vertices =
 			{
-				{glm::vec4(0,   1, 0,0),  glm::vec3(0,0,1) },
-				{glm::vec4(1,  -1, 0,0),  glm::vec3(0,0,1) },
-				{glm::vec4(-1,  -1, 0,0),  glm::vec3(0,0,1) }
+				{glm::vec4(0,   1, 0,0),  glm::vec3(0,0,-1) },
+				{glm::vec4(1,  -1, 0,0),  glm::vec3(0,0,-1) },
+				{glm::vec4(-1,  -1, 0,0),  glm::vec3(0,0,-1) }
 			};
 
 			const vector<uint32_t> indices =
 			{
-				0,1,2,
-				2,3,0
+				0,1,2
 			};
 
 			auto inst = Renderer::GetInstance();
@@ -50,10 +49,10 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<Vertex> vertices =
 			{
-				{glm::vec4(-1, 1, 0,0), glm::vec3(0, 0, 1)},
-				{glm::vec4(1, 1, 0,0),  glm::vec3(0, 0, 1)},
-				{glm::vec4(1, -1, 0,0),  glm::vec3(0, 0, 1)},
-				{glm::vec4(-1,-1, 0,0),  glm::vec3(0, 0, 1)},
+				{glm::vec4(-1, 1, 0,0), glm::vec3(0, 0, -1)},
+				{glm::vec4(1, 1, 0,0),  glm::vec3(0, 0, -1)},
+				{glm::vec4(1, -1, 0,0),  glm::vec3(0, 0,-1)},
+				{glm::vec4(-1,-1, 0,0),  glm::vec3(0, 0, -1)},
 			};
 
 
@@ -84,9 +83,9 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//Create verts
 			const vector<Vertex> vertices =
 			{
-				{glm::vec4(-1.0f,-1.0f,-1.0f,0), glm::vec3(1, 0, 0) , 1}, // triangle 1 : begin
-				{glm::vec4(-1.0f,-1.0f, 1.0f, 0), glm::vec3(1, 0, 0),1},
-				{glm::vec4(-1.0f, 1.0f, 1.0f,0), glm::vec3(1, 0, 0), 1}, // triangle 1 : end
+				{glm::vec4(-1.0f,-1.0f,-1.0f,0), glm::vec3(-1, 0, 0) , 1}, // triangle 1 : begin
+				{glm::vec4(-1.0f,-1.0f, 1.0f, 0), glm::vec3(-1, 0, 0),1},
+				{glm::vec4(-1.0f, 1.0f, 1.0f,0), glm::vec3(-1, 0, 0), 1}, // triangle 1 : end
 				{glm::vec4(1.0f, 1.0f,-1.0f,0), glm::vec3(0, 0, -1) }, // triangle 2 : begin
 				{glm::vec4(-1.0f,-1.0f,-1.0f,0), glm::vec3(0, 0, -1)},
 				{glm::vec4(-1.0f, 1.0f,-1.0f,0),  glm::vec3(0, 0, -1)}, // triangle 2 : end
