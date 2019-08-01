@@ -164,22 +164,11 @@ uint64_t RendererUtil::SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList,
 }
 
 
-DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const WCHAR* entryPoints[])
+DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<std::wstring>& entryPoints)
 {
 	// Compile the shader
-	//BUG:: THIS DOESN'T WORK WHEN PASSED AS A PARAMETER
-
-	const WCHAR* kRayGenShader = L"rayGen";
-	const WCHAR* kMissShader = L"miss";
-	const WCHAR* kClosestHitShader = L"chs";
-	const WCHAR* kShadowChs = L"shadowChs";
-	const WCHAR* kShadowMiss = L"shadowMiss";
-
-	const WCHAR* ebntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
-
 	ID3DBlobPtr pDxilLib = CompileLibrary(mWinHandle, shaderFilename.c_str(), L"lib_6_3");
-	//const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
-	return DxilLibrary(pDxilLib, ebntryPoints, arraysize(ebntryPoints));
+	return DxilLibrary(pDxilLib, entryPoints, entryPoints.size());
 }
 
 ID3DBlobPtr RendererUtil::CompileLibrary(HWND winHandle, const WCHAR* filename, const WCHAR* targetString)

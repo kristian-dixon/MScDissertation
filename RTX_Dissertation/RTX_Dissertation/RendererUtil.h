@@ -69,7 +69,7 @@ struct HeapData
 
 struct DxilLibrary
 {
-	DxilLibrary(ID3DBlobPtr pBlob, const WCHAR* entryPoint[], uint32_t entryPointCount) : pShaderBlob(pBlob)
+	DxilLibrary(ID3DBlobPtr pBlob, const std::vector<std::wstring>& entryPoint, uint32_t entryPointCount) : pShaderBlob(pBlob)
 	{
 		stateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
 		stateSubobject.pDesc = &dxilLibDesc;
@@ -94,7 +94,7 @@ struct DxilLibrary
 		}
 	};
 
-	DxilLibrary() : DxilLibrary(nullptr, nullptr, 0) {}
+	DxilLibrary() : DxilLibrary(nullptr, std::vector<std::wstring>(), 0) {}
 
 	D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
 	D3D12_STATE_SUBOBJECT stateSubobject{};
@@ -208,7 +208,7 @@ public:
 
 	static uint64_t SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue);
 
-	static DxilLibrary CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const WCHAR* entryPoints[]);
+	static DxilLibrary CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<std::wstring>& entryPoints);
 
 	static ID3DBlobPtr CompileLibrary(HWND mWinHandle, const WCHAR* filename, const WCHAR* targetString);
 	static ID3D12RootSignaturePtr CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc);

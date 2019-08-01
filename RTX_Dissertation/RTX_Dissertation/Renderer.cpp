@@ -318,7 +318,7 @@ void Renderer::CreateRTPipelineState()
 	//  2 for shader config (shared between all programs. 1 for the config, 1 for association)
 	//  1 for pipeline config
 	//  1 for the global root signature
-	std::array<D3D12_STATE_SUBOBJECT, 13> subobjects;
+	std::vector<D3D12_STATE_SUBOBJECT> subobjects(13);
 	uint32_t index = 0;
 
 	const WCHAR* kRayGenShader = L"rayGen";
@@ -331,7 +331,7 @@ void Renderer::CreateRTPipelineState()
 	const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 
 
-	const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
+	const vector<wstring> entryPoints = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
 
 	// Create the DXIL library
 	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(mWinHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);

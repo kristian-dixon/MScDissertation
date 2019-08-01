@@ -40,8 +40,21 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 {
 	//TODO:: Figure out how many spaces we need.
 
+	//1 for loading shader
+	//1 per hit program
+	//1 for ray gen
+	//2 per object with root signature
+	//1 for all empties
+	//1 for shader config
+	//1 for pipeline config
+	//1 for global root signature
 
-	std::array<D3D12_STATE_SUBOBJECT, 13> subobjects;
+	// 6 + (hit groups total) + (hitPrograms with root signatures * 2) + (miss programs with root signatures * 2)
+
+	const int subobjectCount = 6 + (mHitPrograms.size() + mEmptyHitPrograms.size()) + (mHitPrograms.size() * 2) + (mMissPrograms.size() * 2);
+
+
+	std::vector<D3D12_STATE_SUBOBJECT> subobjects(subobjectCount);
 	uint32_t index = 0;
 
 	const WCHAR* kRayGenShader = L"rayGen";
@@ -57,7 +70,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
 
 	// Create the DXIL library
-	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(winHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
+	DxilLibrary dxilLib;// = RendererUtil::CreateDxilLibrary(winHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
 	subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
 	HitProgram hitProgram(nullptr, kClosestHitShader, kHitGroup);
