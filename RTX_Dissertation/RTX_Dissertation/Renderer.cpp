@@ -230,7 +230,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 		{
 			//A lot of this could be switched into a instance class...
 			instanceDescs[instanceIndex].InstanceID = instanceIndex; // This value will be exposed to the shader via InstanceID()
-			instanceDescs[instanceIndex].InstanceContributionToHitGroupIndex = (meshIndex * 2) ;  //TODO:: UPDATE ME LATER FOR INTERESTING STUFF
+			instanceDescs[instanceIndex].InstanceContributionToHitGroupIndex = (meshIndex * 2) ;  //TODO:: Instead of this, have some count of the number of hit groups being called and use that instead
 			instanceDescs[instanceIndex].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
 			mat4 m = transpose(instance); // GLM is column major, the INSTANCE_DESC is row major
 			memcpy(instanceDescs[instanceIndex].Transform, &m, sizeof(instanceDescs[instanceIndex].Transform));
@@ -366,12 +366,12 @@ void Renderer::CreateRTPipelineState()
 	// Create the miss- and hit-programs root-signature and association
 	D3D12_ROOT_SIGNATURE_DESC emptyDesc = {};
 	emptyDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-	LocalRootSignature hitMissRootSignature(mWinHandle, mpDevice, emptyDesc);
-	subobjects[index] = hitMissRootSignature.subobject; // 7 Root Sig to be shared between Miss and CHS
+	LocalRootSignature emptyRootSignature(mWinHandle, mpDevice, emptyDesc);
+	subobjects[index] = emptyRootSignature.subobject; // 7 Root Sig to be shared between Miss and CHS
 
 	uint32_t hitMissRootIndex = index++; // 8
 	const WCHAR* missHitExportName[] = { kMissShader, kShadowChs, kShadowMiss };
-	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(hitMissRootSignature.subobject));
+	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	// Bind the payload size to the programs
@@ -543,7 +543,6 @@ void Renderer::CreateShaderTable()
 
 	//Bind each VBO to a shader entry
 	int counter = 0;
-	//TODO:: Get all meshes
 	for (auto& mesh : meshDB)
 	{
 		auto vbos = mesh.second->GetVBOs();
