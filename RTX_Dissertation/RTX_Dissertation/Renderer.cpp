@@ -4,6 +4,7 @@
 #include <map>
 #include "ResourceManager.h"
 #include <DirectXMath.h>
+#include "RaytracingPipelineState.h"
 Renderer* Renderer::mInstance = nullptr;
 
 
@@ -348,7 +349,7 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = rgsRootSignature.subobject; // 3 RayGen Root Sig
 
 	uint32_t rgsRootIndex = index++; // 3
-	ExportAssociation rgsRootAssociation(&kRayGenShader, 1, &(subobjects[rgsRootIndex]));
+	ExportAssociation rgsRootAssociation(&kRayGenShader, &(subobjects[rgsRootIndex]));
 	subobjects[index++] = rgsRootAssociation.subobject; // 4 Associate Root Sig to RGS
 
 	///
@@ -358,7 +359,7 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = hitRootSignature.subobject; // 5 Triangle Hit Root Sig
 
 	uint32_t hitRootIndex = index++; // 5
-	ExportAssociation hitRootAssociation(&kClosestHitShader, 1, &(subobjects[hitRootIndex]));
+	ExportAssociation hitRootAssociation(&kClosestHitShader, &(subobjects[hitRootIndex]));
 	subobjects[index++] = hitRootAssociation.subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
 
 	///
@@ -370,8 +371,8 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = emptyRootSignature.subobject; // 7 Root Sig to be shared between Miss and CHS
 
 	uint32_t hitMissRootIndex = index++; // 8
-	const WCHAR* missHitExportName[] = { kMissShader, kShadowChs, kShadowMiss };
-	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(emptyRootSignature.subobject));
+	vector<wstring> missHitExportName = { kMissShader, kShadowChs, kShadowMiss };
+	ExportAssociation missHitRootAssociation(missHitExportName, &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	// Bind the payload size to the programs
@@ -379,8 +380,8 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = shaderConfig.subobject; // 10 Shader Config
 
 	uint32_t shaderConfigIndex = index++; // 10
-	const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
+	vector<wstring> shaderExports = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
+	ExportAssociation configAssociation(shaderExports, &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config
@@ -587,8 +588,23 @@ void Renderer::CreateShaderTable()
 void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
+
+	string shaderName = "Data/Shaders.hlsl";
 	CreateRTPipelineState();                   
-	
+
+	/*RaytracingPipelineState rtspo = RaytracingPipelineState(shaderName);
+
+	{
+		LocalRootSignature rgsRootSignature(mWinHandle, mpDevice, RendererUtil::CreateRayGenRootDesc().desc);
+
+		rtspo.AddHitProgram(HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
+		rtspo.AddHitProgram(HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup"));
+
+		rtspo.AddMissProgram(MissProgram(L"miss"));
+		rtspo.AddMissProgram(MissProgram(L"shadowMiss"));
+
+		rtspo.BuildPipeline(mWinHandle, mpDevice);
+	}*/
 	
 	mCamera.CreateCamera(mWinHandle, mpDevice);
 	mCamera.UpdateCamera();

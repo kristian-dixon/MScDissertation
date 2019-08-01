@@ -86,8 +86,8 @@ struct DxilLibrary
 
 			for (uint32_t i = 0; i < entryPointCount; i++)
 			{
-				exportName[i] = entryPoint[i];
-				exportDesc[i].Name = exportName[i].c_str();
+				exportName[i] = entryPoint[i].c_str();
+				exportDesc[i].Name = exportName[i];
 				exportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
 				exportDesc[i].ExportToRename = nullptr;
 			}
@@ -100,7 +100,7 @@ struct DxilLibrary
 	D3D12_STATE_SUBOBJECT stateSubobject{};
 	ID3DBlobPtr pShaderBlob;
 	std::vector<D3D12_EXPORT_DESC> exportDesc;
-	std::vector<std::wstring> exportName;
+	std::vector<LPCWSTR> exportName;
 };
 
 
@@ -115,9 +115,25 @@ struct RootSignatureDesc
 
 struct ExportAssociation
 {
-	ExportAssociation(const WCHAR* exportNames[], uint32_t exportCount, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
+	ExportAssociation(std::vector<std::wstring>& exportNames, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
 	{
-		association.NumExports = exportCount;
+		std::vector<LPCWSTR> test;
+		for(int i = 0; i < exportNames.size(); i++)
+		{
+			test.push_back(exportNames[i].c_str());
+		}
+
+		association.NumExports = exportNames.size();
+		association.pExports = test.data();
+		association.pSubobjectToAssociate = pSubobjectToAssociate;
+
+		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
+		subobject.pDesc = &association;
+	}
+
+	ExportAssociation(const WCHAR** exportNames, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
+	{
+		association.NumExports = 1;
 		association.pExports = exportNames;
 		association.pSubobjectToAssociate = pSubobjectToAssociate;
 

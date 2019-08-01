@@ -36,87 +36,167 @@ void RaytracingPipelineState::AddMissProgram(MissProgram& missProgram)
 	}
 }
 
+void RaytracingPipelineState::GetEntryPoints(vector<wstring>& entryPoints)
+{
+	entryPoints.push_back(L"rayGen");
+
+	for(int i = 0; i < mMissPrograms.size(); ++i)
+	{
+		entryPoints.push_back(mMissPrograms[i].missShader);
+	}
+
+	for (int i = 0; i < mEmptyMissPrograms.size(); ++i)
+	{
+		entryPoints.push_back(mEmptyMissPrograms[i].missShader);
+	}
+
+	for (int i = 0; i < mHitPrograms.size(); ++i)
+	{
+		if(mHitPrograms[i].desc.AnyHitShaderImport != nullptr)
+		{
+			entryPoints.push_back(mHitPrograms[i].desc.AnyHitShaderImport);
+		}
+
+		if (mHitPrograms[i].desc.ClosestHitShaderImport != nullptr)
+		{
+			entryPoints.push_back(mHitPrograms[i].desc.ClosestHitShaderImport);
+		}
+
+		if (mHitPrograms[i].desc.IntersectionShaderImport != nullptr)
+		{
+			entryPoints.push_back(mHitPrograms[i].desc.IntersectionShaderImport);
+		}
+	}
+
+	for (int i = 0; i < mEmptyHitPrograms.size(); ++i)
+	{
+		if (mEmptyHitPrograms[i].desc.AnyHitShaderImport != nullptr)
+		{
+			entryPoints.push_back(mEmptyHitPrograms[i].desc.AnyHitShaderImport);
+		}
+
+		if (mEmptyHitPrograms[i].desc.ClosestHitShaderImport != nullptr)
+		{
+			entryPoints.push_back(mEmptyHitPrograms[i].desc.ClosestHitShaderImport);
+		}
+
+		if (mEmptyHitPrograms[i].desc.IntersectionShaderImport != nullptr)
+		{
+			entryPoints.push_back(mEmptyHitPrograms[i].desc.IntersectionShaderImport);
+		}
+	}
+}	
+
 void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr device)
 {
-	//TODO:: Figure out how many spaces we need.
+	const WCHAR* kRayGenShader = L"rayGen";
 
 	//1 for loading shader
 	//1 per hit program
-	//1 for ray gen
+	//2 for ray gen
 	//2 per object with root signature
-	//1 for all empties
-	//1 for shader config
+	//2 for all empties
+	//2 for shader config
 	//1 for pipeline config
 	//1 for global root signature
 
 	// 6 + (hit groups total) + (hitPrograms with root signatures * 2) + (miss programs with root signatures * 2)
 
-	const int subobjectCount = 6 + (mHitPrograms.size() + mEmptyHitPrograms.size()) + (mHitPrograms.size() * 2) + (mMissPrograms.size() * 2);
+	const int subobjectCount = 9 + (mHitPrograms.size() + mEmptyHitPrograms.size()) + (mHitPrograms.size() * 2) + (mMissPrograms.size() * 2);
 
 
 	std::vector<D3D12_STATE_SUBOBJECT> subobjects(subobjectCount);
 	uint32_t index = 0;
 
-	const WCHAR* kRayGenShader = L"rayGen";
-	const WCHAR* kMissShader = L"miss";
-	const WCHAR* kClosestHitShader = L"chs";
-	const WCHAR* kShadowChs = L"shadowChs";
-	const WCHAR* kShadowMiss = L"shadowMiss";
-
-	const WCHAR* kHitGroup = L"HitGroup";
-	const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
+	vector<wstring> shaderEntryPoints;
+	GetEntryPoints(shaderEntryPoints);
 
 
-	const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
 
 	// Create the DXIL library
-	DxilLibrary dxilLib;// = RendererUtil::CreateDxilLibrary(winHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
+	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(winHandle, RendererUtil::string_2_wstring(mShaderFileName), shaderEntryPoints);
 	subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
-	HitProgram hitProgram(nullptr, kClosestHitShader, kHitGroup);
-	subobjects[index++] = hitProgram.subObject; // 1 Hit Group
 
-	HitProgram shadowHitProgram(nullptr, kShadowChs, kShadowHitGroup);
-	subobjects[index++] = shadowHitProgram.subObject; // 2 Shadow Hit Group
+	//Bind hit groups
+	for(auto hitProgram : mHitPrograms)
+	{
+		subobjects[index++] = hitProgram.subObject;
+	}
+
+	for (auto hitProgram : mEmptyHitPrograms)
+	{
+		subobjects[index++] = hitProgram.subObject;
+	}
+
+
+	//Create Ray-Gen Root-Signature and Association
+	
 
 	// Create the ray-gen root-signature and association
 	LocalRootSignature rgsRootSignature(winHandle, device, RendererUtil::CreateRayGenRootDesc().desc);
-	subobjects[index] = rgsRootSignature.subobject; // 3 RayGen Root Sig
+	subobjects[index] = rgsRootSignature.subobject; // RayGen Root Sig
 
 	uint32_t rgsRootIndex = index++; // 3
-	ExportAssociation rgsRootAssociation(&kRayGenShader, 1, &(subobjects[rgsRootIndex]));
-	subobjects[index++] = rgsRootAssociation.subobject; // 4 Associate Root Sig to RGS
+	ExportAssociation rgsRootAssociation(&kRayGenShader, &(subobjects[rgsRootIndex]));
+	subobjects[index++] = rgsRootAssociation.subobject; //Associate Root Sig to RGS
 
-	///
 
-	// Create the tri hit root-signature and association
-	LocalRootSignature hitRootSignature(winHandle, device, RendererUtil::CreateHitRootDesc().desc);
-	subobjects[index] = hitRootSignature.subobject; // 5 Triangle Hit Root Sig
 
-	uint32_t hitRootIndex = index++; // 5
-	ExportAssociation hitRootAssociation(&kClosestHitShader, 1, &(subobjects[hitRootIndex]));
-	subobjects[index++] = hitRootAssociation.subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
 
-	///
+	//Create hit programs and their associations // TODO:: Look up what we need to do about AHS 
+	for(auto hitProgram : mHitPrograms)
+	{
+		//TODO:: BIND THE PROPER ROOT SIGNATURE
+		LocalRootSignature hitRootSignature(winHandle, device, RendererUtil::CreateHitRootDesc().desc);
+		subobjects[index] = hitRootSignature.subobject; // 5 Triangle Hit Root Sig
 
-	// Create the miss- and hit-programs root-signature and association
+		uint32_t hitRootIndex = index++; // 5
+		ExportAssociation hitRootAssociation(&hitProgram.desc.ClosestHitShaderImport, &(subobjects[hitRootIndex]));
+		subobjects[index++] = hitRootAssociation.subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
+	}
+
+
+	
+
+	//Create things that'll use the empty-root signature and the association object
+
 	D3D12_ROOT_SIGNATURE_DESC emptyDesc = {};
 	emptyDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 	LocalRootSignature emptyRootSignature(winHandle, device, emptyDesc);
 	subobjects[index] = emptyRootSignature.subobject; // 7 Root Sig to be shared between Miss and CHS
 
 	uint32_t hitMissRootIndex = index++; // 8
-	const WCHAR* missHitExportName[] = { kMissShader, kShadowChs, kShadowMiss };
-	ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(emptyRootSignature.subobject));
+	
+	vector<wstring> missHitExportName;
+	for(auto t : mEmptyHitPrograms)
+	{
+		missHitExportName.push_back(t.desc.ClosestHitShaderImport);
+	}
+
+	for (auto t : mEmptyMissPrograms)
+	{
+		missHitExportName.push_back(t.missShader);
+	}
+	
+	ExportAssociation missHitRootAssociation(missHitExportName, &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
+	
+	
+	
 	// Bind the payload size to the programs
 	ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 3);
 	subobjects[index] = shaderConfig.subobject; // 10 Shader Config
 
+
+
+	
+
+
 	uint32_t shaderConfigIndex = index++; // 10
-	const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
+	//const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
+	ExportAssociation configAssociation(shaderEntryPoints, &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config

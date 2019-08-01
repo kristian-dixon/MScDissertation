@@ -14,14 +14,12 @@ public:
 	void AddHitProgram(HitProgram& hitProgram);
 	void AddMissProgram(MissProgram& missProgram);
 
+	void GetEntryPoints(vector<wstring>& entryPoints);
 	void BuildPipeline(HWND winHandle, ID3D12Device5Ptr device);
 
 private:
 
 	string mShaderFileName;
-
-	//Names of the shaders that'll be run (don't include the hit group names)
-	vector<string> mEntryPoints;
 
 	vector<HitProgram> mHitPrograms;
 	vector<HitProgram> mEmptyHitPrograms;
