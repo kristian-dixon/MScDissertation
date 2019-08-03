@@ -20,11 +20,3 @@ void Mesh::RemoveInstance(size_t id)
 	}
 }
 
-ID3D12DescriptorHeapPtr Mesh::GetDescriptorHeap()
-{
-	if (!mDescriptorHeap)
-	{
-		mDescriptorHeap = Renderer::GetInstance()->CreateDescriptorHeap(mVBOs[0], mIndices[0]);
-	}
-	return mDescriptorHeap;
-}

@@ -39,7 +39,6 @@ public:
 	const std::vector<uint32_t>& GetIndexCounts() const { return mIndicesCounts; };
 
 
-	ID3D12DescriptorHeapPtr GetDescriptorHeap(); 
 
 
 private:

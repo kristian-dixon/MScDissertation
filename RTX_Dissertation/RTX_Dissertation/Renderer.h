@@ -26,7 +26,6 @@ public:
 
 	Camera& GetCamera() { return mCamera; };
 
-	ID3D12DescriptorHeapPtr CreateDescriptorHeap(ID3D12ResourcePtr vertexBuffer, ID3D12ResourcePtr indexBuffer);
 
 
 private:
@@ -47,7 +46,6 @@ private:
 	void BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>&, uint64_t& tlasSize, bool update, AccelerationStructureBuffers& buffers);
 	void CreateAccelerationStructures();
 
-	void CreateRTPipelineState();
 	void CreateShaderResources();
 	void CreateShaderTable();
 	uint32_t BeginFrame();
