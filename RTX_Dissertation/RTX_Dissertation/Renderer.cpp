@@ -590,21 +590,29 @@ void Renderer::CreateDXRResources()
 	CreateAccelerationStructures();   
 
 	string shaderName = "Data/Shaders.hlsl";
-	CreateRTPipelineState();                   
+	//CreateRTPipelineState();                   
 
-	/*RaytracingPipelineState rtspo = RaytracingPipelineState(shaderName);
+	
+	RaytracingPipelineState rtspo = RaytracingPipelineState(shaderName);
 
 	{
 		LocalRootSignature rgsRootSignature(mWinHandle, mpDevice, RendererUtil::CreateRayGenRootDesc().desc);
 
-		rtspo.AddHitProgram(HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
-		rtspo.AddHitProgram(HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup"));
+		auto hitGroup = HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature);
+		auto hitGroup2 = HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup");
 
-		rtspo.AddMissProgram(MissProgram(L"miss"));
-		rtspo.AddMissProgram(MissProgram(L"shadowMiss"));
+		rtspo.AddHitProgram(hitGroup);
+		rtspo.AddHitProgram(hitGroup2);
+
+		auto miss1 = MissProgram(L"miss");
+		auto miss2 = MissProgram(L"shadowMiss");
+		rtspo.AddMissProgram(miss1);
+		rtspo.AddMissProgram(miss2);
 
 		rtspo.BuildPipeline(mWinHandle, mpDevice);
-	}*/
+
+		mpPipelineState = rtspo.GetPipelineObject();
+	}
 	
 	mCamera.CreateCamera(mWinHandle, mpDevice);
 	mCamera.UpdateCamera();

@@ -17,14 +17,15 @@ public:
 	void GetEntryPoints(vector<const WCHAR*>& entryPoints);
 	void BuildPipeline(HWND winHandle, ID3D12Device5Ptr device);
 
+	ID3D12StateObjectPtr GetPipelineObject() { return mPipelineStateObject; };
 private:
 
 	string mShaderFileName;
 
-	vector<HitProgram> mHitPrograms;
-	vector<HitProgram> mEmptyHitPrograms;
-	vector<MissProgram> mMissPrograms;
-	vector<MissProgram> mEmptyMissPrograms;
+	vector<HitProgram*> mHitPrograms;
+	vector<HitProgram*> mEmptyHitPrograms;
+	vector<MissProgram*> mMissPrograms;
+	vector<MissProgram*> mEmptyMissPrograms;
 
 	ShaderConfig mShaderConfig;
 	PipelineConfig mPipelineConfig;

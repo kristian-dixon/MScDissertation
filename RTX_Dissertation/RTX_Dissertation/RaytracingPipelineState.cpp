@@ -13,12 +13,12 @@ void RaytracingPipelineState::AddHitProgram(HitProgram& hitProgram)
 	if(hitProgram.localRootSignature == nullptr)
 	{
 		//Add to empty list
-		mEmptyHitPrograms.push_back(hitProgram);
+		mEmptyHitPrograms.push_back(&hitProgram);
 	}
 	else
 	{
 		//Add to list that'll mount the root signature later
-		mHitPrograms.push_back(hitProgram);
+		mHitPrograms.push_back(&hitProgram);
 	}
 }
 
@@ -27,12 +27,12 @@ void RaytracingPipelineState::AddMissProgram(MissProgram& missProgram)
 	if (missProgram.localRootSignature == nullptr)
 	{
 		//Add to empty list
-		mEmptyMissPrograms.push_back(missProgram);
+		mEmptyMissPrograms.push_back(&missProgram);
 	}
 	else
 	{
 		//Add to list that'll mount the root signature later
-		mMissPrograms.push_back(missProgram);
+		mMissPrograms.push_back(&missProgram);
 	}
 }
 
@@ -42,47 +42,47 @@ void RaytracingPipelineState::GetEntryPoints(vector<const WCHAR*>& entryPoints)
 
 	for(int i = 0; i < mMissPrograms.size(); ++i)
 	{
-		entryPoints.push_back(mMissPrograms[i].missShader);
+		entryPoints.push_back(mMissPrograms[i]->missShader);
 	}
 
 	for (int i = 0; i < mEmptyMissPrograms.size(); ++i)
 	{
-		entryPoints.push_back(mEmptyMissPrograms[i].missShader);
+		entryPoints.push_back(mEmptyMissPrograms[i]->missShader);
 	}
 
 	for (int i = 0; i < mHitPrograms.size(); ++i)
 	{
-		if(mHitPrograms[i].desc.AnyHitShaderImport != nullptr)
+		if(mHitPrograms[i]->desc.AnyHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i].desc.AnyHitShaderImport);
+			entryPoints.push_back(mHitPrograms[i]->exportStr);
 		}
 
-		if (mHitPrograms[i].desc.ClosestHitShaderImport != nullptr)
+		if (mHitPrograms[i]->desc.ClosestHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i].desc.ClosestHitShaderImport);
+			entryPoints.push_back(mHitPrograms[i]->exportStr);
 		}
 
-		if (mHitPrograms[i].desc.IntersectionShaderImport != nullptr)
+		if (mHitPrograms[i]->desc.IntersectionShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i].desc.IntersectionShaderImport);
+			entryPoints.push_back(mHitPrograms[i]->exportStr);
 		}
 	}
 
 	for (int i = 0; i < mEmptyHitPrograms.size(); ++i)
 	{
-		if (mEmptyHitPrograms[i].desc.AnyHitShaderImport != nullptr)
+		if (mEmptyHitPrograms[i]->desc.AnyHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i].desc.AnyHitShaderImport);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
 		}
 
-		if (mEmptyHitPrograms[i].desc.ClosestHitShaderImport != nullptr)
+		if (mEmptyHitPrograms[i]->desc.ClosestHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i].desc.ClosestHitShaderImport);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
 		}
 
-		if (mEmptyHitPrograms[i].desc.IntersectionShaderImport != nullptr)
+		if (mEmptyHitPrograms[i]->desc.IntersectionShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i].desc.IntersectionShaderImport);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
 		}
 	}
 }	
@@ -119,14 +119,14 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 
 	//Bind hit groups
-	for(auto hitProgram : mHitPrograms)
+	for(auto& hitProgram : mHitPrograms)
 	{
-		subobjects[index++] = hitProgram.subObject;
+		subobjects[index++] = hitProgram->subObject;
 	}
 
-	for (auto hitProgram : mEmptyHitPrograms)
+	for (auto& hitProgram : mEmptyHitPrograms)
 	{
-		subobjects[index++] = hitProgram.subObject;
+		subobjects[index++] = hitProgram->subObject;
 	}
 
 
@@ -142,18 +142,22 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	subobjects[index++] = rgsRootAssociation.subobject; //Associate Root Sig to RGS
 
 
+	vector<LocalRootSignature> hitRootSignatures(mHitPrograms.size());
+	vector<ExportAssociation> exportAssociations(mHitPrograms.size());
+	int counter = 0;
 
 
 	//Create hit programs and their associations // TODO:: Look up what we need to do about AHS 
-	for(auto hitProgram : mHitPrograms)
+	for(auto& hitProgram : mHitPrograms)
 	{
-		//TODO:: BIND THE PROPER ROOT SIGNATURE
-		LocalRootSignature hitRootSignature(winHandle, device, RendererUtil::CreateHitRootDesc().desc);
-		subobjects[index] = hitRootSignature.subobject; // 5 Triangle Hit Root Sig
+		hitRootSignatures[counter] = LocalRootSignature(winHandle, device, RendererUtil::CreateHitRootDesc().desc);
+		subobjects[index] = hitRootSignatures[counter].subobject; // 5 Triangle Hit Root Sig
 
 		uint32_t hitRootIndex = index++; // 5
-		ExportAssociation hitRootAssociation(&hitProgram.desc.ClosestHitShaderImport, &(subobjects[hitRootIndex]));
-		subobjects[index++] = hitRootAssociation.subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
+		exportAssociations[counter] = ExportAssociation(&hitProgram->exportStr, &(subobjects[hitRootIndex]));
+		subobjects[index++] = exportAssociations[counter].subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
+
+		counter++;
 	}
 
 
@@ -169,17 +173,17 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	uint32_t hitMissRootIndex = index++; // 8
 	
 	vector<const WCHAR*> missHitExportName;
-	for(auto t : mEmptyHitPrograms)
+	for(auto& t : mEmptyHitPrograms)
 	{
-		missHitExportName.push_back(t.desc.ClosestHitShaderImport);
+		missHitExportName.push_back(t->exportStr);
 	}
 
-	for (auto t : mEmptyMissPrograms)
+	for (auto& t : mEmptyMissPrograms)
 	{
-		missHitExportName.push_back(t.missShader);
+		missHitExportName.push_back(t->missShader);
 	}
 	
-	ExportAssociation missHitRootAssociation(missHitExportName.data(), &(emptyRootSignature.subobject));
+	ExportAssociation missHitRootAssociation(missHitExportName.data(), missHitExportName.size(), &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	
@@ -196,7 +200,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 	uint32_t shaderConfigIndex = index++; // 10
 	//const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderEntryPoints.data(), &(subobjects[shaderConfigIndex]));
+	ExportAssociation configAssociation(shaderEntryPoints.data(), shaderEntryPoints.size(), &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config

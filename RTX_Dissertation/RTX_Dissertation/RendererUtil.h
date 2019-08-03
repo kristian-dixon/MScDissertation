@@ -137,6 +137,11 @@ struct ExportAssociation
 		subobject.pDesc = &association;
 	}
 
+	ExportAssociation()
+	{
+		
+	}
+
 	D3D12_STATE_SUBOBJECT subobject = {};
 	D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION association = {};
 };
@@ -246,6 +251,12 @@ struct LocalRootSignature
 		subobject.pDesc = &pInterface;
 		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
 	}
+
+	LocalRootSignature()
+	{
+		pRootSig = nullptr;
+	}
+
 	ID3D12RootSignaturePtr pRootSig;
 	ID3D12RootSignature* pInterface = nullptr;
 	D3D12_STATE_SUBOBJECT subobject = {};
@@ -282,18 +293,22 @@ struct Camera
 
 struct HitProgram
 {
-	HitProgram(LPCWSTR ahsExport, LPCWSTR chsExport, const std::wstring& name, LocalRootSignature* lrs = nullptr) : exportName(name), localRootSignature(lrs)
+	HitProgram(LPCWSTR ahsExport, const WCHAR* chsExport, const std::wstring name, LocalRootSignature* lrs = nullptr) : exportName(name), localRootSignature(lrs)
 	{
 		desc = {};
-		desc.AnyHitShaderImport = ahsExport;
+		desc.AnyHitShaderImport = nullptr;
 		desc.ClosestHitShaderImport = chsExport;
 		desc.HitGroupExport = exportName.c_str();
 
 		subObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
 		subObject.pDesc = &desc;
+
+		exportStr = chsExport;
 	}
 
 	std::wstring exportName;
+	const WCHAR* exportStr;
+
 	D3D12_HIT_GROUP_DESC desc;
 	D3D12_STATE_SUBOBJECT subObject;
 	LocalRootSignature* localRootSignature = nullptr;
@@ -301,11 +316,11 @@ struct HitProgram
 
 struct MissProgram
 {
-	MissProgram(LPCWSTR missExport, LocalRootSignature* lrs = nullptr) : missShader(missExport), localRootSignature(lrs)
+	MissProgram(const WCHAR* missExport, LocalRootSignature* lrs = nullptr) : missShader(missExport), localRootSignature(lrs)
 	{
 		
 	}
 
-	LPCWSTR missShader;
+	const WCHAR* missShader;
 	LocalRootSignature* localRootSignature = nullptr;
 };
