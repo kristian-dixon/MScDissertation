@@ -332,7 +332,7 @@ void Renderer::CreateRTPipelineState()
 	const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 
 
-	const vector<wstring> entryPoints = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
+	vector<const WCHAR*> entryPoints = { kRayGenShader, kMissShader, kClosestHitShader, kShadowChs, kShadowMiss };
 
 	// Create the DXIL library
 	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(mWinHandle, RendererUtil::string_2_wstring("Data/Shaders.hlsl"), entryPoints);
@@ -371,8 +371,8 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = emptyRootSignature.subobject; // 7 Root Sig to be shared between Miss and CHS
 
 	uint32_t hitMissRootIndex = index++; // 8
-	vector<wstring> missHitExportName = { kMissShader, kShadowChs, kShadowMiss };
-	ExportAssociation missHitRootAssociation(missHitExportName, &(emptyRootSignature.subobject));
+	vector<const WCHAR*> missHitExportName = { kMissShader, kShadowChs, kShadowMiss };
+	ExportAssociation missHitRootAssociation(missHitExportName.data(), missHitExportName.size(), &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	// Bind the payload size to the programs
@@ -380,8 +380,8 @@ void Renderer::CreateRTPipelineState()
 	subobjects[index] = shaderConfig.subobject; // 10 Shader Config
 
 	uint32_t shaderConfigIndex = index++; // 10
-	vector<wstring> shaderExports = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderExports, &(subobjects[shaderConfigIndex]));
+	vector<const WCHAR*> shaderExports = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
+	ExportAssociation configAssociation(shaderExports.data(), shaderExports.size(), &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config

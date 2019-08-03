@@ -164,7 +164,7 @@ uint64_t RendererUtil::SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList,
 }
 
 
-DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<std::wstring>& entryPoints)
+DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<const WCHAR*>& entryPoints)
 {
 	// Compile the shader
 	ID3DBlobPtr pDxilLib = CompileLibrary(mWinHandle, shaderFilename.c_str(), L"lib_6_3");

@@ -14,7 +14,7 @@ public:
 	void AddHitProgram(HitProgram& hitProgram);
 	void AddMissProgram(MissProgram& missProgram);
 
-	void GetEntryPoints(vector<wstring>& entryPoints);
+	void GetEntryPoints(vector<const WCHAR*>& entryPoints);
 	void BuildPipeline(HWND winHandle, ID3D12Device5Ptr device);
 
 private:

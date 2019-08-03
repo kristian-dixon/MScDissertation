@@ -36,7 +36,7 @@ void RaytracingPipelineState::AddMissProgram(MissProgram& missProgram)
 	}
 }
 
-void RaytracingPipelineState::GetEntryPoints(vector<wstring>& entryPoints)
+void RaytracingPipelineState::GetEntryPoints(vector<const WCHAR*>& entryPoints)
 {
 	entryPoints.push_back(L"rayGen");
 
@@ -108,7 +108,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	std::vector<D3D12_STATE_SUBOBJECT> subobjects(subobjectCount);
 	uint32_t index = 0;
 
-	vector<wstring> shaderEntryPoints;
+	vector<const WCHAR*> shaderEntryPoints;
 	GetEntryPoints(shaderEntryPoints);
 
 
@@ -168,7 +168,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 	uint32_t hitMissRootIndex = index++; // 8
 	
-	vector<wstring> missHitExportName;
+	vector<const WCHAR*> missHitExportName;
 	for(auto t : mEmptyHitPrograms)
 	{
 		missHitExportName.push_back(t.desc.ClosestHitShaderImport);
@@ -179,7 +179,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 		missHitExportName.push_back(t.missShader);
 	}
 	
-	ExportAssociation missHitRootAssociation(missHitExportName, &(emptyRootSignature.subobject));
+	ExportAssociation missHitRootAssociation(missHitExportName.data(), &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	
@@ -196,7 +196,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 	uint32_t shaderConfigIndex = index++; // 10
 	//const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderEntryPoints, &(subobjects[shaderConfigIndex]));
+	ExportAssociation configAssociation(shaderEntryPoints.data(), &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config

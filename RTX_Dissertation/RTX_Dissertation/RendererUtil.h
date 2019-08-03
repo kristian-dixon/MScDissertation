@@ -69,7 +69,7 @@ struct HeapData
 
 struct DxilLibrary
 {
-	DxilLibrary(ID3DBlobPtr pBlob, const std::vector<std::wstring>& entryPoint, uint32_t entryPointCount) : pShaderBlob(pBlob)
+	DxilLibrary(ID3DBlobPtr pBlob, const std::vector<const WCHAR*>& entryPoint, uint32_t entryPointCount) : pShaderBlob(pBlob)
 	{
 		stateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
 		stateSubobject.pDesc = &dxilLibDesc;
@@ -86,7 +86,7 @@ struct DxilLibrary
 
 			for (uint32_t i = 0; i < entryPointCount; i++)
 			{
-				exportName[i] = entryPoint[i].c_str();
+				exportName[i] = entryPoint[i];
 				exportDesc[i].Name = exportName[i];
 				exportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
 				exportDesc[i].ExportToRename = nullptr;
@@ -94,7 +94,7 @@ struct DxilLibrary
 		}
 	};
 
-	DxilLibrary() : DxilLibrary(nullptr, std::vector<std::wstring>(), 0) {}
+	DxilLibrary() : DxilLibrary(nullptr, std::vector<const WCHAR*>(), 0) {}
 
 	D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
 	D3D12_STATE_SUBOBJECT stateSubobject{};
@@ -115,16 +115,12 @@ struct RootSignatureDesc
 
 struct ExportAssociation
 {
-	ExportAssociation(std::vector<std::wstring>& exportNames, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
+	ExportAssociation(const WCHAR** exportNames, int count, const D3D12_STATE_SUBOBJECT* pSubobjectToAssociate)
 	{
-		std::vector<LPCWSTR> test;
-		for(int i = 0; i < exportNames.size(); i++)
-		{
-			test.push_back(exportNames[i].c_str());
-		}
+		association.NumExports = count;
 
-		association.NumExports = exportNames.size();
-		association.pExports = test.data();
+		association.pExports = exportNames;
+		
 		association.pSubobjectToAssociate = pSubobjectToAssociate;
 
 		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
@@ -224,7 +220,7 @@ public:
 
 	static uint64_t SubmitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue);
 
-	static DxilLibrary CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<std::wstring>& entryPoints);
+	static DxilLibrary CreateDxilLibrary(HWND mWinHandle, std::wstring& shaderFilename, const std::vector<const WCHAR*>& entryPoints);
 
 	static ID3DBlobPtr CompileLibrary(HWND mWinHandle, const WCHAR* filename, const WCHAR* targetString);
 	static ID3D12RootSignaturePtr CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc);
