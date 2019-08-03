@@ -415,6 +415,8 @@ void Renderer::CreateShaderTable()
 		for(int i = 0; i < vbos.size(); ++i)
 		{
 			{
+				//Get instance info, mount 
+
 				// Entry 2 - hit program
 				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries
 				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
