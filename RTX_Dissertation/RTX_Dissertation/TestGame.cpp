@@ -27,7 +27,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mat4 transformMat = mat4();
 
-		Instance instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		Instance instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
@@ -40,6 +40,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 
 		mesh = ResourceManager::RequestMesh("CUBE");
+	    instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		transformMat = translate(mat4(), vec3(0, 0, 10));
 		instance.SetTransform(transformMat);
@@ -61,10 +62,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
-		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
-
-		
-//		instance.SetTransform(transformMat);
+		instance.SetTransform(transformMat);
 
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 		mesh->AddInstance(instance);
