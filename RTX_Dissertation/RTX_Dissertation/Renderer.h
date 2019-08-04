@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include <map>
 #include "Vertex.h"
+#include "ShaderTable.h"
 
 using namespace glm;
 
@@ -87,6 +88,9 @@ private:
 
 	ID3D12ResourcePtr mpShaderTable;
 	uint32_t mShaderTableEntrySize = 0;
+
+
+	ShaderTable mShaderTable;
 
 
 	Camera mCamera;

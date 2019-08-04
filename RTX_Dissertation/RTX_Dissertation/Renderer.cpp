@@ -5,6 +5,7 @@
 #include "ResourceManager.h"
 #include <DirectXMath.h>
 #include "RaytracingPipelineState.h"
+#include "ShaderTable.h"
 Renderer* Renderer::mInstance = nullptr;
 
 
@@ -473,6 +474,10 @@ void Renderer::CreateDXRResources()
 		rtspo.AddMissProgram(miss1);
 		rtspo.AddMissProgram(miss2);
 
+		mShaderTable.AddMissProgram(miss1);
+		mShaderTable.AddMissProgram(miss2);
+
+
 		rtspo.BuildPipeline(mWinHandle, mpDevice);
 
 		mpPipelineState = rtspo.GetPipelineObject();
@@ -485,7 +490,9 @@ void Renderer::CreateDXRResources()
 
 	testCB = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice);
 
-	CreateShaderTable();
+	//CreateShaderTable();
+
+	
 }
 
 
