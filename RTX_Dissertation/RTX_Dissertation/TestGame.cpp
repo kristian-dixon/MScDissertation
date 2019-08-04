@@ -20,6 +20,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	{
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
+		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("PinkGroup");
+
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 
 
@@ -59,7 +61,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
-		instance.SetTransform(transformMat);
+		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+
+		
+//		instance.SetTransform(transformMat);
 
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 		mesh->AddInstance(instance);
@@ -69,9 +74,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		transformMat = translate(mat4(), vec3(-8, 3, 14.25));
+		transformMat = translate(mat4(), vec3(8, 3, 14.25));
+		
 		instance.SetTransform(transformMat);
-
+		
 		mesh->AddInstance(instance);
 	}
 
@@ -86,6 +92,7 @@ void TestGame::LoadHitPrograms()
 	LocalRootSignature rgsRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateRayGenRootDesc().desc);
 
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
+	ResourceManager::AddHitProgram("PinkGroup", make_shared<HitProgram>(nullptr, L"pink", L"PinkGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
 }

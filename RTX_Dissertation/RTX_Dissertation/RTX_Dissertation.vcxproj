@@ -149,6 +149,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererUtil.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="ShaderTable.cpp" />
     <ClCompile Include="TestGame.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererUtil.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="ShaderTable.h" />
     <ClInclude Include="TestGame.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>

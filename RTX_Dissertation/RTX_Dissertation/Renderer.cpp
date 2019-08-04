@@ -365,9 +365,7 @@ void Renderer::CreateShaderTable()
 	*/
 	const WCHAR* kRayGenShader = L"rayGen";
 	const WCHAR* kMissShader = L"miss";
-	const WCHAR* kHitGroup = L"HitGroup";
 	const WCHAR* kShadowMiss = L"shadowMiss";
-	const WCHAR* kShadowHitGroup = L"ShadowHitGroup";
 
 	// Calculate the size and create the buffer
 	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
