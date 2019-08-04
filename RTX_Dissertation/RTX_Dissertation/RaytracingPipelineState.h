@@ -17,7 +17,7 @@ public:
 	void GetEntryPoints(vector<const WCHAR*>& entryPoints);
 	void BuildPipeline(HWND winHandle, ID3D12Device5Ptr device);
 
-	ID3D12StateObjectPtr GetPipelineObject() { return mPipelineStateObject; };
+	ID3D12StateObjectPtr GetPipelineObject() const { return mPipelineStateObject; };
 private:
 
 	string mShaderFileName;

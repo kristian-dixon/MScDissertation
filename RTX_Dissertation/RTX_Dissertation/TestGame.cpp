@@ -20,10 +20,12 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	{
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
+		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
+
 
 		mat4 transformMat = mat4();
 
-		Instance instance(transformMat, hitGroupPointer, vector<ID3D12ResourcePtr>());
+		Instance instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 

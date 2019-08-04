@@ -415,37 +415,30 @@ void Renderer::CreateShaderTable()
 		//For each geometry
 		for(int i = 0; i < vbos.size(); ++i)
 		{
-			
-			{
-				//Get instance info, mount 
+			auto hitPrograms = mesh.second->GetInstances()[0].GetHitProgram();
 
+			for(auto hitProgram : hitPrograms)
+			{
 				// Entry 2 - hit program
 				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries
-				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(hitProgram->exportName.c_str()), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
-				uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-				assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+				if(hitProgram->localRootSignature != nullptr)
+				{
+					uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+					assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
 
-				*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
+					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
 
-				pCbDesc += 8; //Wow this actually worked
-				*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[i]->GetGPUVirtualAddress();
+					pCbDesc += 8; //Wow this actually worked
+					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[i]->GetGPUVirtualAddress();
 
-				pCbDesc += 8;
-				*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mTLAS.pResult->GetGPUVirtualAddress();
+					pCbDesc += 8;
+					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mTLAS.pResult->GetGPUVirtualAddress();
+				}
 
+				counter++;
 			}
-
-			counter++;
-
-			//Bind shadow program
-			{
-				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries
-
-				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(kShadowHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			}
-
-			counter++;
 		}
 	}
 
