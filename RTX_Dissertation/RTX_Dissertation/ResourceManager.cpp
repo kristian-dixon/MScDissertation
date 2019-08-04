@@ -8,8 +8,6 @@ std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 std::map<string, shared_ptr<HitProgram>> ResourceManager::mHitProgramDB;
 
 
-
-
 shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 {
 	const auto mesh = mMeshDB.find(key);

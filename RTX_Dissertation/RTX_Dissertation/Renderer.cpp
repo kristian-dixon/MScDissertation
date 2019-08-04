@@ -412,8 +412,10 @@ void Renderer::CreateShaderTable()
 	for (auto& mesh : meshDB)
 	{
 		auto vbos = mesh.second->GetVBOs();
+		//For each geometry
 		for(int i = 0; i < vbos.size(); ++i)
 		{
+			
 			{
 				//Get instance info, mount 
 
