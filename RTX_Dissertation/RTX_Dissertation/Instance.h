@@ -9,7 +9,7 @@ public:
 	
 
 	glm::mat4& GetTransform() { return mTransform; };
-	std::vector<std::shared_ptr<HitProgram>> GetHitProgram() const { return mHitPrograms; };
+	std::vector<std::shared_ptr<HitProgram>> GetHitPrograms() const { return mHitPrograms; };
 	std::vector<ID3D12ResourcePtr> GetResources() const { return mResources; };
 
 

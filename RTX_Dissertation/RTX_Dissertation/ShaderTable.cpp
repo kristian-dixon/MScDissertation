@@ -50,7 +50,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	//TODO: Support binding necessary data
 	for(int i = 0; i < missPrograms.size(); i++)
 	{
-		memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(missPrograms[i].missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i].missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	}
 
 
@@ -61,7 +61,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 		//For each mesh instance
 		for (auto& instance : mesh.second->GetInstances())
 		{
-			for (auto hitProgram : instance.GetHitProgram())
+			for (auto hitProgram : instance.GetHitPrograms())
 			{
 				// Entry 2 - hit program
 				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries

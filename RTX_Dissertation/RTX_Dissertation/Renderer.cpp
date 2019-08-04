@@ -222,7 +222,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 	// The InstanceContributionToHitGroupIndex is set based on the shader-table layout specified in createShaderTable()
 
 	int instanceIndex = 0;
-	int meshIndex = 0;
+	int hitContributionToHitGroupIndex = 0;
 	for(auto mesh : meshDB)
 	{
 		auto& instances = mesh.second->GetInstances();
@@ -232,15 +232,17 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 		{
 			//A lot of this could be switched into a instance class...
 			instanceDescs[instanceIndex].InstanceID = instanceIndex; // This value will be exposed to the shader via InstanceID()
-			instanceDescs[instanceIndex].InstanceContributionToHitGroupIndex = (meshIndex * 2) ;  //TODO:: Instead of this, have some count of the number of hit groups being called and use that instead
+			instanceDescs[instanceIndex].InstanceContributionToHitGroupIndex = (hitContributionToHitGroupIndex) ;  //TODO:: Instead of this, have some count of the number of hit groups being called and use that instead
 			instanceDescs[instanceIndex].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
 			mat4 m = transpose(instance.GetTransform()); // GLM is column major, the INSTANCE_DESC is row major
 			memcpy(instanceDescs[instanceIndex].Transform, &m, sizeof(instanceDescs[instanceIndex].Transform));
 			instanceDescs[instanceIndex].AccelerationStructure = blas.pResult->GetGPUVirtualAddress();
 			instanceDescs[instanceIndex].InstanceMask = 0xFF;
 			instanceIndex++;
+
+			hitContributionToHitGroupIndex += instance.GetHitPrograms().size();
+
 		}
-		meshIndex++;
 		
 	}
 
@@ -414,7 +416,7 @@ void Renderer::CreateShaderTable()
 		//For each geometry
 		for(int i = 0; i < vbos.size(); ++i)
 		{
-			auto hitPrograms = mesh.second->GetInstances()[0].GetHitProgram();
+			auto hitPrograms = mesh.second->GetInstances()[0].GetHitPrograms();
 
 			for(auto hitProgram : hitPrograms)
 			{
@@ -492,7 +494,9 @@ void Renderer::CreateDXRResources()
 
 	//CreateShaderTable();
 
-	
+	mShaderTable.BuildShaderTable(mWinHandle, mpDevice, mpPipelineState, mTLAS, mpSrvUavHeap);
+
+	mpShaderTable = mShaderTable.GetShaderTable();
 }
 
 
@@ -540,27 +544,30 @@ void Renderer::Render()
 	raytraceDesc.Depth = 1;
 
 	// RayGen is the first entry in the shader-table
-	raytraceDesc.RayGenerationShaderRecord.StartAddress = mpShaderTable->GetGPUVirtualAddress() + 0 * mShaderTableEntrySize;
-	raytraceDesc.RayGenerationShaderRecord.SizeInBytes = mShaderTableEntrySize;
+	raytraceDesc.RayGenerationShaderRecord.StartAddress = mpShaderTable->GetGPUVirtualAddress();
+	raytraceDesc.RayGenerationShaderRecord.SizeInBytes = mShaderTable.GetShaderTableEntrySize();
 
 	// Miss is the second entry in the shader-table
-	size_t missOffset = 1 * mShaderTableEntrySize;
+	size_t missOffset = mShaderTable.GetShaderTableEntrySize();
 	raytraceDesc.MissShaderTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + missOffset;
-	raytraceDesc.MissShaderTable.StrideInBytes = mShaderTableEntrySize;
-	raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize * 2;   // Only two miss-entries
+	raytraceDesc.MissShaderTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
+	raytraceDesc.MissShaderTable.SizeInBytes = mShaderTable.GetShaderTableEntrySize() * mShaderTable.GetMissShaderCount();   // Only two miss-entries
 
 	// Hit is the third entry in the shader-table
-	size_t hitOffset = 3 * mShaderTableEntrySize;
+	size_t hitOffset = (mShaderTable.GetMissShaderCount() + 1) * mShaderTable.GetShaderTableEntrySize();
 	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
-	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
+	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
 
-	int vboCount = 0;
+	int hitGroupsCount = 0;
 	auto meshDB = ResourceManager::GetMeshDB();
 	for (auto& mesh : meshDB)
 	{
-		vboCount += mesh.second->GetVBOs().size();
+		for (auto& instances : mesh.second->GetInstances())
+		{
+			hitGroupsCount += instances.GetHitPrograms().size();
+		}
 	}
-	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * (vboCount * 2);
+	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTable.GetShaderTableEntrySize() * hitGroupsCount;
 
 	// Bind the empty root signature
 	mpCmdList->SetComputeRootSignature(mpEmptyRootSig);

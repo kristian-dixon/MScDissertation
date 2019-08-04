@@ -37,7 +37,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
-
+		
 
 		mesh = ResourceManager::RequestMesh("CUBE");
 	    instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
@@ -47,7 +47,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		transformMat = translate(mat4(), vec3(0, -10, 0));
+		
+		transformMat = translate(mat4(), vec3(0, -5, 0));
 		transformMat = scale(transformMat, vec3(100, 1, 100));
 		instance.SetTransform(transformMat);
 
@@ -59,24 +60,24 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-
+		
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
 		instance.SetTransform(transformMat);
 
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 		mesh->AddInstance(instance);
+		///*
+		//transformMat = translate(mat4(), vec3(-10, -5, 10));
+		//instance.SetTransform(transformMat);
 
-		transformMat = translate(mat4(), vec3(-10, -5, 10));
-		instance.SetTransform(transformMat);
+		//mesh->AddInstance(instance);
 
-		mesh->AddInstance(instance);
-
-		transformMat = translate(mat4(), vec3(8, 3, 14.25));
-		
-		instance.SetTransform(transformMat);
-		
-		mesh->AddInstance(instance);
+		//transformMat = translate(mat4(), vec3(8, 3, 14.25));
+		//
+		//instance.SetTransform(transformMat);
+		//
+	/*	mesh->AddInstance(instance);*/
 	}
 
 
