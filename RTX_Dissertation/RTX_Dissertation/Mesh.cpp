@@ -4,9 +4,9 @@ Mesh::Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCount
 {
 }
 
-size_t Mesh::AddInstance(mat4& transform)
+size_t Mesh::AddInstance(Instance& val)
 {
-	mInstances.push_back(transform);
+	mInstances.push_back(val);
 	mInstanceCount++;
 	return mInstances.size() - 1;
 }

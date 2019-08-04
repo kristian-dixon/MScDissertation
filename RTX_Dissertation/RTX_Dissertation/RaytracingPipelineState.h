@@ -11,7 +11,7 @@ class RaytracingPipelineState
 public:
 	RaytracingPipelineState(string& shaderFileName);
 
-	void AddHitProgram(HitProgram& hitProgram);
+	void AddHitProgram(shared_ptr<HitProgram> hitProgram);
 	void AddMissProgram(MissProgram& missProgram);
 
 	void GetEntryPoints(vector<const WCHAR*>& entryPoints);
@@ -22,8 +22,8 @@ private:
 
 	string mShaderFileName;
 
-	vector<HitProgram*> mHitPrograms;
-	vector<HitProgram*> mEmptyHitPrograms;
+	vector<shared_ptr<HitProgram>> mHitPrograms;
+	vector<shared_ptr<HitProgram>> mEmptyHitPrograms;
 	vector<MissProgram*> mMissPrograms;
 	vector<MissProgram*> mEmptyMissPrograms;
 

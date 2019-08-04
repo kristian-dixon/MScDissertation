@@ -26,7 +26,8 @@ public:
 
 	Camera& GetCamera() { return mCamera; };
 
-
+	HWND GetWindowHandle() { return mWinHandle; };
+	ID3D12Device5Ptr GetDevice() { return mpDevice; };
 
 private:
 	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);

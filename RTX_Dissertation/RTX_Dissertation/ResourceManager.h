@@ -22,8 +22,15 @@ public:
 
 	static void ClearResources() { mMeshDB.clear(); }
 
+	static shared_ptr<HitProgram> RequestHitProgram(const string& key);
+		
+	static void AddHitProgram(const string& key, shared_ptr<HitProgram> hitProgram);
+
+	static std::map<string, shared_ptr<HitProgram>> GetHitProgramDB() { return mHitProgramDB; };
+
 private:
 	static std::map<string, shared_ptr<Mesh>> mMeshDB;
+	static std::map<string, shared_ptr<HitProgram>> mHitProgramDB;
 
 };
 

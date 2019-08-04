@@ -227,13 +227,13 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 		auto& instances = mesh.second->GetInstances();
 		auto blas = mesh.second->GetBLAS();
 
-		for (const auto& instance : instances)
+		for (auto& instance : instances)
 		{
 			//A lot of this could be switched into a instance class...
 			instanceDescs[instanceIndex].InstanceID = instanceIndex; // This value will be exposed to the shader via InstanceID()
 			instanceDescs[instanceIndex].InstanceContributionToHitGroupIndex = (meshIndex * 2) ;  //TODO:: Instead of this, have some count of the number of hit groups being called and use that instead
 			instanceDescs[instanceIndex].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-			mat4 m = transpose(instance); // GLM is column major, the INSTANCE_DESC is row major
+			mat4 m = transpose(instance.GetTransform()); // GLM is column major, the INSTANCE_DESC is row major
 			memcpy(instanceDescs[instanceIndex].Transform, &m, sizeof(instanceDescs[instanceIndex].Transform));
 			instanceDescs[instanceIndex].AccelerationStructure = blas.pResult->GetGPUVirtualAddress();
 			instanceDescs[instanceIndex].InstanceMask = 0xFF;
@@ -451,7 +451,6 @@ void Renderer::CreateShaderTable()
 	mpShaderTable->Unmap(0, nullptr);
 }
 
-
 void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
@@ -465,11 +464,16 @@ void Renderer::CreateDXRResources()
 	{
 		LocalRootSignature rgsRootSignature(mWinHandle, mpDevice, RendererUtil::CreateRayGenRootDesc().desc);
 
-		auto hitGroup = HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature);
-		auto hitGroup2 = HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup");
+		auto hitGroups = ResourceManager::GetHitProgramDB();
 
-		rtspo.AddHitProgram(hitGroup);
-		rtspo.AddHitProgram(hitGroup2);
+		for (auto hitGroup : hitGroups)
+		{
+			rtspo.AddHitProgram(hitGroup.second);
+		}
+
+		/*auto hitGroup = HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature);
+		auto hitGroup2 = HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup");
+		*/
 
 		auto miss1 = MissProgram(L"miss");
 		auto miss2 = MissProgram(L"shadowMiss");

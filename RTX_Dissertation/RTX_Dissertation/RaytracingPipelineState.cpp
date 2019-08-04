@@ -8,17 +8,17 @@ RaytracingPipelineState::RaytracingPipelineState(string& shaderFileName) :
 {
 }
 
-void RaytracingPipelineState::AddHitProgram(HitProgram& hitProgram)
+void RaytracingPipelineState::AddHitProgram(shared_ptr<HitProgram> hitProgram)
 {
-	if(hitProgram.localRootSignature == nullptr)
+	if(hitProgram->localRootSignature == nullptr)
 	{
 		//Add to empty list
-		mEmptyHitPrograms.push_back(&hitProgram);
+		mEmptyHitPrograms.push_back(hitProgram);
 	}
 	else
 	{
 		//Add to list that'll mount the root signature later
-		mHitPrograms.push_back(&hitProgram);
+		mHitPrograms.push_back(hitProgram);
 	}
 }
 

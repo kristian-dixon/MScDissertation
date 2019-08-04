@@ -9,46 +9,83 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	SetMouse(winHandle);
 
+	
+
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	auto mesh = ResourceManager::RequestMesh("TRIANGLE");
+	LoadHitPrograms();
 
-	mat4 transformMat = mat4();
-	mesh->AddInstance(transformMat);
 
-	transformMat = translate(mat4(), vec3(2, 0, 5));
-	mesh->AddInstance(transformMat);
-	
-	
-	mesh = ResourceManager::RequestMesh("CUBE");
+	{
+		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
 
-	transformMat = translate(mat4(), vec3(0, 0, 10));
-	mesh->AddInstance(transformMat);
+		mat4 transformMat = mat4();
 
-	transformMat = translate(mat4(), vec3(0, -10, 0));
-	transformMat = scale(transformMat, vec3(100, 1, 100));
-	mesh->AddInstance(transformMat);
+		Instance instance(transformMat, hitGroupPointer, vector<ID3D12ResourcePtr>());
 
-	mesh = ResourceManager::RequestMesh("QUAD");
-	transformMat = translate(mat4(), vec3(2, 0, 0.25f));
-	mesh->AddInstance(transformMat);
-	
+		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
-	mesh = ResourceManager::RequestMesh("SPHERE");
-	transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
-	//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
-	mesh->AddInstance(transformMat);
-	
-	transformMat = translate(mat4(), vec3(-10, -5, 10));
-	mesh->AddInstance(transformMat);
+		mesh->AddInstance(instance);
 
-	transformMat = translate(mat4(), vec3(-8, 3, 14.25));
-	mesh->AddInstance(transformMat);
+		transformMat = translate(mat4(), vec3(2, 0, 5));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+
+		mesh = ResourceManager::RequestMesh("CUBE");
+
+		transformMat = translate(mat4(), vec3(0, 0, 10));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+		transformMat = translate(mat4(), vec3(0, -10, 0));
+		transformMat = scale(transformMat, vec3(100, 1, 100));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+		mesh = ResourceManager::RequestMesh("QUAD");
+		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+
+		mesh = ResourceManager::RequestMesh("SPHERE");
+		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
+		instance.SetTransform(transformMat);
+
+		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
+		mesh->AddInstance(instance);
+
+		transformMat = translate(mat4(), vec3(-10, -5, 10));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+		transformMat = translate(mat4(), vec3(-8, 3, 14.25));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+	}
+
 
 	//Create final renderer resources
 	renderer->CreateDXRResources();
+}
+
+void TestGame::LoadHitPrograms()
+{
+	auto renderer = Renderer::GetInstance();
+	LocalRootSignature rgsRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateRayGenRootDesc().desc);
+
+	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
+	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
+
 }
 
 void TestGame::Update()

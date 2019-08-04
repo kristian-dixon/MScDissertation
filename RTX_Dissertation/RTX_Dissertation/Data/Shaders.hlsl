@@ -159,54 +159,30 @@ float fbm (in float2 st) {
 }
 
 
-
-
-
-
-
-
-
-[shader("miss")]
-void miss(inout RayPayload payload)
+//From the book of shaders.
+float3 SkyboxColour(float3 rayDir)
 {
-	float horizonStrength = dot(WorldRayDirection(), float3(0,1,0)) * 0.5 + 0.5;
-	float3 blue = float3(0.25, 0.25, 1);
+	rayDir.z *= -1;
+	
+	float3 outColour;
+	float2 st = rayDir.xy;
 
+	float3 color = float3(0.0, 0, 0);
 
-	float hitT = RayTCurrent();
-	float3 rayDirW = WorldRayDirection();
-	float3 rayOriginW = WorldRayOrigin();
-
-	// Find the world-space hit position
-	float3 posW = normalize(rayDirW);
-
-	float test = fbm(posW.xz * 8);
-	test = lerp(test, fbm(posW.xy * 2), 0.3);
-	test = lerp(test, fbm(posW.zy* 5), 0.3);
-	test = pow(1 - test, 5);
-
-	float3 outColour = lerp(blue * horizonStrength, (test).rrr, 0.5);
-
-	float2 st = posW.xy;
-
-
-
-	float3 color = float3(0.0,0,0);
-
-	float2 q = float2(0.,0);
+	float2 q = float2(0., 0);
 	q.x = fbm(st + 0.00 * 1);
-	q.y = fbm(st + float2(1.0,1));
+	q.y = fbm(st + float2(1.0, 1));
 
-	st = posW.zy;
+	st = rayDir.zy;
 
 
-	float2 r = float2(0.,0);
+	float2 r = float2(0., 0);
 	r.x = fbm(st + 1.0 * q + float2(1.7, 9.2) + 0.15 * 1);
 	r.y = fbm(st + 1.0 * q + float2(8.3, 2.8) + 0.126 * 1);
 
 	float f = fbm(st + r);
 
-	color = lerp(float3(0.101961, 0.619608, 0.666667),
+	color = lerp(float3(1, 0.019608, 1),
 		float3(0.666667, 0.666667, 0.498039),
 		clamp((f * f) * 4.0, 0.0, 1.0));
 
@@ -219,13 +195,17 @@ void miss(inout RayPayload payload)
 		clamp(length(r.x), 0.0, 1.0));
 
 	outColour = float4((f * f * f + .6 * f * f + .5 * f) * color, 1.);
+	return outColour;
+}
 
 
 
 
 
-
-	payload.color = outColour;//float3(1, 0, 1) * 0.125;
+[shader("miss")]
+void miss(inout RayPayload payload)
+{
+	payload.color = SkyboxColour(normalize(WorldRayDirection()));
 }
 
 

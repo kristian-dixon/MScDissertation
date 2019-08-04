@@ -5,6 +5,8 @@
 #include "Vertex.h"
 
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
+std::map<string, shared_ptr<HitProgram>> ResourceManager::mHitProgramDB;
+
 
 
 
@@ -316,5 +318,21 @@ shared_ptr<Mesh> ResourceManager::AddNewMesh(const string& key, ID3D12ResourcePt
 	//TODO:: Check if already exists.
 	//TODO:: ADD TO DB
 	return shared_ptr<Mesh>();
+}
+
+shared_ptr<HitProgram> ResourceManager::RequestHitProgram(const string& key)
+{
+	const auto hitProgram = mHitProgramDB.find(key);
+
+	if(hitProgram != mHitProgramDB.end())
+	{
+		return hitProgram->second;
+	}
+	return nullptr;
+}
+
+void ResourceManager::AddHitProgram(const string& key, shared_ptr<HitProgram> hitProgram)
+{
+	 mHitProgramDB.insert({ key, hitProgram }); 
 }
 

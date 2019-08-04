@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer.h"
+#include "Instance.h"
 #include <memory>
 using namespace glm;
 
@@ -13,7 +14,7 @@ public:
 	//Adds an instance to be uploaded into the TLAS
 	//Returns: index of instance entry
 	//**********************************************//
-	size_t AddInstance(mat4& transform);
+	size_t AddInstance(Instance& val);
 
 	//******************************************//
 	//Removes an instance from the TLAS
@@ -21,7 +22,7 @@ public:
 	//******************************************//
 	void RemoveInstance(size_t id);
 
-	void UpdateInstance(size_t id, mat4& transform) { mInstances[id] = transform; }
+	void UpdateInstance(size_t id, Instance& val) { mInstances[id] = val; }
 	int GetInstanceCount() const { return mInstanceCount; };
 
 
@@ -32,7 +33,7 @@ public:
 
 	std::vector<ID3D12ResourcePtr>& GetVBOs() { return mVBOs; };
 	AccelerationStructureBuffers GetBLAS() const { return mBLAS; };
-	std::vector<mat4>& GetInstances() { return mInstances; };
+	std::vector<Instance>& GetInstances() { return mInstances; };
 	const std::vector<uint32_t>& GetVertexCounts() const { return mVertexCounts; };
 	
 	std::vector<ID3D12ResourcePtr>& GetIndices() { return mIndices; };
@@ -57,7 +58,7 @@ private:
 
 
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
-	std::vector<mat4> mInstances;
+	std::vector<Instance> mInstances;
 
 	int mInstanceCount = 0;
 
