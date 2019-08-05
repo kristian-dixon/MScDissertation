@@ -20,12 +20,14 @@ public:
 
 	void MouseInput() override;
 
-	
+	size_t animationTestHook;
 
 private:
 	float mMovSpeed = 0.2f;
 	float yaw = 0;
 	float pitch = 0;
+
+	float shitTimer = 0;
 
 
 	glm::vec3 mForward;

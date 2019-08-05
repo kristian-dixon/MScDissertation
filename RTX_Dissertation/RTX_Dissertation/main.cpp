@@ -112,7 +112,7 @@ void msgLoop()
 		else
 		{
 			//DO LOGIC AND RENDERING
-			//game.Update();
+			game.Update();
 			game.Render();
 		}
 	}

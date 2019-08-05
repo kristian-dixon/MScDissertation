@@ -107,10 +107,12 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
+
+
 		transformMat = translate(mat4(), vec3(10, 5, 10));
 		instance.SetTransform(transformMat);
 
-		mesh->AddInstance(instance);
+		animationTestHook =  mesh->AddInstance(instance);
 
 		//transformMat = translate(mat4(), vec3(8, 3, 14.25));
 		//
@@ -138,7 +140,13 @@ void TestGame::LoadHitPrograms()
 void TestGame::Update()
 {
 	//TODO::Update things
-	
+	shitTimer += 1 / 60.f;
+
+	auto mesh = ResourceManager::RequestMesh("SPHERE");
+
+	auto animPos = translate(mat4(), vec3(10, 5 + sin(1 * shitTimer) * 10, 10));
+
+	mesh->GetInstances()[animationTestHook].SetTransform(animPos);
 }
 
 void TestGame::Render()

@@ -434,6 +434,8 @@ void Renderer::Render()
 {
 	uint32_t rtvIndex = BeginFrame();
 
+	BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, true, mTLAS);
+
 	// Let's raytrace
 	RendererUtil::ResourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	D3D12_DISPATCH_RAYS_DESC raytraceDesc = {};
