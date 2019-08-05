@@ -349,7 +349,7 @@ void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
 
-	string shaderName = "Data/Shaders.hlsl";
+	wstring shaderName = L"Data/Shaders.hlsl";
 	//CreateRTPipelineState();                   
 
 	

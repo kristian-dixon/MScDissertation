@@ -9,7 +9,7 @@ using namespace std;
 class RaytracingPipelineState
 {
 public:
-	RaytracingPipelineState(string& shaderFileName);
+	RaytracingPipelineState(wstring& shaderFileName);
 
 	void AddHitProgram(shared_ptr<HitProgram> hitProgram);
 	void AddMissProgram(MissProgram& missProgram);
@@ -20,7 +20,7 @@ public:
 	ID3D12StateObjectPtr GetPipelineObject() const { return mPipelineStateObject; };
 private:
 
-	string mShaderFileName;
+	wstring mShaderFileName;
 
 	vector<shared_ptr<HitProgram>> mHitPrograms;
 	vector<shared_ptr<HitProgram>> mEmptyHitPrograms;

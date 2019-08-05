@@ -1,7 +1,7 @@
 #include "RaytracingPipelineState.h"
 
 
-RaytracingPipelineState::RaytracingPipelineState(string& shaderFileName) : 
+RaytracingPipelineState::RaytracingPipelineState(wstring& shaderFileName) : 
 	mShaderFileName(shaderFileName), 
 	mShaderConfig(sizeof(float) * 2, sizeof(float) * 3),
 	mPipelineConfig(2)
@@ -114,7 +114,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 
 	// Create the DXIL library
-	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(winHandle, RendererUtil::string_2_wstring(mShaderFileName), shaderEntryPoints);
+	DxilLibrary dxilLib = RendererUtil::CreateDxilLibrary(winHandle, mShaderFileName, shaderEntryPoints);
 	subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
 
