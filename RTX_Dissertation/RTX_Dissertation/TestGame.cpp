@@ -24,8 +24,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 
+		void* redPtr = new vec4(1, 0, 0, 1);
 
-		const auto cb = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(1, 0, 0, 1));
+		const auto cb = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), redPtr, sizeof(vec4));
 		vector<ID3D12ResourcePtr> buffers; buffers.push_back(cb);
 
 		mat4 transformMat = mat4();
@@ -43,8 +44,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
-		
-		auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(0, 0, 1, 1));
+
+
+		void* bluePtr = new vec4(0, 0, 1, 1);
+		auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), bluePtr, sizeof(vec4));
 
 		buffers.clear();
 		buffers.push_back(cblue);
@@ -59,7 +62,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(1, 1, 1, 1));
+		void* whitePtr = new vec4(1, 1, 1, 1);
+		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
 
 		buffers.clear();
 		buffers.push_back(cwhite);
@@ -84,8 +88,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
-		
-		auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(-1, -1, -1, -1));
+
+		void* funColour = new vec4(-1, -1, -1, -1);
+		auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), funColour, sizeof(vec4));
 
 		buffers.clear();
 		buffers.push_back(cFun);

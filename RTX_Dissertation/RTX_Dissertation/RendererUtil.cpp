@@ -305,15 +305,12 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	return desc;
 }
 
-ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::vec4 data)
+ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, void* data, uint32_t bufferSize)
 {
-	using namespace glm;
-
-	const uint32_t bufferSize = sizeof(vec4);
 	ID3D12ResourcePtr result = CreateBuffer(winHandle, device, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 	uint8_t* pData;
 	D3DCall(winHandle, result->Map(0, nullptr, (void**)& pData));
-	memcpy(pData, &data, sizeof(data));
+	memcpy(pData, data, bufferSize);
 	result->Unmap(0, nullptr);
 	return result;
 }
