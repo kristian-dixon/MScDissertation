@@ -20,20 +20,20 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	{
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
-		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("PinkGroup");
+		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("GridGroup");
 
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 
 
 		mat4 transformMat = mat4();
 
-		Instance instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		Instance instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
 		mesh->AddInstance(instance);
 
-		transformMat = translate(mat4(), vec3(2, 0, 5));
+		transformMat = translate(mat4(), vec3(2, 5, 5));
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
@@ -47,12 +47,15 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		
+
 		transformMat = translate(mat4(), vec3(0, -5, 0));
 		transformMat = scale(transformMat, vec3(100, 1, 100));
+
+
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		mesh = ResourceManager::RequestMesh("QUAD");
 		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
@@ -68,10 +71,14 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
 		mesh->AddInstance(instance);
 		///*
-		//transformMat = translate(mat4(), vec3(-10, -5, 10));
-		//instance.SetTransform(transformMat);
+		
 
-		//mesh->AddInstance(instance);
+		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+
+		transformMat = translate(mat4(), vec3(10, 5, 10));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
 
 		//transformMat = translate(mat4(), vec3(8, 3, 14.25));
 		//
@@ -91,7 +98,7 @@ void TestGame::LoadHitPrograms()
 	LocalRootSignature rgsRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateRayGenRootDesc().desc);
 
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
-	ResourceManager::AddHitProgram("PinkGroup", make_shared<HitProgram>(nullptr, L"pink", L"PinkGroup", nullptr));
+	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
 }

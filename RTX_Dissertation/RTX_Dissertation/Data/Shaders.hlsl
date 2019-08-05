@@ -220,9 +220,21 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 
 [shader("closesthit")]
-void pink(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void grid(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-	payload.color = float3(1, 0.5, 0.5);
+	float hitT = RayTCurrent();
+	float3 rayDirW = WorldRayDirection();
+	float3 rayOriginW = WorldRayOrigin();
+
+	// Find the world-space hit position
+	float3 posW = rayOriginW + hitT * rayDirW;
+
+	float x = sin(posW.x * 10);
+	float z = sin(posW.z * 10);
+
+
+
+	payload.color = float3(x * z, 0, x * z);
 }
 
 
