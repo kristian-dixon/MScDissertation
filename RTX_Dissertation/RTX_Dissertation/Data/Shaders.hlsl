@@ -13,10 +13,10 @@ cbuffer CameraParams : register(b0)
 }
 
 
-/*cbuffer ColourBuffer : register(b1)
+cbuffer ColourBuffer : register(b1)
 {
-	float3 testColor;
-}*/
+	float3 matColour;
+}
 
 
 struct STriVertex
@@ -215,7 +215,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	float colour = saturate(dot(hitnormal, ray.Direction));
 
 
-	payload.color = colour * factor;
+	payload.color = colour * factor * matColour;
 }
 
 

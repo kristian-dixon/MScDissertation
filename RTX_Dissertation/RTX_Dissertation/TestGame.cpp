@@ -25,14 +25,20 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 
 
+		const auto cb = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(1, 0, 0, 1));
+		vector<ID3D12ResourcePtr> buffers; buffers.push_back(cb);
+
 		mat4 transformMat = mat4();
 
-		Instance instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		Instance instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+	
 
 		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
 		mesh->AddInstance(instance);
 
+
+		
 		transformMat = translate(mat4(), vec3(2, 5, 5));
 		instance.SetTransform(transformMat);
 
@@ -40,7 +46,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		
 
 		mesh = ResourceManager::RequestMesh("CUBE");
-	    instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+	    
 
 		transformMat = translate(mat4(), vec3(0, 0, 10));
 		instance.SetTransform(transformMat);
@@ -55,7 +61,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
-		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		
 
 		mesh = ResourceManager::RequestMesh("QUAD");
 		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
@@ -84,7 +90,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		//
 		//instance.SetTransform(transformMat);
 		//
-	/*	mesh->AddInstance(instance);*/
+		//mesh->AddInstance(instance);
 	}
 
 

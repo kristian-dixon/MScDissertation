@@ -343,109 +343,7 @@ void Renderer::CreateShaderResources()
 }
 
 
-void Renderer::CreateShaderTable()
-{
-	//Here's how we're going to do this
-	/*
-	 * Entry 0 - Ray-Gen Program
-	 * Entry 1 to MissShaderCount + 1 - Miss Shaders
-	 
-	 * Then for each object
-	 *	- For Each Instance
-	 *		- Bind Shaders
-	 *		
-	 * Profit.
-	 */
 
-
-	/** The shader-table layout is as follows:
-		Entry 0 - Ray-gen program
-		Entry 1 - Miss program
-		Entry 2 - Hit program
-		All entries in the shader-table must have the same size, so we will choose it base on the largest required entry.
-		The ray-gen program requires the largest entry - sizeof(program identifier) + 8 bytes for a descriptor-table.
-		The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
-	*/
-	const WCHAR* kRayGenShader = L"rayGen";
-	const WCHAR* kMissShader = L"miss";
-	const WCHAR* kShadowMiss = L"shadowMiss";
-
-	// Calculate the size and create the buffer
-	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-	mShaderTableEntrySize += 24; // The ray-gen's descriptor table
-	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-	
-	int vboCount = 0;
-	auto meshDB = ResourceManager::GetMeshDB();
-	for(auto& mesh : meshDB)
-	{
-		vboCount += mesh.second->GetVBOs().size();
-	}
-
-
-	uint32_t shaderTableSize = mShaderTableEntrySize * (3 + (vboCount * 2));
-
-	// For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
-	mpShaderTable = RendererUtil::CreateBuffer(mWinHandle, mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, RendererUtil::kUploadHeapProps);
-
-	// Map the buffer
-	uint8_t* pData;
-	RendererUtil::D3DCall(mWinHandle, mpShaderTable->Map(0, nullptr, (void**)& pData));
-
-	MAKE_SMART_COM_PTR(ID3D12StateObjectProperties);
-	ID3D12StateObjectPropertiesPtr pRtsoProps;
-	mpPipelineState->QueryInterface(IID_PPV_ARGS(&pRtsoProps));
-
-	// Entry 0 - ray-gen program ID and descriptor data
-	memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-	uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-	*(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-	// This is where we need to set the descriptor data for the ray-gen shader. We'll get to it in the next tutorial
-
-	// Entry 1 - miss program
-	memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-	memcpy(pData + mShaderTableEntrySize * 2, pRtsoProps->GetShaderIdentifier(kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-
-	//Bind each VBO to a shader entry
-	int counter = 0;
-	for (auto& mesh : meshDB)
-	{
-		auto vbos = mesh.second->GetVBOs();
-		//For each geometry
-		for(int i = 0; i < vbos.size(); ++i)
-		{
-			auto hitPrograms = mesh.second->GetInstances()[0].GetHitPrograms();
-
-			for(auto hitProgram : hitPrograms)
-			{
-				// Entry 2 - hit program
-				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries
-				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(hitProgram->exportName.c_str()), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-				if(hitProgram->localRootSignature != nullptr)
-				{
-					uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-					assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-
-					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = vbos[i]->GetGPUVirtualAddress();
-
-					pCbDesc += 8; //Wow this actually worked
-					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[i]->GetGPUVirtualAddress();
-
-					pCbDesc += 8;
-					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mTLAS.pResult->GetGPUVirtualAddress();
-				}
-
-				counter++;
-			}
-		}
-	}
-
-	// Unmap
-	mpShaderTable->Unmap(0, nullptr);
-}
 
 void Renderer::CreateDXRResources()
 {
@@ -490,7 +388,7 @@ void Renderer::CreateDXRResources()
 
 	CreateShaderResources();
 
-	testCB = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice);
+	//testCB = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice);
 
 	//CreateShaderTable();
 

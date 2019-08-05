@@ -280,7 +280,7 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 RootSignatureDesc RendererUtil::CreateHitRootDesc()
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(3);
+	desc.rootParams.resize(4);
 
 	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
@@ -293,18 +293,21 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[2].Descriptor.RegisterSpace = 0;
 	desc.rootParams[2].Descriptor.ShaderRegister = 0;
+
+	desc.rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	desc.rootParams[3].Descriptor.RegisterSpace = 0;
+	desc.rootParams[3].Descriptor.ShaderRegister = 1;
 	
-	desc.desc.NumParameters = 3;
+	desc.desc.NumParameters = 4;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
 	return desc;
 }
 
-ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device)
+ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, glm::vec4 data)
 {
 	using namespace glm;
-	auto data = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 	const uint32_t bufferSize = sizeof(vec4);
 	ID3D12ResourcePtr result = CreateBuffer(winHandle, device, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);

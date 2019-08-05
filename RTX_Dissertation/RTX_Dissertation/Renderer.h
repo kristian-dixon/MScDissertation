@@ -87,9 +87,6 @@ private:
 	ID3D12DescriptorHeapPtr mpSrvUavHeap;
 
 	ID3D12ResourcePtr mpShaderTable;
-	uint32_t mShaderTableEntrySize = 0;
-
-
 	ShaderTable mShaderTable;
 
 

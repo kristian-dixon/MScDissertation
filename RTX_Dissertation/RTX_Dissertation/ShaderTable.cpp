@@ -7,7 +7,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 
 	// TODO:: Make this nicer
 	mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-	mShaderTableEntrySize += 24; // The ray-gen's descriptor table
+	mShaderTableEntrySize += 32; // The ray-gen's descriptor table
 	mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
 
 	//Raygen 
