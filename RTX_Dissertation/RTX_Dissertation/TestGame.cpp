@@ -44,6 +44,12 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 		
+		auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(0, 0, 1, 1));
+
+		buffers.clear();
+		buffers.push_back(cblue);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+
 
 		mesh = ResourceManager::RequestMesh("CUBE");
 	    
@@ -52,6 +58,12 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 
 		mesh->AddInstance(instance);
+
+		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(1, 1, 1, 1));
+
+		buffers.clear();
+		buffers.push_back(cwhite);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
 
 		transformMat = translate(mat4(), vec3(0, -5, 0));
@@ -72,6 +84,15 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
+		
+		auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), vec4(-1, -1, -1, -1));
+
+		buffers.clear();
+		buffers.push_back(cFun);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+
+
+
 		instance.SetTransform(transformMat);
 
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));

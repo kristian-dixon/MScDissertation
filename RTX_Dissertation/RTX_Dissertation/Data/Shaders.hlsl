@@ -214,8 +214,17 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	float colour = saturate(dot(hitnormal, ray.Direction));
 
+	if (matColour.r < 0)
+	{
+		float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
+		funColour.yz *= 0.25;
 
-	payload.color = colour * factor * matColour;
+		payload.color = colour * factor * funColour;
+	}
+	else
+	{
+		payload.color = colour * factor * matColour;
+	}
 }
 
 
