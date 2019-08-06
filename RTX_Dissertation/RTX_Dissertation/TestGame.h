@@ -1,7 +1,7 @@
 #pragma once
 #include "Game.h"
 #include <Mouse.h>
-
+#include <chrono>
 
 class TestGame :
 	public Game
@@ -29,6 +29,7 @@ private:
 
 	float shitTimer = 0;
 
+	std::chrono::system_clock::time_point mLastFrameTime;
 
 	glm::vec3 mForward;
 	

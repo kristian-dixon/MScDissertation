@@ -2,6 +2,9 @@
 #include "ResourceManager.h"
 #include "RendererUtil.h"
 
+#include <chrono>
+#include <ctime>
+
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
 
@@ -101,18 +104,26 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 
 		//transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
-		mesh->AddInstance(instance);
+		//mesh->AddInstance(instance);
 		///*
 		
 
-		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		instance = Instance(transformMat, { pinkGroupPointer }, vector<ID3D12ResourcePtr>());
 
+		
+		//auto mesh = ResourceManager::RequestMesh("SPHERE");
+		for(int x = 0; x < 10; x++)
+		{
+			for(int z = 0; z < 10; z++)
+			{
+				transformMat = translate(mat4(), vec3(-125.5f + x * 25, 5, -125.5f + z * 25));
+				instance.SetTransform(transformMat);
+				animationTestHook = mesh->AddInstance(instance);
+			}
+		}
+		
+		
 
-
-		transformMat = translate(mat4(), vec3(10, 5, 10));
-		instance.SetTransform(transformMat);
-
-		animationTestHook =  mesh->AddInstance(instance);
 
 		//transformMat = translate(mat4(), vec3(8, 3, 14.25));
 		//
@@ -124,6 +135,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	//Create final renderer resources
 	renderer->CreateDXRResources();
+
+	mLastFrameTime = std::chrono::system_clock::now();
+
 }
 
 void TestGame::LoadHitPrograms()
@@ -139,6 +153,15 @@ void TestGame::LoadHitPrograms()
 
 void TestGame::Update()
 {
+
+
+	auto thisFrameTime = std::chrono::system_clock::now();
+	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
+
+	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
+
+	mLastFrameTime = std::chrono::system_clock::now();
+	
 	//TODO::Update things
 	shitTimer += 1 / 60.f;
 

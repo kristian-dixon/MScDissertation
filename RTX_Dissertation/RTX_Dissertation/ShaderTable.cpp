@@ -18,7 +18,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	auto meshDB = ResourceManager::GetMeshDB();
 	for (auto& mesh : meshDB)
 	{
-		for(auto& instances : mesh.second->GetInstances())
+		for (auto& instances : mesh.second->GetInstances())
 		{
 			entryCount++;
 		}
@@ -48,11 +48,35 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 
 	// Entry 1 - miss program
 	//TODO: Support binding necessary data
-	for(int i = 0; i < missPrograms.size(); i++)
+	for (int i = 0; i < missPrograms.size(); i++)
 	{
 		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i].missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	}
 
+	for (auto& mesh : meshDB)
+	{
+		int i = 0;
+
+		//For each mesh instance
+		for (auto& instance : mesh.second->GetInstances())
+		{
+
+			if (i == 0)//(int)(mesh.second->GetInstances().size()) - 1)
+			{
+				int k = 0;
+			}
+
+			for (auto& hitProgram : instance.GetHitPrograms())
+			{
+				
+				if (hitProgram->localRootSignature != nullptr)
+				{
+				}
+			}
+			i++;
+
+		}
+	}
 
 	//Bind each VBO to a shader entry
 	int counter = 0;
@@ -61,12 +85,13 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 		//For each mesh instance
 		for (auto& instance : mesh.second->GetInstances())
 		{
-			for (auto hitProgram : instance.GetHitPrograms())
+			for (auto& hitProgram : instance.GetHitPrograms())
 			{
 				// Entry 2 - hit program
-				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (3 + counter); // +3 skips the ray-gen and miss entries
+				uint8_t* pHitEntry = pData + mShaderTableEntrySize * (missPrograms.size() + 1 + counter); // +3 skips the ray-gen and miss entries
 				memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(hitProgram->exportName.c_str()), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
+				//Bind data
 				if (hitProgram->localRootSignature != nullptr)
 				{
 					uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
