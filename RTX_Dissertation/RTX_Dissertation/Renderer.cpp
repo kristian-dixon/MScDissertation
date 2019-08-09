@@ -28,7 +28,7 @@ Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t w
 
 
 
-Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight) : mWinHandle(winHandle), mSwapChainSize(winWidth, winHeight)
+Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight) : mWinHandle(winHandle), mSwapChainSize(winWidth, winHeight), mFenceEvent()
 {
 }
 
@@ -457,7 +457,7 @@ void Renderer::Render()
 	// Hit is the third entry in the shader-table
 	size_t hitOffset = (mShaderTable.GetMissShaderCount() + 1) * mShaderTable.GetShaderTableEntrySize();
 	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
-	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
+	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize() * 2;
 
 	int hitGroupsCount = 0;
 	auto meshDB = ResourceManager::GetMeshDB();

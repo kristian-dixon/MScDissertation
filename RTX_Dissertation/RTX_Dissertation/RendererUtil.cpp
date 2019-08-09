@@ -351,7 +351,6 @@ void Camera::CreateCamera(HWND winHandle, ID3D12Device5Ptr device)
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mConstHeap->GetCPUDescriptorHandleForHeapStart();
 	device->CreateConstantBufferView(&cbvDesc, srvHandle);
 }
-
 void Camera::UpdateCamera()
 {
 

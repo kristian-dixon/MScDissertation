@@ -123,8 +123,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	
 
 	//Minor TODO:: Make this a part of the config file
-	int windowWidth = 1920;
-	int windowHeight = 1080;
+	int windowWidth = 1200;
+	int windowHeight = 720;
 
 	gWinHandle = OpenWindow(windowWidth, windowHeight);
 

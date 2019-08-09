@@ -20,7 +20,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	{
 		for (auto& instances : mesh.second->GetInstances())
 		{
-			entryCount++;
+			entryCount+= instances.GetHitPrograms().size();
 		}
 	}
 
