@@ -16,13 +16,21 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	entryCount += missPrograms.size();
 
 	auto meshDB = ResourceManager::GetMeshDB();
+	int largestHitGroupSize = 0;
+	int hitGroupsCount = 0;
 	for (auto& mesh : meshDB)
 	{
 		for (auto& instances : mesh.second->GetInstances())
 		{
-			entryCount+= instances.GetHitPrograms().size();
+			entryCount += instances.GetHitPrograms().size();
+
+			/*if (instances.GetHitPrograms().size() > largestHitGroupSize)
+			{
+				largestHitGroupSize = instances.GetHitPrograms().size();
+			}*/
 		}
 	}
+	//entryCount += largestHitGroupSize * hitGroupsCount;
 
 	mShaderTableEntryCount = entryCount;
 
@@ -51,31 +59,6 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	for (int i = 0; i < missPrograms.size(); i++)
 	{
 		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i].missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-	}
-
-	for (auto& mesh : meshDB)
-	{
-		int i = 0;
-
-		//For each mesh instance
-		for (auto& instance : mesh.second->GetInstances())
-		{
-
-			if (i == 0)//(int)(mesh.second->GetInstances().size()) - 1)
-			{
-				int k = 0;
-			}
-
-			for (auto& hitProgram : instance.GetHitPrograms())
-			{
-				
-				if (hitProgram->localRootSignature != nullptr)
-				{
-				}
-			}
-			i++;
-
-		}
 	}
 
 	//Bind each VBO to a shader entry
@@ -114,6 +97,10 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 
 				counter++;
 			}
+
+			//Skip empty hitgroups
+			//int skip = largestHitGroupSize - instance.GetHitPrograms().size();
+			//counter += skip;
 		}
 	}
 

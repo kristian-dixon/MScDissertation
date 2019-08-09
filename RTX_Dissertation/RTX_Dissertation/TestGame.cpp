@@ -91,7 +91,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		void* whitePtr = new vec4(1, 1, 1, 1);
+		void* whitePtr = new vec4(0, 0, 0, 1);
+		//void* whitePtr = new vec4(0.8f, 0.8f, 0.8f, 1);
+		
 		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
 
 		buffers.clear();
@@ -127,8 +129,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 		
 		
-		/*
-		instance = Instance(transformMat, { pinkGroupPointer }, vector<ID3D12ResourcePtr>());
+		
+		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		
 		//auto mesh = ResourceManager::RequestMesh("SPHERE");
@@ -136,7 +138,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		{
 			for(int z = 0; z < 10; z++)
 			{
-				transformMat = translate(mat4(), vec3(-125.5f + x * 25, 5, -125.5f + z * 25));
+				transformMat = translate(mat4(), vec3(-125.5f + x * 25, 10, -125.5f + z * 25));
 				instance.SetTransform(transformMat);
 				animationTestHook = mesh->AddInstance(instance);
 			}
@@ -145,11 +147,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		
 
 
-		transformMat = translate(mat4(), vec3(8, 3, 14.25));
 		
-		instance.SetTransform(transformMat);
-		
-		mesh->AddInstance(instance);*/
+		mesh->AddInstance(instance);
 	}
 
 

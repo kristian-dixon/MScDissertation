@@ -80,7 +80,8 @@ void rayGen()
 	ray.TMax = 100000;
 
 	RayPayload payload;
-	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload);
+	payload.color = float3(0,0,0);
+	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
 	float3 col = linearToSrgb(payload.color);
 	gOutput[launchIndex.xy] = float4(col, 1);
 }
@@ -204,49 +205,62 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	
 	RayDesc ray;
 	ray.Origin = posW;
-	ray.Direction = normalize(float3(0.25, 0.5, -0.35));
+	ray.Direction = normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
 	ray.TMin = 0.001;
 	ray.TMax = 100000;
 	ShadowPayload shadowPayload;
-	TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
-
-	//ray.Origin = posW;
-	//ray.Direction = normalize(float3(-0.25, 0.5, 0.35));
-	//ray.TMin = 1.0;
-	//ray.TMax = 100000;
-	//ShadowPayload shadowPayload2;
-	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload2);
-
-	//ray.Origin = posW;
-	//ray.Direction = normalize(float3(0.25, 0.5, 0.35));
-	//ray.TMin = 1.0;
-	//ray.TMax = 100000;
-	//ShadowPayload shadowPayload3;
-	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload3);
-
-	//ray.Origin = posW;
-	//ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
-	//ray.TMin = 1.0;
-	//ray.TMax = 100000;
-	//ShadowPayload shadowPayload4;
-	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload4);
-
-	float factor =  shadowPayload.hit ? 0.1 : 1.0;
-
-
-	float colour = saturate(dot(hitnormal, ray.Direction));
-
-	if (matColour.r < 0)
+	
+	if (payload.color.r > -1)
 	{
-		float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
-		funColour.yz *= 0.25;
+		payload.color.r = -1;
+		TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
 
-		payload.color = colour * factor * funColour;
 	}
-	else
-	{
-		payload.color = colour * factor * matColour;
-	}
+
+
+
+		//ray.Origin = posW;
+		//ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+		//ray.TMin = 0.001;
+		//ray.TMax = 100000;
+		//ShadowPayload shadowPayload2;
+		//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload2);
+
+		//ray.Origin = posW;
+		//ray.Direction = normalize(float3(0.25, 0.5, 0.35));
+		//ray.TMin = 0.001;
+		//ray.TMax = 100000;
+		//ShadowPayload shadowPayload3;
+		//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload3);
+
+		//ray.Origin = posW;
+		//ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+		//ray.TMin = 0.001;
+		//ray.TMax = 100000;
+		//ShadowPayload shadowPayload4;
+		//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload4);
+
+		//float factor = 1;//shadowPayload.hit ? 0.1 : 1.0;
+		//factor *= shadowPayload2.hit ? 0.1 : 1.0;
+		/*factor *= shadowPayload3.hit ? 0.1 : 1.0;
+		factor *= shadowPayload4.hit ? 0.1 : 1.0;
+		*/
+
+		float factor = 1;
+		float colour = saturate(dot(hitnormal, ray.Direction));
+
+		if (matColour.r < 0)
+		{
+			float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
+			funColour.yz *= 0.25;
+
+			payload.color = lerp(payload.color, colour * factor * funColour, 0.5f);
+		}
+		else
+		{
+			payload.color = lerp(payload.color, colour * factor * matColour, 0.9f);
+		}
+	
 }
 
 
