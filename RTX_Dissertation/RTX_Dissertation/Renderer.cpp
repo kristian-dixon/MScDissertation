@@ -457,7 +457,7 @@ void Renderer::Render()
 	// Hit is the third entry in the shader-table
 	size_t hitOffset = (mShaderTable.GetMissShaderCount() + 1) * mShaderTable.GetShaderTableEntrySize();
 	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
-	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize() * 2;
+	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
 
 	int hitGroupsCount = 0;
 	auto meshDB = ResourceManager::GetMeshDB();

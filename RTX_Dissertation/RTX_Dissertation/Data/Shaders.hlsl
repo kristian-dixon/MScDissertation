@@ -200,33 +200,53 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	// Find the world-space hit position
 	float3 posW = rayOriginW + hitT * rayDirW;
-	payload.color = posW;
 	// Fire a shadow ray. The direction is hard-coded here, but can be fetched from a constant-buffer
-	//RayDesc ray;
+	
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = normalize(float3(0.25, 0.5, -0.35));
+	ray.TMin = 0.001;
+	ray.TMax = 100000;
+	ShadowPayload shadowPayload;
+	TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
+
 	//ray.Origin = posW;
-	//ray.Direction = normalize(float3(0.25, 0.5, -0.35));
+	//ray.Direction = normalize(float3(-0.25, 0.5, 0.35));
 	//ray.TMin = 1.0;
 	//ray.TMax = 100000;
-	//ShadowPayload shadowPayload;
-	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
+	//ShadowPayload shadowPayload2;
+	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload2);
+
+	//ray.Origin = posW;
+	//ray.Direction = normalize(float3(0.25, 0.5, 0.35));
+	//ray.TMin = 1.0;
+	//ray.TMax = 100000;
+	//ShadowPayload shadowPayload3;
+	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload3);
+
+	//ray.Origin = posW;
+	//ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+	//ray.TMin = 1.0;
+	//ray.TMax = 100000;
+	//ShadowPayload shadowPayload4;
+	//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload4);
+
+	float factor =  shadowPayload.hit ? 0.1 : 1.0;
 
 
-	//float factor =  shadowPayload.hit ? 0.1 : 1.0;
+	float colour = saturate(dot(hitnormal, ray.Direction));
 
+	if (matColour.r < 0)
+	{
+		float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
+		funColour.yz *= 0.25;
 
-	//float colour = saturate(dot(hitnormal, ray.Direction));
-
-	//if (matColour.r < 0)
-	//{
-	//	float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
-	//	funColour.yz *= 0.25;
-
-	//	payload.color = colour * factor * funColour;
-	//}
-	//else
-	//{
-	//	payload.color = colour * factor * matColour;
-	//}
+		payload.color = colour * factor * funColour;
+	}
+	else
+	{
+		payload.color = colour * factor * matColour;
+	}
 }
 
 

@@ -45,94 +45,111 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 
 
+		mesh = ResourceManager::RequestMesh("CUBE");
+		instance.SetTransform(translate(mat4(), vec3(0, -2, 0)));
+
+		//mesh->AddInstance(instance);
+
+		mat4 baseTransform = translate(mat4(), vec3(10, 0, 10));
 		
-		//transformMat = translate(mat4(), vec3(2, 5, 5));
-		//instance.SetTransform(transformMat);
+		for(int i = 0; i < 5; i++)
+		{
+			for(int j = 0; j < 5 - i; j++)
+			{
+				transformMat = translate(baseTransform, vec3(-i, j, i + j) * 2.f);
+				instance.SetTransform(transformMat);
+				mesh->AddInstance(instance);
 
-		//mesh->AddInstance(instance);
+				transformMat = translate(baseTransform, vec3(i, j, i + j) * 2.f);
+				instance.SetTransform(transformMat);
+				mesh->AddInstance(instance);
+				
 
+				transformMat = translate(baseTransform, vec3(i, j, -(i + j) + 8) * 2.f);
+				instance.SetTransform(transformMat);
+				mesh->AddInstance(instance);
 
-		//void* bluePtr = new vec4(0, 0, 1, 1);
-		//auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), bluePtr, sizeof(vec4));
+				transformMat = translate(baseTransform, vec3(-i, j, -(i + j) + 8) * 2.f);
+				instance.SetTransform(transformMat);
+				mesh->AddInstance(instance);
+			}
+		}
+		
+		void* bluePtr = new vec4(0, 0, 1, 1);
+		auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), bluePtr, sizeof(vec4));
 
-		//buffers.clear();
-		//buffers.push_back(cblue);
-		//instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
-
-
-		//mesh = ResourceManager::RequestMesh("CUBE");
-	 //   
-
-		//transformMat = translate(mat4(), vec3(0, 0, 10));
-		//instance.SetTransform(transformMat);
-
-		//mesh->AddInstance(instance);
-
-		//void* whitePtr = new vec4(1, 1, 1, 1);
-		//auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
-
-		//buffers.clear();
-		//buffers.push_back(cwhite);
-		//instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
-
-
-		//transformMat = translate(mat4(), vec3(0, -5, 0));
-		//transformMat = scale(transformMat, vec3(100, 1, 100));
-
-
-		//instance.SetTransform(transformMat);
-
-		//mesh->AddInstance(instance);
-		//
-
-		//mesh = ResourceManager::RequestMesh("QUAD");
-		//transformMat = translate(mat4(), vec3(2, 0, 0.25f));
-		//instance.SetTransform(transformMat);
-
-		//mesh->AddInstance(instance);
-
-		//
-		//mesh = ResourceManager::RequestMesh("SPHERE");
-		//transformMat = translate(mat4(), vec3(-10, -1, 15.25f));
-
-		//void* funColour = new vec4(-1, -1, -1, -1);
-		//auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), funColour, sizeof(vec4));
-
-		//buffers.clear();
-		//buffers.push_back(cFun);
-		//instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+		buffers.clear();
+		buffers.push_back(cblue);
+		transformMat = translate(mat4(), vec3(-2, 0, 3));
+		
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+		mesh->AddInstance(instance);
 
 
+		transformMat = translate(mat4(), vec3(0, 0, 10));
+		instance.SetTransform(transformMat);
 
-		//instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
 
-		////transformMat = glm::rotate(transformMat, glm::radians(180.f), vec3(1, 1, 0));
-		////mesh->AddInstance(instance);
-		/////*
-		//
+		void* whitePtr = new vec4(1, 1, 1, 1);
+		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
 
-		//instance = Instance(transformMat, { pinkGroupPointer }, vector<ID3D12ResourcePtr>());
+		buffers.clear();
+		buffers.push_back(cwhite);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
-		//
-		////auto mesh = ResourceManager::RequestMesh("SPHERE");
-		//for(int x = 0; x < 10; x++)
-		//{
-		//	for(int z = 0; z < 10; z++)
-		//	{
-		//		transformMat = translate(mat4(), vec3(-125.5f + x * 25, 5, -125.5f + z * 25));
-		//		instance.SetTransform(transformMat);
-		//		animationTestHook = mesh->AddInstance(instance);
-		//	}
-		//}
+		transformMat = translate(mat4(), vec3(0, -1, 0));
+		transformMat = scale(transformMat, vec3(100, 0.001, 100));
+
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
 		
 		
+		mesh = ResourceManager::RequestMesh("QUAD");
+		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
+		instance.SetTransform(transformMat);
+
+		mesh->AddInstance(instance);
+
+		
+		mesh = ResourceManager::RequestMesh("SPHERE");
+		transformMat = translate(mat4(), vec3(-10, 2, 15.25f));
+
+		void* funColour = new vec4(-1, -1, -1, -1);
+		auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), funColour, sizeof(vec4));
+
+		buffers.clear();
+		buffers.push_back(cFun);
+		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
+		
+		
+		/*
+		instance = Instance(transformMat, { pinkGroupPointer }, vector<ID3D12ResourcePtr>());
+
+		
+		//auto mesh = ResourceManager::RequestMesh("SPHERE");
+		for(int x = 0; x < 10; x++)
+		{
+			for(int z = 0; z < 10; z++)
+			{
+				transformMat = translate(mat4(), vec3(-125.5f + x * 25, 5, -125.5f + z * 25));
+				instance.SetTransform(transformMat);
+				animationTestHook = mesh->AddInstance(instance);
+			}
+		}
+		
+		
 
 
-		//transformMat = translate(mat4(), vec3(8, 3, 14.25));
-		//
-		//instance.SetTransform(transformMat);
-		//
-		//mesh->AddInstance(instance);
+		transformMat = translate(mat4(), vec3(8, 3, 14.25));
+		
+		instance.SetTransform(transformMat);
+		
+		mesh->AddInstance(instance);*/
 	}
 
 

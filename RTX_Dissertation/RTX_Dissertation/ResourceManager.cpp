@@ -152,8 +152,8 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//TODO:LOAD SPHERE
 
 			float radius = 2.5f;
-			uint32 sliceCount = 20;
-			uint32 stackCount = 20;
+			uint32 sliceCount = 64;
+			uint32 stackCount = 64;
 			/*GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
 			{*/
 			std::vector<Vertex> verts;
