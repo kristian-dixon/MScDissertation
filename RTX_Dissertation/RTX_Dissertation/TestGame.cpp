@@ -86,9 +86,14 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 
 
-		transformMat = translate(mat4(), vec3(0, 0, 10));
+		transformMat = translate(mat4(), vec3(7.95, 0, 9.9));
 		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
 
+
+
+		transformMat = translate(mat4(), vec3(12.05, 0, 9.9));
+		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 
 		//void* whitePtr = new vec4(0, 0, 0, 1);
@@ -128,7 +133,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 		
-		
+
+		/*
 		
 		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
@@ -143,7 +149,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 				animationTestHook = mesh->AddInstance(instance);
 			}
 		}
-		
+		*/
 		
 
 
