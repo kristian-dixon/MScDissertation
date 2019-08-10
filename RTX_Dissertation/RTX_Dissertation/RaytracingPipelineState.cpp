@@ -204,7 +204,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config
-	PipelineConfig config(2);
+	PipelineConfig config(10);
 	subobjects[index++] = config.subobject; //12
 
 	// Create the global root signature and store the empty signature

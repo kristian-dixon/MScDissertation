@@ -91,8 +91,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 
-		void* whitePtr = new vec4(0, 0, 0, 1);
-		//void* whitePtr = new vec4(0.8f, 0.8f, 0.8f, 1);
+		//void* whitePtr = new vec4(0, 0, 0, 1);
+		void* whitePtr = new vec4(0.8f, 0.8f, 0.8f, 1);
 		
 		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
 

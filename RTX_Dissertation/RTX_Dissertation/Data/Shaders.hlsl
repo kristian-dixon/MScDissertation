@@ -219,12 +219,11 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 
 
-		//ray.Origin = posW;
-		//ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
-		//ray.TMin = 0.001;
-		//ray.TMax = 100000;
-		//ShadowPayload shadowPayload2;
-		//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload2);
+		ray.Origin = posW;
+		ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+		ray.TMin = 0.001;
+		ray.TMax = 100000;
+		TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
 
 		//ray.Origin = posW;
 		//ray.Direction = normalize(float3(0.25, 0.5, 0.35));
@@ -240,13 +239,13 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		//ShadowPayload shadowPayload4;
 		//TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload4);
 
-		//float factor = 1;//shadowPayload.hit ? 0.1 : 1.0;
+		float factor = shadowPayload.hit ? 0.1 : 1.0;
 		//factor *= shadowPayload2.hit ? 0.1 : 1.0;
 		/*factor *= shadowPayload3.hit ? 0.1 : 1.0;
 		factor *= shadowPayload4.hit ? 0.1 : 1.0;
 		*/
 
-		float factor = 1;
+		//float factor = 1;
 		float colour = saturate(dot(hitnormal, ray.Direction));
 
 		if (matColour.r < 0)
