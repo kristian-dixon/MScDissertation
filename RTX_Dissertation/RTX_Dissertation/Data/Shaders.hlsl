@@ -30,6 +30,12 @@ StructuredBuffer<STriVertex> BTriVertex : register(t1);
 StructuredBuffer<int> indices: register(t2);
 
 
+float random(in float2 st) {
+	return frac(sin(dot(st.xy,
+		float2(12.9898, 78.233))) *
+		43758.5453123);
+}
+
 float3 linearToSrgb(float3 c)
 {
 	// Based on http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
@@ -58,32 +64,42 @@ void rayGen()
 	uint3 launchIndex = DispatchRaysIndex();
 	uint3 launchDim = DispatchRaysDimensions();
 
-	float2 crd = float2(launchIndex.xy);
-	float2 dims = float2(launchDim.xy);
-
-	float2 d = ((crd / dims) * 2.f - 1.f);
-	float aspectRatio = dims.x / dims.y;
+	
 
 	// #DXR Extra: Perspective Camera
 	// Perspective
-	RayDesc ray;
-	ray.Origin = mul(viewI, float4(0, 0, 0, 1));
-	float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
-	ray.Direction = normalize(mul(viewI, float4(target.xyz, 0)));
-	
-	/*
-	RayDesc ray;
-	ray.Origin = float3(0, 0, -2);
-	ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
-	*/
-	ray.TMin = 0;
-	ray.TMax = 100000;
 
-	RayPayload payload;
-	payload.color = float3(5,0,0);
-	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
+	float3 col = float3(0, 0, 0);
+
+	int sampleCount = 4;
+	for (int i = 0; i < sampleCount; i++)
+	{
+		float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
+		float2 dims = float2(launchDim.xy);
+
+		float2 d = ((crd / dims) * 2.f - 1.f);
+		float aspectRatio = dims.x / dims.y;
+
+
+		RayDesc ray;
+		ray.Origin = mul(viewI, float4(0, 0, 0, 1));
+		float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
+		ray.Direction = normalize(mul(viewI, float4(target.xyz, 0)));
+
+		
+		ray.TMin = 0;
+		ray.TMax = 100000;
+
+		RayPayload payload;
+		payload.color = float3(4, 0, 0);
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		col += payload.color;
+	}
+
+	col /= sampleCount;
+
 	//payload.color = sqrt(payload.color);
-	float3 col = linearToSrgb(payload.color);
+	col = linearToSrgb(col);
 	gOutput[launchIndex.xy] = float4(col, 1);
 }
 
@@ -91,11 +107,7 @@ void rayGen()
 
 
 
-float random (in float2 st) {
-    return frac(sin(dot(st.xy,
-                         float2(12.9898,78.233)))*
-        43758.5453123);
-}
+
 
 // Based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
@@ -179,14 +191,26 @@ float3 SkyboxColour(float3 rayDir)
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-	payload.color = SkyboxColour(normalize(WorldRayDirection()));
+	payload.color = float3(1, 1, 1);//SkyboxColour(normalize(WorldRayDirection()));
 }
 
 //Raytracing in a weekend
 float3 RandomUnitInSphere(float seed)
 {
 	float3 p;
-	p = 2.0 * float3(random(float2(seed, seed * 10)), random(float2(seed * 10, 5216)), random(float2(1231, seed * 10))) - float3(1, 1, 1);
+
+	float x = random(float2(seed, seed * 10));
+	float y = random(float2(seed * 10, 5216));
+	float z = random(float2(1231, seed * 10));
+
+	float3 dir = float3(x, y, z);
+
+	if (x * x + y * y + z * z > 1)
+	{
+		dir = normalize(dir);
+	}
+
+	p = 2.0 * dir - float3(1, 1, 1);
 	return p;
 }
 
@@ -269,7 +293,8 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	//Shadow ray
 	ray.Origin = posW;
-	ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+	float3 sunDir = normalize(float3(-0.25, 0.5, -0.35) + RandomUnitInSphere(seed * (1 + 1)) * 0.075);
+	ray.Direction = sunDir;
 	ray.TMin = 0.001;
 	ray.TMax = 100000;
 	ShadowPayload shadowPayload;
@@ -292,7 +317,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	}
 
 
-	ray.Direction = normalize(float3(-0.25, 0.5, -0.35));
+	
 
 
 	
@@ -300,7 +325,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		
 
 	//float factor = 1;
-	float colour = saturate(dot(hitnormal, ray.Direction));
+	float colour = saturate(dot(hitnormal, sunDir));
 
 	if (matColour.r < 0)
 	{
