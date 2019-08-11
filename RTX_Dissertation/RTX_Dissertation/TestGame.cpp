@@ -170,7 +170,7 @@ void TestGame::LoadHitPrograms()
 	auto renderer = Renderer::GetInstance();
 	LocalRootSignature rgsRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateRayGenRootDesc().desc);
 
-	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"fancyPants", L"HitGroup", &rgsRootSignature));
+	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 

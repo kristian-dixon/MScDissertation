@@ -71,7 +71,7 @@ void rayGen()
 
 	float3 col = float3(0, 0, 0);
 
-	int sampleCount = 4;
+	int sampleCount = 1;
 	for (int i = 0; i < sampleCount; i++)
 	{
 		float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -92,13 +92,13 @@ void rayGen()
 
 		RayPayload payload;
 		payload.color = float3(4, 0, 0);
-		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 		col += payload.color;
 	}
 
 	col /= sampleCount;
 
-	//payload.color = sqrt(payload.color);
+	//col = sqrt(col);
 	col = linearToSrgb(col);
 	gOutput[launchIndex.xy] = float4(col, 1);
 }
@@ -191,7 +191,7 @@ float3 SkyboxColour(float3 rayDir)
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-	payload.color = float3(1, 1, 1);//SkyboxColour(normalize(WorldRayDirection()));
+	payload.color = SkyboxColour(normalize(WorldRayDirection()));
 }
 
 //Raytracing in a weekend
@@ -239,7 +239,14 @@ void fancyPants(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
 		RayDesc ray;
 		ray.Origin = posW;
-		ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+		if (matColour.r < 0)
+		{
+			ray.Direction = -reflect(rayDirW /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
+		}
+		else
+		{
+			ray.Direction = (hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+		}
 		ray.TMin = 0.001;
 		ray.TMax = 100000;
 
@@ -281,13 +288,19 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	//Reflection ray
 	RayDesc ray;
 	ray.Origin = posW;
-	ray.Direction = normalize(reflect(normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05), hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	
+	ray.Direction = normalize(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+
+	if (true)
+	{
+		ray.Direction = asin(rayDirW * sin(dot(hitnormal, rayDirW)));      //rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.005;//normalize(reflect(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal), hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	}
 	ray.TMin = 0.001;
 	ray.TMax = 100000;
 	
 	if (payload.color.r > 0)
 	{
-		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 	}
 
 
@@ -311,7 +324,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	for (int i = 0; i < 1 && shadowPayload.hit == false; ++i)
 	{
 		ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i +1)));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
-		TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
+		//TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
 
 		factor *= shadowPayload.hit ? 0.1 : 1.0;
 	}
