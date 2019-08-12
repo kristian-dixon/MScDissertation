@@ -305,6 +305,28 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	return desc;
 }
 
+RootSignatureDesc RendererUtil::CreateHitRootDesc2()
+{
+	RootSignatureDesc desc;
+	desc.rootParams.resize(2);
+
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[0].Descriptor.RegisterSpace = 0;
+	desc.rootParams[0].Descriptor.ShaderRegister = 3;
+
+	desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[1].Descriptor.RegisterSpace = 0;
+	desc.rootParams[1].Descriptor.ShaderRegister = 4;
+
+	
+
+	desc.desc.NumParameters = 2;
+	desc.desc.pParameters = desc.rootParams.data();
+	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+	return desc;
+}
+
 ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, void* data, uint32_t bufferSize)
 {
 	ID3D12ResourcePtr result = CreateBuffer(winHandle, device, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);

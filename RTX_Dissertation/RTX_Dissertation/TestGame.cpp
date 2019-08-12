@@ -112,7 +112,21 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		mesh->AddInstance(instance);
 		
-		
+
+
+		transformMat = translate(mat4(), vec3(-25, 10, 0));
+		transformMat = scale(transformMat, vec3(1, 10, 10));
+
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
+
+		transformMat = translate(transformMat, vec3(-25, 0, 0));
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
+
+
+
+
 		mesh = ResourceManager::RequestMesh("QUAD");
 		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
 		instance.SetTransform(transformMat);
@@ -128,19 +142,24 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		buffers.clear();
 		buffers.push_back(cFun);
+		
+		
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
 		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 		
+		transformMat = translate(mat4(), vec3(-37.5f, 5.f, 0.f));
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
 
-		/*
 		
-		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		
+		//instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
 
 		
 		//auto mesh = ResourceManager::RequestMesh("SPHERE");
-		for(int x = 0; x < 10; x++)
+		/*for(int x = 0; x < 10; x++)
 		{
 			for(int z = 0; z < 10; z++)
 			{
@@ -148,8 +167,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 				instance.SetTransform(transformMat);
 				animationTestHook = mesh->AddInstance(instance);
 			}
-		}
-		*/
+		}*/
+		
 		
 
 
@@ -168,9 +187,13 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 void TestGame::LoadHitPrograms()
 {
 	auto renderer = Renderer::GetInstance();
-	LocalRootSignature rgsRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateRayGenRootDesc().desc);
+	LocalRootSignature* rgsRootSignature2 = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc2().desc);
 
-	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", &rgsRootSignature));
+	LocalRootSignature* rgsRootSignature = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc().desc);
+
+	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", rgsRootSignature2));
+	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", rgsRootSignature));
+
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 

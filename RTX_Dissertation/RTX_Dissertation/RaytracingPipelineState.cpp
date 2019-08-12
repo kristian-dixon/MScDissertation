@@ -150,7 +150,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	//Create hit programs and their associations // TODO:: Look up what we need to do about AHS 
 	for(auto& hitProgram : mHitPrograms)
 	{
-		hitRootSignatures[counter] = LocalRootSignature(winHandle, device, RendererUtil::CreateHitRootDesc().desc);
+		hitRootSignatures[counter] = *hitProgram->localRootSignature;
 		subobjects[index] = hitRootSignatures[counter].subobject; // 5 Triangle Hit Root Sig
 
 		uint32_t hitRootIndex = index++; // 5
@@ -204,7 +204,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config
-	PipelineConfig config(10);
+	PipelineConfig config(30);
 	subobjects[index++] = config.subobject; //12
 
 	// Create the global root signature and store the empty signature

@@ -30,6 +30,10 @@ StructuredBuffer<STriVertex> BTriVertex : register(t1);
 StructuredBuffer<int> indices: register(t2);
 
 
+StructuredBuffer<STriVertex> BTriVertex2 : register(t3);
+StructuredBuffer<int> indices2: register(t4);
+
+
 float random(in float2 st) {
 	return frac(sin(dot(st.xy,
 		float2(12.9898, 78.233))) *
@@ -71,7 +75,7 @@ void rayGen()
 
 	float3 col = float3(0, 0, 0);
 
-	int sampleCount = 1;
+	int sampleCount = 4;
 	for (int i = 0; i < sampleCount; i++)
 	{
 		float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -91,7 +95,7 @@ void rayGen()
 		ray.TMax = 100000;
 
 		RayPayload payload;
-		payload.color = float3(4, 0, 0);
+		payload.color = float3(24, 0, 0);
 		TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 		col += payload.color;
 	}
@@ -239,13 +243,13 @@ void fancyPants(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
 		RayDesc ray;
 		ray.Origin = posW;
-		if (matColour.r < 0)
+		if (true)
 		{
-			ray.Direction = -reflect(rayDirW /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
+			ray.Direction = reflect(rayDirW /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
 		}
 		else
 		{
-			ray.Direction = (hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+			//ray.Direction = (hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
 		}
 		ray.TMin = 0.001;
 		ray.TMax = 100000;
@@ -273,74 +277,116 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
+	payload.color = hitnormal;
+
+	//float hitT = RayTCurrent();
+	//float3 rayDirW = WorldRayDirection();
+	//float3 rayOriginW = WorldRayOrigin();
+
+	//// Find the world-space hit position
+	//float3 posW = rayOriginW + hitT * rayDirW;
+	//// Fire a shadow ray. The direction is hard-coded here, but can be fetched from a constant-buffer
+	//float seed = /*hitT + dot(rayDirW, rayDirW) + dot(rayOriginW, rayOriginW) +*/ dot(posW, posW);
+
+
+	////Reflection ray
+	//RayDesc ray;
+	//ray.Origin = posW;
+	//
+	//ray.Direction = normalize(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+
+	//if (false)
+	//{
+	//	ray.Direction = asin(rayDirW * sin(dot(hitnormal, rayDirW)));      //rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.005;//normalize(reflect(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal), hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	//}
+	//ray.TMin = 0.001;
+	//ray.TMax = 100000;
+	//
+	//if (payload.color.r > 0)
+	//{
+	//	TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+	//}
+
+
+	////Shadow ray
+	//ray.Origin = posW;
+	//float3 sunDir = normalize(float3(-0.25, 0.5, -0.35) + RandomUnitInSphere(seed * (1 + 1)) * 0.075);
+	//ray.Direction = sunDir;
+	//ray.TMin = 0.001;
+	//ray.TMax = 100000;
+	//ShadowPayload shadowPayload;
+	//TraceRay(gRtScene, 0  , 0xFF, 1, 0, 1, ray, shadowPayload);
+	//float factor = shadowPayload.hit ? 0.1 : 1.0;
+
+	//shadowPayload.hit = false;
+
+	////AO ray
+	//ray.Origin = posW;
+	//ray.TMin = 0.001;
+	//ray.TMax = 0.15;
+
+	//for (int i = 0; i < 1 && shadowPayload.hit == false; ++i)
+	//{
+	//	ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i +1)));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	//	TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
+
+	//	factor *= shadowPayload.hit ? 0.1 : 1.0;
+	//}
+
+
+	//
+
+
+	//
+
+	//	
+
+	////float factor = 1;
+	//float colour = saturate(dot(hitnormal, sunDir));
+
+	//if (matColour.r < 0)
+	//{
+	//	float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
+	//	funColour.yz *= 0.25;
+
+	//	payload.color = lerp(payload.color, colour * factor * funColour, 1.f);
+	//}
+	//else
+	//{
+	//	payload.color = lerp(payload.color, colour * factor * matColour, 1.f);
+	//}
+	
+}
+
+[shader("closesthit")]
+void metal(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color.r -= 1;
+
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+
+	uint vertId = PrimitiveIndex() * 3;
+	float3 hitnormal = BTriVertex2[indices2[vertId + 0]].normal.xyz * barycentrics.x +
+		BTriVertex2[indices2[vertId + 1]].normal.xyz * barycentrics.y +
+		BTriVertex2[indices2[vertId + 2]].normal.xyz * barycentrics.z;
+
 
 
 	float hitT = RayTCurrent();
 	float3 rayDirW = WorldRayDirection();
 	float3 rayOriginW = WorldRayOrigin();
 
-	// Find the world-space hit position
-	float3 posW = rayOriginW + hitT * rayDirW;
-	// Fire a shadow ray. The direction is hard-coded here, but can be fetched from a constant-buffer
-	float seed = /*hitT + dot(rayDirW, rayDirW) + dot(rayOriginW, rayOriginW) +*/ dot(posW, posW);
-
-
-	//Reflection ray
-	RayDesc ray;
-	ray.Origin = posW;
 	
-	ray.Direction = normalize(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	float3 sunDir = (1, -1, 1);
 
-	if (true)
-	{
-		ray.Direction = asin(rayDirW * sin(dot(hitnormal, rayDirW)));      //rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.005;//normalize(reflect(reflect(rayDirW/*normalize(rayDirW + RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal), hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
-	}
-	ray.TMin = 0.001;
-	ray.TMax = 100000;
-	
-	if (payload.color.r > 0)
-	{
-		TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
-	}
-
-
-	//Shadow ray
-	ray.Origin = posW;
-	float3 sunDir = normalize(float3(-0.25, 0.5, -0.35) + RandomUnitInSphere(seed * (1 + 1)) * 0.075);
-	ray.Direction = sunDir;
-	ray.TMin = 0.001;
-	ray.TMax = 100000;
-	ShadowPayload shadowPayload;
-	TraceRay(gRtScene, 0  , 0xFF, 1, 0, 1, ray, shadowPayload);
-	float factor = shadowPayload.hit ? 0.1 : 1.0;
-
-	shadowPayload.hit = false;
-
-	//AO ray
-	ray.Origin = posW;
-	ray.TMin = 0.001;
-	ray.TMax = 0.15;
-
-	for (int i = 0; i < 1 && shadowPayload.hit == false; ++i)
-	{
-		ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i +1)));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
-		//TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
-
-		factor *= shadowPayload.hit ? 0.1 : 1.0;
-	}
-
-
-	
-
-
-	
-
-		
 
 	//float factor = 1;
 	float colour = saturate(dot(hitnormal, sunDir));
 
-	if (matColour.r < 0)
+	payload.color = colour;
+
+	/*if (matColour.r < 0)
 	{
 		float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
 		funColour.yz *= 0.25;
@@ -349,11 +395,9 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	}
 	else
 	{
-		payload.color = lerp(payload.color, colour * factor * matColour, 0.9f);
-	}
-	
+		payload.color = lerp(payload.color, colour * factor * matColour, 0.1f);
+	}*/
 }
-
 
 [shader("closesthit")]
 void grid(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)

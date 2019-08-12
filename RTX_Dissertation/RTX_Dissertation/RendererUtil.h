@@ -229,8 +229,21 @@ public:
 
 	static ID3DBlobPtr CompileLibrary(HWND mWinHandle, const WCHAR* filename, const WCHAR* targetString);
 	static ID3D12RootSignaturePtr CreateRootSignature(HWND mWinHandle, ID3D12Device5Ptr pDevice, const D3D12_ROOT_SIGNATURE_DESC& desc);
+
+
+
+
+
+
+
 	static RootSignatureDesc CreateRayGenRootDesc();
 	static RootSignatureDesc CreateHitRootDesc();
+	static RootSignatureDesc RendererUtil::CreateHitRootDesc2();
+
+
+
+
+
 
 	static ID3D12ResourcePtr CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, void* data, uint32_t bufferSize);
 
