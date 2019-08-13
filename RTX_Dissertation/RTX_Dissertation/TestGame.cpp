@@ -26,7 +26,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 
-		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("GridGroup");
+		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("MetalHitGroup");
 
 
 		void* redPtr = new vec4(1, 0, 0, 1);
@@ -155,11 +155,14 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		
 		
-		//instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, vector<ID3D12ResourcePtr>());
+		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &vec3(1, 1, 1), sizeof(vec3));
+		buffers.clear();
+		buffers.push_back(constBuff);
+		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, buffers);
 
 		
 		//auto mesh = ResourceManager::RequestMesh("SPHERE");
-		/*for(int x = 0; x < 10; x++)
+		for(int x = 0; x < 10; x++)
 		{
 			for(int z = 0; z < 10; z++)
 			{
@@ -167,7 +170,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 				instance.SetTransform(transformMat);
 				animationTestHook = mesh->AddInstance(instance);
 			}
-		}*/
+		}
 		
 		
 

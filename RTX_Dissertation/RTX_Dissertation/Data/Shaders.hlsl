@@ -18,6 +18,11 @@ cbuffer ColourBuffer : register(b1)
 	float3 matColour;
 }
 
+cbuffer TestBuffer : register(b2)
+{
+	float3 matColour2;
+}
+
 
 struct STriVertex
 {
@@ -30,8 +35,9 @@ StructuredBuffer<STriVertex> BTriVertex : register(t1);
 StructuredBuffer<int> indices: register(t2);
 
 
-StructuredBuffer<STriVertex> BTriVertex2 : register(t3);
-StructuredBuffer<int> indices2: register(t4);
+
+//StructuredBuffer<STriVertex> BTriVertex2 : register(t3);
+//StructuredBuffer<int> indices2: register(t4);
 
 
 float random(in float2 st) {
@@ -269,8 +275,8 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 {
 	payload.color.r -= 1;
 
-
-	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	payload.color = float3(1, 0, 1);
+	/*float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
 	uint vertId = PrimitiveIndex() * 3;
 	float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
@@ -278,7 +284,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
 	payload.color = hitnormal;
-
+	*/
 	//float hitT = RayTCurrent();
 	//float3 rayDirW = WorldRayDirection();
 	//float3 rayOriginW = WorldRayOrigin();
@@ -364,15 +370,15 @@ void metal(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
 	payload.color.r -= 1;
 
 
-	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	/*float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
 	uint vertId = PrimitiveIndex() * 3;
 	float3 hitnormal = BTriVertex2[indices2[vertId + 0]].normal.xyz * barycentrics.x +
 		BTriVertex2[indices2[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex2[indices2[vertId + 2]].normal.xyz * barycentrics.z;
+		*/
 
-
-
+	float3 hitnormal = matColour2;
 	float hitT = RayTCurrent();
 	float3 rayDirW = WorldRayDirection();
 	float3 rayOriginW = WorldRayOrigin();
