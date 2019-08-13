@@ -280,9 +280,9 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 RootSignatureDesc RendererUtil::CreateHitRootDesc()
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(1);
+	desc.rootParams.resize(4);
 
-	/*desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
 	desc.rootParams[0].Descriptor.ShaderRegister = 1;
 	
@@ -293,12 +293,12 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[2].Descriptor.RegisterSpace = 0;
 	desc.rootParams[2].Descriptor.ShaderRegister = 0;
-	*/
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 1;
 	
-	desc.desc.NumParameters = 1;
+	desc.rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	desc.rootParams[3].Descriptor.RegisterSpace = 0;
+	desc.rootParams[3].Descriptor.ShaderRegister = 1;
+	
+	desc.desc.NumParameters = 4;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
@@ -308,19 +308,25 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc()
 RootSignatureDesc RendererUtil::CreateHitRootDesc2()
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(1);
+	desc.rootParams.resize(4);
 
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 2;
+	desc.rootParams[0].Descriptor.ShaderRegister = 1;
 
-	/*desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	desc.rootParams[1].Descriptor.RegisterSpace = 0;
-	desc.rootParams[1].Descriptor.ShaderRegister = 4;
-	*/
-	
+	desc.rootParams[1].Descriptor.ShaderRegister = 2;
 
-	desc.desc.NumParameters = 1;
+	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	desc.rootParams[2].Descriptor.RegisterSpace = 0;
+	desc.rootParams[2].Descriptor.ShaderRegister = 0;
+
+	desc.rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	desc.rootParams[3].Descriptor.RegisterSpace = 0;
+	desc.rootParams[3].Descriptor.ShaderRegister = 2;
+
+	desc.desc.NumParameters = 4;
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 

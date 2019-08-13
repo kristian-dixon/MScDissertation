@@ -155,7 +155,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		
 		
-		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &vec3(1, 1, 1), sizeof(vec3));
+		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &vec3(1, 0, 1), sizeof(vec3));
 		buffers.clear();
 		buffers.push_back(constBuff);
 		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, buffers);

@@ -237,7 +237,7 @@ public:
 
 	static RootSignatureDesc CreateRayGenRootDesc();
 	static RootSignatureDesc CreateHitRootDesc();
-	static RootSignatureDesc RendererUtil::CreateHitRootDesc2();
+	static RootSignatureDesc CreateHitRootDesc2();
 
 
 
