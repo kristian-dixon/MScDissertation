@@ -105,23 +105,13 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		buffers.push_back(cwhite);
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
+		
+
 		transformMat = translate(mat4(), vec3(0, -1, 0));
 		transformMat = scale(transformMat, vec3(100, 0.001, 100));
 
 		instance.SetTransform(transformMat);
 
-		mesh->AddInstance(instance);
-		
-
-
-		transformMat = translate(mat4(), vec3(-25, 10, 0));
-		transformMat = scale(transformMat, vec3(1, 10, 10));
-
-		instance.SetTransform(transformMat);
-		mesh->AddInstance(instance);
-
-		transformMat = translate(transformMat, vec3(-25, 0, 0));
-		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 
 
@@ -154,10 +144,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 
 		
-		
-		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &vec3(1, 0, 1), sizeof(vec3));
+		float yay = 0.f;
+		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &yay, sizeof(float));
 		buffers.clear();
 		buffers.push_back(constBuff);
+		buffers.push_back(cblue);
 		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, buffers);
 
 		
@@ -168,15 +159,27 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 			{
 				transformMat = translate(mat4(), vec3(-125.5f + x * 25, 10, -125.5f + z * 25));
 				instance.SetTransform(transformMat);
-				animationTestHook = mesh->AddInstance(instance);
+				mesh->AddInstance(instance);
 			}
 		}
 		
 		
+		
+		mesh = ResourceManager::RequestMesh("CUBE");
 
+
+
+		transformMat = translate(mat4(), vec3(-25, 8, 0));
+		transformMat = scale(transformMat, vec3(1, 8, 10));
+
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
+
+		transformMat = translate(transformMat, vec3(-25, 0, 0));
+		instance.SetTransform(transformMat);
+		mesh->AddInstance(instance);
 
 		
-		mesh->AddInstance(instance);
 	}
 
 
@@ -184,7 +187,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	renderer->CreateDXRResources();
 
 	mLastFrameTime = std::chrono::system_clock::now();
-
+	
 }
 
 void TestGame::LoadHitPrograms()
