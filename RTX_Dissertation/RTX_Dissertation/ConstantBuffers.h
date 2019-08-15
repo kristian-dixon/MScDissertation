@@ -5,8 +5,9 @@
 struct WorldBuffer
 {
 	glm::vec3 sunDir;
+	float pad1;
 	glm::vec3 sunColour;
-
+	float pad2;
 	//TODO::An array of all light sources and positions
 
 	float time;

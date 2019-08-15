@@ -35,6 +35,8 @@ cbuffer WorldBuffer : register(b3)
 {
     float3 sunDir;
     float pad5;
+    float3 sunColour;
+    float pad6;
     float time;
 }
 
@@ -226,13 +228,13 @@ float3 RandomUnitInSphere(float seed)
     float x = random(float2(seed, seed * 10));
     float y = random(float2(seed * 10, 5216));
     float z = random(float2(1231, seed * 10));
-
+    
     float3 dir = float3(x, y, z);
 
-    if (x * x + y * y + z * z > 1)
+    /*if (x * x + y * y + z * z > 1)
     {
         dir = normalize(dir);
-    }
+    }*/
 
     p = 2.0 * dir - float3(1, 1, 1);
     return p;
@@ -320,7 +322,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
 	
     float seed = dot(posW, posW);
-    float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
+    //float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
 	//Shadow ray
     ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
     float factor = shadowPayload.hit ? 0.1 : 1;
@@ -338,7 +340,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     ray.TMax = 0.15;
 
 
-    for (int i = 0; i < 1 && shadowPayload.hit == false; ++i)
+    for (int i = 1; i < 1 && shadowPayload.hit == false; ++i)
     {
         ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i + 1))); //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
         TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
@@ -348,19 +350,19 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 	
 
 	//float factor = 1;
-    float colour = saturate(dot(hitnormal, sunDir));
-    float specular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower));
+    float3 lightColour = saturate(dot(hitnormal, sunDir)) * sunColour;
+    float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower)) * sunColour;
 
     if (matColour.r < 0)
     {
-        float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
+        float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f) * sin(time);
         funColour.yz *= 0.25;
 
-        payload.color = saturate(lerp(payload.color, colour * funColour + (specular * specularColour), 1.f) * factor);
+        payload.color = saturate(lerp(payload.color, lightColour * funColour + (lightSpecular * specularColour), 1.f) * factor);
     }
     else
     {
-        payload.color = saturate(lerp(payload.color, colour * matColour + (specular * specularColour), 1.f) * factor);
+        payload.color = saturate(lerp(payload.color, lightColour * matColour + (lightSpecular * specularColour), 1.f) * factor);
     }
 
     //Test specular
@@ -393,7 +395,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     RayDesc ray;
     ray.Origin = posW;
     ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
-    ray.TMin = 0.001;
+    ray.TMin = 0.1;
     ray.TMax = 100000;
 	
 
@@ -407,8 +409,6 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
         payload.color = float3(0, 0, 0);
     }
 
-	
-        float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
 //Shadow ray
     //ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
     //float factor = shadowPayload.hit ? 0.1 : 1;
@@ -435,17 +435,9 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 	
     float colour = saturate(dot(hitnormal, sunDir));
     float factor = 1;
-    if (matColour.r < 0)
-    {
-        float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
-        funColour.yz *= 0.25;
-
-        payload.color = lerp(payload.color, colour * factor * funColour, shine);
-    }
-    else
-    {
-        payload.color = lerp(payload.color, colour * factor * matColour, shine);
-    }
+    
+    payload.color = lerp(payload.color, colour * factor * matColour, shine);
+    
 
 }
 

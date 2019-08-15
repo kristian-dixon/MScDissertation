@@ -34,36 +34,35 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		const auto redMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &redMat, sizeof(MaterialBuffer));
 
 
-		MaterialBuffer blueMat{ vec3(0,0,1), 0, vec3(1,1,1), 0,7 };
+		MaterialBuffer blueMat{ vec3(0,0,1), 0, vec3(1,1,1), 0, 15 };
 		auto blueMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &blueMat, sizeof(MaterialBuffer));
 
 
 		MaterialBuffer whiteMat{ vec3(0.8f,0.8f,0.8f),0, vec3(1,1,1),0, 5 };
 		auto whiteMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &whiteMat, sizeof(MaterialBuffer));
 
-		MaterialBuffer funMat{ vec3(-1, -1, -1),0, vec3(0,0,0), 0,50 };
+		MaterialBuffer funMat{ vec3(-1, -1, -1),0, vec3(1,1,1), 0,8 };
 		auto funMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &funMat, sizeof(MaterialBuffer));
 
 		MetalBuffer metalBuffer{ 0.05f, vec3(0), 0.0f, vec3() };
 		auto metalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &metalBuffer, sizeof(MetalBuffer));
 
-		MetalBuffer roughMetalBuffer{ 0.05f, vec3(), 0.1f, vec3() };
+		MetalBuffer roughMetalBuffer{ 0.05f, vec3(), 0.05f, vec3() };
 		auto roughMetalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &roughMetalBuffer, sizeof(MetalBuffer));
 
 		
 		MetalBuffer testMetalBuffer{ 0.85f, vec3(), 0.0f, vec3() };
 		auto testMetalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &testMetalBuffer, sizeof(MetalBuffer));
 
+		worldBuffer = { vec3(-0.2, 0.5, 0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
+		worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
+
 		
-		
-		
-		vector<ID3D12ResourcePtr> buffers; buffers.push_back(redMatCB);
+		vector<ID3D12ResourcePtr> buffers; buffers.push_back(redMatCB); buffers.push_back(worldCB);
 
 		mat4 transformMat = mat4();
 
 		Instance instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
-		//Instance instance = Instance(transformMat, { pinkGroupPointer }, vector<ID3D12ResourcePtr>());
-
 
 		auto mesh = ResourceManager::RequestMesh("TRIANGLE");
 
@@ -73,7 +72,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh = ResourceManager::RequestMesh("CUBE");
 		instance.SetTransform(translate(mat4(), vec3(0, -2, 0)));
 
-		//mesh->AddInstance(instance);
+		mesh->AddInstance(instance);
 
 		mat4 baseTransform = translate(mat4(), vec3(10, 0, 10));
 		
@@ -100,10 +99,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 			}
 		}
 		
-		
 
 		buffers.clear();
-		buffers.push_back(blueMatCB);
+		buffers.push_back(blueMatCB); buffers.push_back(worldCB);
 		transformMat = translate(mat4(), vec3(-2, 0, 3));
 		
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
@@ -122,7 +120,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		
 		buffers.clear();
-		buffers.push_back(whiteMatCB);
+		buffers.push_back(whiteMatCB); buffers.push_back(worldCB);
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
 
@@ -149,7 +147,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		
 		buffers.clear();
 		buffers.push_back(funMatCB);
-		
+		buffers.push_back(worldCB);
 		
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
@@ -165,6 +163,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		buffers.clear();
 		buffers.push_back(metalCB);
 		buffers.push_back(blueMatCB);
+		buffers.push_back(worldCB);
 		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
 
 		
@@ -201,6 +200,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		buffers.clear();
 		buffers.push_back(roughMetalCB);
 		buffers.push_back(redMatCB);
+		buffers.push_back(worldCB);
 		transformMat = translate(mat4(), vec3(-35, 0, 0));
 		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
 		mesh->AddInstance(instance);
@@ -209,6 +209,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		buffers.clear();
 		buffers.push_back(testMetalCB);
 		buffers.push_back(redMatCB);
+		buffers.push_back(worldCB);
 		transformMat = translate(mat4(), vec3(-40, 0, 0));
 		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
 		mesh->AddInstance(instance);
@@ -228,7 +229,7 @@ void TestGame::LoadHitPrograms()
 {
 	auto renderer = Renderer::GetInstance();
 
-	vector<D3D12_ROOT_PARAMETER> chsRootParams(4);
+	vector<D3D12_ROOT_PARAMETER> chsRootParams(5);
 	{
 		chsRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 		chsRootParams[0].Descriptor.RegisterSpace = 0;
@@ -245,9 +246,13 @@ void TestGame::LoadHitPrograms()
 		chsRootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		chsRootParams[3].Descriptor.RegisterSpace = 0;
 		chsRootParams[3].Descriptor.ShaderRegister = 1;
+
+		chsRootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		chsRootParams[4].Descriptor.RegisterSpace = 0;
+		chsRootParams[4].Descriptor.ShaderRegister = 3;
 	}
 
-	vector<D3D12_ROOT_PARAMETER> metalRootParams(5);
+	vector<D3D12_ROOT_PARAMETER> metalRootParams(6);
 	{
 		metalRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 		metalRootParams[0].Descriptor.RegisterSpace = 0;
@@ -268,6 +273,10 @@ void TestGame::LoadHitPrograms()
 		metalRootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		metalRootParams[4].Descriptor.RegisterSpace = 0;
 		metalRootParams[4].Descriptor.ShaderRegister = 1;
+
+		metalRootParams[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		metalRootParams[5].Descriptor.RegisterSpace = 0;
+		metalRootParams[5].Descriptor.ShaderRegister = 3;
 	}
 
 
@@ -281,6 +290,7 @@ void TestGame::LoadHitPrograms()
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
+
 }
 
 void TestGame::Update()
@@ -293,6 +303,18 @@ void TestGame::Update()
 	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
 
 	mLastFrameTime = std::chrono::system_clock::now();
+
+
+	worldBuffer.time += 0.02f;
+
+	uint8_t* pData;
+	(worldCB->Map(0, nullptr, (void**)& pData));
+	memcpy(pData, &worldBuffer, sizeof(worldBuffer));
+	worldCB->Unmap(0, nullptr);
+
+
+
+
 	/*
 	//TODO::Update things
 	shitTimer += 1 / 60.f;

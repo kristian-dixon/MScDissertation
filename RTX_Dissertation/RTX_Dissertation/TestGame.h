@@ -2,6 +2,7 @@
 #include "Game.h"
 #include <Mouse.h>
 #include <chrono>
+#include "ConstantBuffers.h"
 
 class TestGame :
 	public Game
@@ -21,7 +22,6 @@ public:
 	void MouseInput() override;
 
 	size_t animationTestHook;
-
 private:
 	float mMovSpeed = 0.2f;
 	float yaw = 0;
@@ -36,6 +36,8 @@ private:
 
 	std::unique_ptr<DirectX::Mouse> mMouse;
 
+	WorldBuffer worldBuffer;
+	ID3D12ResourcePtr worldCB;
 
 };
 
