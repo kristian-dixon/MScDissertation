@@ -120,13 +120,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 
-		//void* whitePtr = new vec4(0, 0, 0, 1);
 		
 		buffers.clear();
 		buffers.push_back(whiteMatCB);
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
-		
 
 		transformMat = translate(mat4(), vec3(0, -1, 0));
 		transformMat = scale(transformMat, vec3(100, 0.001, 100));
@@ -229,9 +227,53 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 void TestGame::LoadHitPrograms()
 {
 	auto renderer = Renderer::GetInstance();
-	LocalRootSignature* rgsRootSignature2 = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc2().desc);
 
-	LocalRootSignature* rgsRootSignature = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc().desc);
+	vector<D3D12_ROOT_PARAMETER> chsRootParams(4);
+	{
+		chsRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		chsRootParams[0].Descriptor.RegisterSpace = 0;
+		chsRootParams[0].Descriptor.ShaderRegister = 1;
+
+		chsRootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		chsRootParams[1].Descriptor.RegisterSpace = 0;
+		chsRootParams[1].Descriptor.ShaderRegister = 2;
+
+		chsRootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		chsRootParams[2].Descriptor.RegisterSpace = 0;
+		chsRootParams[2].Descriptor.ShaderRegister = 0;
+
+		chsRootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		chsRootParams[3].Descriptor.RegisterSpace = 0;
+		chsRootParams[3].Descriptor.ShaderRegister = 1;
+	}
+
+	vector<D3D12_ROOT_PARAMETER> metalRootParams(5);
+	{
+		metalRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		metalRootParams[0].Descriptor.RegisterSpace = 0;
+		metalRootParams[0].Descriptor.ShaderRegister = 1;
+
+		metalRootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		metalRootParams[1].Descriptor.RegisterSpace = 0;
+		metalRootParams[1].Descriptor.ShaderRegister = 2;
+
+		metalRootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		metalRootParams[2].Descriptor.RegisterSpace = 0;
+		metalRootParams[2].Descriptor.ShaderRegister = 0;
+
+		metalRootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		metalRootParams[3].Descriptor.RegisterSpace = 0;
+		metalRootParams[3].Descriptor.ShaderRegister = 2;
+
+		metalRootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		metalRootParams[4].Descriptor.RegisterSpace = 0;
+		metalRootParams[4].Descriptor.ShaderRegister = 1;
+	}
+
+
+	LocalRootSignature* rgsRootSignature2 = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
+
+	LocalRootSignature* rgsRootSignature = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
 
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", rgsRootSignature2));
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", rgsRootSignature));

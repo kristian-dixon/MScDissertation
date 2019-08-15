@@ -236,8 +236,7 @@ public:
 
 
 	static RootSignatureDesc CreateRayGenRootDesc();
-	static RootSignatureDesc CreateHitRootDesc();
-	static RootSignatureDesc CreateHitRootDesc2();
+	static RootSignatureDesc CreateHitRootDesc(std::vector<D3D12_ROOT_PARAMETER> params);
 
 
 

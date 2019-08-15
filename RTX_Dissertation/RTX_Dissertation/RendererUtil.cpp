@@ -277,65 +277,20 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 	return desc;
 }
 
-RootSignatureDesc RendererUtil::CreateHitRootDesc()
+RootSignatureDesc RendererUtil::CreateHitRootDesc(std::vector<D3D12_ROOT_PARAMETER> params)
 {
 	RootSignatureDesc desc;
-	desc.rootParams.resize(4);
+	desc.rootParams = params;
 
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 1;
 	
-	desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[1].Descriptor.RegisterSpace = 0;
-	desc.rootParams[1].Descriptor.ShaderRegister = 2;
-
-	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[2].Descriptor.RegisterSpace = 0;
-	desc.rootParams[2].Descriptor.ShaderRegister = 0;
-	
-	desc.rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	desc.rootParams[3].Descriptor.RegisterSpace = 0;
-	desc.rootParams[3].Descriptor.ShaderRegister = 1;
-	
-	desc.desc.NumParameters = 4;
+	desc.desc.NumParameters = params.size();
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
 	return desc;
 }
 
-RootSignatureDesc RendererUtil::CreateHitRootDesc2()
-{
-	RootSignatureDesc desc;
-	desc.rootParams.resize(5);
 
-	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[0].Descriptor.RegisterSpace = 0;
-	desc.rootParams[0].Descriptor.ShaderRegister = 1;
-
-	desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[1].Descriptor.RegisterSpace = 0;
-	desc.rootParams[1].Descriptor.ShaderRegister = 2;
-
-	desc.rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	desc.rootParams[2].Descriptor.RegisterSpace = 0;
-	desc.rootParams[2].Descriptor.ShaderRegister = 0;
-
-	desc.rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	desc.rootParams[3].Descriptor.RegisterSpace = 0;
-	desc.rootParams[3].Descriptor.ShaderRegister = 2;
-
-	desc.rootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	desc.rootParams[4].Descriptor.RegisterSpace = 0;
-	desc.rootParams[4].Descriptor.ShaderRegister = 1;
-
-	desc.desc.NumParameters = 5;
-	desc.desc.pParameters = desc.rootParams.data();
-	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-
-	return desc;
-}
 
 ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, void* data, uint32_t bufferSize)
 {

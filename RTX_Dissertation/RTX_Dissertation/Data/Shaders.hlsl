@@ -31,6 +31,13 @@ cbuffer MetalBuffer : register(b2)
 }
 
 
+cbuffer WorldBuffer : register(b3)
+{
+    float3 sunDir;
+    float pad5;
+    float time;
+}
+
 struct STriVertex
 {
     float4 vertex;
@@ -41,10 +48,6 @@ struct STriVertex
 StructuredBuffer<STriVertex> BTriVertex : register(t1);
 StructuredBuffer<int> indices : register(t2);
 
-
-
-//StructuredBuffer<STriVertex> BTriVertex2 : register(t3);
-//StructuredBuffer<int> indices2: register(t4);
 
 
 float random(in float2 st)
