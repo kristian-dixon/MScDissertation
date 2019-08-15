@@ -302,6 +302,15 @@ ID3D12ResourcePtr RendererUtil::CreateConstantBuffer(HWND winHandle, ID3D12Devic
 	return result;
 }
 
+void RendererUtil::UpdateConstantBuffer(ID3D12ResourcePtr buffer, void* data, uint32_t bufferSize)
+{
+	uint8_t* pData;
+	(buffer->Map(0, nullptr, (void**)& pData));
+	memcpy(pData, data, bufferSize);
+	buffer->Unmap(0, nullptr);
+
+}
+
 
 void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
 {

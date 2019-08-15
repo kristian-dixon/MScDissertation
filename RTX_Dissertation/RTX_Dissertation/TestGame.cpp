@@ -305,12 +305,11 @@ void TestGame::Update()
 	mLastFrameTime = std::chrono::system_clock::now();
 
 
-	worldBuffer.time += 0.02f;
+	worldBuffer.time += dt;
 
-	uint8_t* pData;
-	(worldCB->Map(0, nullptr, (void**)& pData));
-	memcpy(pData, &worldBuffer, sizeof(worldBuffer));
-	worldCB->Unmap(0, nullptr);
+
+	RendererUtil::UpdateConstantBuffer(worldCB, &worldBuffer, sizeof(WorldBuffer));
+
 
 
 

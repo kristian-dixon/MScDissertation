@@ -244,6 +244,7 @@ public:
 
 
 	static ID3D12ResourcePtr CreateConstantBuffer(HWND winHandle, ID3D12Device5Ptr device, void* data, uint32_t bufferSize);
+	static void UpdateConstantBuffer(ID3D12ResourcePtr buffer, void* data, uint32_t bufferSize);
 
 	static void ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter);
 

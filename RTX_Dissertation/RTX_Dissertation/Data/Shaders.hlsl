@@ -172,7 +172,7 @@ float fbm(in float2 st)
 
 
 //From the book of shaders.
-float3 SkyboxColour(float3 rayDir)
+float3 SkyboxColour(float3 rayDir, float t)
 {
     rayDir.z *= -1;
 	
@@ -182,15 +182,15 @@ float3 SkyboxColour(float3 rayDir)
     float3 color = float3(0.0, 0, 0);
 
     float2 q = float2(0., 0);
-    q.x = fbm(st + 0.00 * 1);
+    q.x = fbm(st + 0.00 * t);
     q.y = fbm(st + float2(1.0, 1));
 
     st = rayDir.zy;
 
 
     float2 r = float2(0., 0);
-    r.x = fbm(st + 1.0 * q + float2(1.7, 9.2) + 0.15 * 1);
-    r.y = fbm(st + 1.0 * q + float2(8.3, 2.8) + 0.126 * 1);
+    r.x = fbm(st + 1.0 * q + float2(1.7, 9.2) + 0.15 * t);
+    r.y = fbm(st + 1.0 * q + float2(8.3, 2.8) + 0.126 * t);
 
     float f = fbm(st + r);
 
@@ -217,7 +217,7 @@ float3 SkyboxColour(float3 rayDir)
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-    payload.color = SkyboxColour(normalize(WorldRayDirection()));
+    payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
 }
 
 //Raytracing in a weekend
@@ -355,7 +355,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
     if (matColour.r < 0)
     {
-        float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f) * sin(time);
+        float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal, time), 0.5f);
         funColour.yz *= 0.25;
 
         payload.color = saturate(lerp(payload.color, lightColour * funColour + (lightSpecular * specularColour), 1.f) * factor);
