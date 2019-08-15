@@ -34,6 +34,9 @@
     <Filter Include="Header Files\Utilities">
       <UniqueIdentifier>{45d08dfa-5b83-44fe-a467-8a8a25d857d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ConstantBuffers">
+      <UniqueIdentifier>{2c941ec7-870e-4e71-bc45-b03a49355059}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -97,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="ShaderTable.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffers.h">
+      <Filter>Header Files\ConstantBuffers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,11 +16,18 @@ cbuffer CameraParams : register(b0)
 cbuffer ColourBuffer : register(b1)
 {
     float3 matColour;
+    float pad1;
+    float3 specularColour;
+    float pad2;
+    float specularPower;
 }
 
 cbuffer MetalBuffer : register(b2)
 {
     float shine;
+    float3 pad3;
+    float scatter;
+    float3 pad4;
 }
 
 
@@ -102,7 +109,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(24, 0, 0);
+        payload.color = float3(5, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -339,19 +346,23 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
 	//float factor = 1;
     float colour = saturate(dot(hitnormal, sunDir));
+    float specular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower));
 
     if (matColour.r < 0)
     {
         float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal), 0.5f);
         funColour.yz *= 0.25;
 
-        payload.color = lerp(payload.color, colour * factor * funColour, 1.f);
+        payload.color = saturate(lerp(payload.color, colour * funColour + (specular * specularColour), 1.f) * factor);
     }
     else
     {
-        payload.color = lerp(payload.color, colour * factor * matColour, 1.f);
+        payload.color = saturate(lerp(payload.color, colour * matColour + (specular * specularColour), 1.f) * factor);
     }
-	
+
+    //Test specular
+
+    //payload.color = specular.rrr;
 }
 
 [shader("closesthit")]
@@ -374,10 +385,11 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
 	// Find the world-space hit position
     float3 posW = rayOriginW + hitT * rayDirW;
+    float seed = dot(posW, posW);
 
     RayDesc ray;
     ray.Origin = posW;
-    ray.Direction = reflect(rayDirW, hitnormal);;
+    ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
     ray.TMin = 0.001;
     ray.TMax = 100000;
 	
@@ -393,7 +405,6 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }
 
 	
-        float seed = dot(posW, posW);
         float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
 //Shadow ray
     //ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);

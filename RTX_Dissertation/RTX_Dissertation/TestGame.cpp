@@ -2,6 +2,8 @@
 #include "ResourceManager.h"
 #include "RendererUtil.h"
 
+#include "ConstantBuffers.h"
+
 #include <chrono>
 #include <ctime>
 
@@ -23,16 +25,39 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	{
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
-
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
+		const auto metalHitGroupPointer = ResourceManager::RequestHitProgram("MetalHitGroup");
 
-		const auto pinkGroupPointer = ResourceManager::RequestHitProgram("MetalHitGroup");
+
+		MaterialBuffer redMat{ vec3(1,0,0),0, vec3(0,1,0), 0, 10 };
+
+		const auto redMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &redMat, sizeof(MaterialBuffer));
 
 
-		void* redPtr = new vec4(1, 0, 0, 1);
+		MaterialBuffer blueMat{ vec3(0,0,1), 0, vec3(1,1,1), 0,7 };
+		auto blueMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &blueMat, sizeof(MaterialBuffer));
 
-		const auto cb = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), redPtr, sizeof(vec4));
-		vector<ID3D12ResourcePtr> buffers; buffers.push_back(cb);
+
+		MaterialBuffer whiteMat{ vec3(0.8f,0.8f,0.8f),0, vec3(1,1,1),0, 5 };
+		auto whiteMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &whiteMat, sizeof(MaterialBuffer));
+
+		MaterialBuffer funMat{ vec3(-1, -1, -1),0, vec3(0,0,0), 0,50 };
+		auto funMatCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &funMat, sizeof(MaterialBuffer));
+
+		MetalBuffer metalBuffer{ 0.05f, vec3(0), 0.0f, vec3() };
+		auto metalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &metalBuffer, sizeof(MetalBuffer));
+
+		MetalBuffer roughMetalBuffer{ 0.05f, vec3(), 0.1f, vec3() };
+		auto roughMetalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &roughMetalBuffer, sizeof(MetalBuffer));
+
+		
+		MetalBuffer testMetalBuffer{ 0.85f, vec3(), 0.0f, vec3() };
+		auto testMetalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &testMetalBuffer, sizeof(MetalBuffer));
+
+		
+		
+		
+		vector<ID3D12ResourcePtr> buffers; buffers.push_back(redMatCB);
 
 		mat4 transformMat = mat4();
 
@@ -75,11 +100,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 			}
 		}
 		
-		void* bluePtr = new vec4(0, 0, 1, 1);
-		auto cblue = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), bluePtr, sizeof(vec4));
+		
 
 		buffers.clear();
-		buffers.push_back(cblue);
+		buffers.push_back(blueMatCB);
 		transformMat = translate(mat4(), vec3(-2, 0, 3));
 		
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
@@ -97,12 +121,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 
 		//void* whitePtr = new vec4(0, 0, 0, 1);
-		void* whitePtr = new vec4(0.8f, 0.8f, 0.8f, 1);
 		
-		auto cwhite = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), whitePtr, sizeof(vec4));
-
 		buffers.clear();
-		buffers.push_back(cwhite);
+		buffers.push_back(whiteMatCB);
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
 
 		
@@ -127,11 +148,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh = ResourceManager::RequestMesh("SPHERE");
 		transformMat = translate(mat4(), vec3(-10, 2, 15.25f));
 
-		void* funColour = new vec4(-1, -1, -1, -1);
-		auto cFun = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), funColour, sizeof(vec4));
-
+		
 		buffers.clear();
-		buffers.push_back(cFun);
+		buffers.push_back(funMatCB);
 		
 		
 		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
@@ -144,12 +163,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		mesh->AddInstance(instance);
 
 		
-		float yay = 0.f;
-		auto constBuff = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &yay, sizeof(float));
+		
 		buffers.clear();
-		buffers.push_back(constBuff);
-		buffers.push_back(cblue);
-		instance = Instance(transformMat, { pinkGroupPointer, shadowHitGroupPointer }, buffers);
+		buffers.push_back(metalCB);
+		buffers.push_back(blueMatCB);
+		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
 
 		
 		//auto mesh = ResourceManager::RequestMesh("SPHERE");
@@ -164,11 +182,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		}
 		
 		
-		
+		//Infinite mirrors
 		mesh = ResourceManager::RequestMesh("CUBE");
-
-
-
 		transformMat = translate(mat4(), vec3(-25, 8, 0));
 		transformMat = scale(transformMat, vec3(1, 8, 10));
 
@@ -179,7 +194,28 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		instance.SetTransform(transformMat);
 		mesh->AddInstance(instance);
 
-		
+
+
+
+		//Reflectance CB tests
+		mesh = ResourceManager::RequestMesh("SPHERE");
+
+		buffers.clear();
+		buffers.push_back(roughMetalCB);
+		buffers.push_back(redMatCB);
+		transformMat = translate(mat4(), vec3(-35, 0, 0));
+		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
+		mesh->AddInstance(instance);
+
+
+		buffers.clear();
+		buffers.push_back(testMetalCB);
+		buffers.push_back(redMatCB);
+		transformMat = translate(mat4(), vec3(-40, 0, 0));
+		instance = Instance(transformMat, { metalHitGroupPointer, shadowHitGroupPointer }, buffers);
+		mesh->AddInstance(instance);
+
+
 	}
 
 

@@ -153,6 +153,7 @@
     <ClCompile Include="TestGame.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConstantBuffers.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Mesh.h" />
