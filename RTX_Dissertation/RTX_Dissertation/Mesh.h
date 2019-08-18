@@ -56,7 +56,6 @@ private:
 
 	ID3D12DescriptorHeapPtr mDescriptorHeap = nullptr;
 
-
 	//List of instances -- TODO: Upgrade to something more flexible in the future such as an instance class.
 	std::vector<Instance> mInstances;
 

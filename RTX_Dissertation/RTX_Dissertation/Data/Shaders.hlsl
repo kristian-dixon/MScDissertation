@@ -94,7 +94,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 4;
+    int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -440,6 +440,96 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     
 
 }
+
+
+[shader("closesthit")]
+void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	float hitT = RayTCurrent();
+	float3 rayDirW = WorldRayDirection();
+	float3 rayOriginW = WorldRayOrigin();
+
+	// Find the world-space hit position
+	float3 posW = rayOriginW + hitT * rayDirW;
+
+	
+
+	float2 uv = posW.xz * 0.5;
+
+	float r = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f)), 2.5) * pow(fbm(uv - float2(time, time * 0.82f)), 2.5));
+	float g = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f) + float2(-0.24, .52)), 2.5) * pow(fbm(uv + float2(0.52, 1) - float2(time, time * 0.82f)), 2.5));
+	float b = 1;//pow(fbm(-uv + float2(time, time * 0.02f)), 5) * pow(fbm(-uv - float2(time, time * 0.82f)), 5);
+
+
+	float3 bumpMap = (float3(r, g, b) * 2) - 1;
+	float3 normal = bumpMap.x * float3(0, 0, 1) + bumpMap.y * float3(1, 0, 0) + bumpMap.z * float3(0, 1, 0);
+	normal = normalize(normal);
+	//normal = float3(0, 1, 0);
+	payload.color.r -= 1;
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+
+	uint vertId = PrimitiveIndex() * 3;
+	float3 hitnormal = normal;/*BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
+		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
+		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
+		*/
+	// payload.color = hitnormal;
+
+	
+	float seed = dot(posW, posW);
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
+	ray.TMin = 0.1;
+	ray.TMax = 100000;
+
+	float colour = saturate(dot(hitnormal, sunDir));
+	//Reflection ray
+	if (payload.color.r > 0)
+	{
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+	}
+	else
+	{
+		payload.color = float3(0, 0, 0);
+	}
+
+	//Shadow ray
+		//ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
+		//float factor = shadowPayload.hit ? 0.1 : 1;
+
+
+
+
+	//AO ray
+	ray.Origin = posW;
+	ray.TMin = 0.001;
+	ray.TMax = 0.15;
+
+	/*
+	for (int i = 0; i < 1 && shadowPayload.hit == false; ++i)
+	{
+		ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i + 1))); //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+	   // TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
+
+		//factor *= shadowPayload.hit ? 0.1 : 1.0;
+	}*/
+
+
+	//float factor = 1;
+
+	
+
+
+	//payload.color = float3(r,g,b);
+}
+
+
+
+
+
 
 [shader("closesthit")] 
 void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)

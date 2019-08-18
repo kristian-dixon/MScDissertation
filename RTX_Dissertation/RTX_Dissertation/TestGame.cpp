@@ -27,6 +27,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
 		const auto metalHitGroupPointer = ResourceManager::RequestHitProgram("MetalHitGroup");
+		const auto rippleHitGroupPointer = ResourceManager::RequestHitProgram("RippleHitGroup");
+
 
 
 		MaterialBuffer redMat{ vec3(1,0,0),0, vec3(0,1,0), 0, 10 };
@@ -54,7 +56,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		MetalBuffer testMetalBuffer{ 0.85f, vec3(), 0.0f, vec3() };
 		auto testMetalCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &testMetalBuffer, sizeof(MetalBuffer));
 
-		worldBuffer = { vec3(-0.2, 0.5, 0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
+		worldBuffer = { vec3(-0.2, 0.5, -0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
 		worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
 
 		
@@ -120,8 +122,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 		
 		buffers.clear();
-		buffers.push_back(whiteMatCB); buffers.push_back(worldCB);
-		instance = Instance(transformMat, { hitGroupPointer, shadowHitGroupPointer }, buffers);
+		buffers.push_back(metalCB);
+		buffers.push_back(whiteMatCB);
+		buffers.push_back(worldCB);
+		instance = Instance(transformMat, { rippleHitGroupPointer, shadowHitGroupPointer }, buffers);
 
 
 		transformMat = translate(mat4(), vec3(0, -1, 0));
@@ -138,7 +142,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		transformMat = translate(mat4(), vec3(2, 0, 0.25f));
 		instance.SetTransform(transformMat);
 
-		mesh->AddInstance(instance);
+		//mesh->AddInstance(instance);
 
 		
 		mesh = ResourceManager::RequestMesh("SPHERE");
@@ -285,6 +289,8 @@ void TestGame::LoadHitPrograms()
 	LocalRootSignature* rgsRootSignature = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
 
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", rgsRootSignature2));
+	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", rgsRootSignature2));
+
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", rgsRootSignature));
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
