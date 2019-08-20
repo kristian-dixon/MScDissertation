@@ -3,6 +3,7 @@
 #include <Mouse.h>
 #include <chrono>
 #include "ConstantBuffers.h"
+#include "PerformanceCapture.h"
 
 class TestGame :
 	public Game
@@ -39,5 +40,6 @@ private:
 	WorldBuffer worldBuffer;
 	ID3D12ResourcePtr worldCB;
 
+	PerformanceCapture mPerfCapture = PerformanceCapture();
 };
 

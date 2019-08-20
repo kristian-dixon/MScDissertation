@@ -306,6 +306,9 @@ void TestGame::Update()
 	auto thisFrameTime = std::chrono::system_clock::now();
 	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
 
+	mPerfCapture.Update(dt);
+
+
 	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
 
 	mLastFrameTime = std::chrono::system_clock::now();
@@ -353,8 +356,6 @@ void TestGame::KeyboardInput(int key)
 
 	if(key == 'A')
 	{
-		
-
 		//MOVE LEFT
 		camera.Eye += glm::cross(mForward, vec3(0, 1, 0)) * (mMovSpeed * -1);
 	}
@@ -378,6 +379,14 @@ void TestGame::KeyboardInput(int key)
 	{
 		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
 	}
+
+
+	//Toggle Framerate capture (period)
+	if (key == 190)
+	{
+		mPerfCapture.ToggleRecording();
+	}
+
 }
 
 void TestGame::MouseInput()
