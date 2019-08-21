@@ -7,14 +7,42 @@
 #include <chrono>
 #include <ctime>
 
+#include <nlohmann/json.hpp>
+
+#include <iostream>
+#include <fstream>
+
+using json = nlohmann::json;
+
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
 
 	auto sizeTest = sizeof(glm::vec3);
 
-	SetMouse(winHandle);
+	json fileReadTest;
+	fileReadTest << std::ifstream("Props.json");
 
-	
+
+
+	auto buffers = fileReadTest["Buffers"];
+
+	for(int i = 0; i < buffers.size(); i++)
+	{
+		auto bufferEntry = buffers[i];
+
+		for(int j = 0; j < bufferEntry.size(); j++)
+		{
+			auto type = bufferEntry["ConstantBufferType"];
+
+			auto colourR = bufferEntry["ColourR"];
+			auto colourB = bufferEntry["ColourB"];
+
+
+			int b = 0;
+
+		}
+
+	}
 
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
@@ -226,7 +254,9 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	renderer->CreateDXRResources();
 
 	mLastFrameTime = std::chrono::system_clock::now();
-	
+
+	SetMouse(winHandle);
+
 }
 
 void TestGame::LoadHitPrograms()

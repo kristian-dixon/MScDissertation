@@ -1,0 +1,10 @@
+{
+	"Name" : "WALLY_BOI",
+	"Mesh" : "CUBE",
+	"HitGroup" : ["Metal", "Shadow"],
+	"Buffers" : [
+		{ "ConstantBufferType" : "Material", "ColourR" : 1.0, "ColourB" : 0.5},
+		{ "ConstantBufferType" : "Metal", "Shininess" : 0.5}
+	]
+}
+
