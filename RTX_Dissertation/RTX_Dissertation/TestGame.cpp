@@ -12,45 +12,30 @@
 #include <iostream>
 #include <fstream>
 
+#include "GameObject.h"
+
 using json = nlohmann::json;
 
 void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
-
-	auto sizeTest = sizeof(glm::vec3);
-
-	json fileReadTest;
-	fileReadTest << std::ifstream("Props.json");
-
-
-
-	auto buffers = fileReadTest["Buffers"];
-
-	for(int i = 0; i < buffers.size(); i++)
-	{
-		auto bufferEntry = buffers[i];
-
-		for(int j = 0; j < bufferEntry.size(); j++)
-		{
-			auto type = bufferEntry["ConstantBufferType"];
-
-			auto colourR = bufferEntry["ColourR"];
-			auto colourB = bufferEntry["ColourB"];
-
-
-			int b = 0;
-
-		}
-
-	}
-
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
 	LoadHitPrograms();
+	worldBuffer = { vec3(-0.2, 0.5, -0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
+	worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
 
 
+
+
+
+	
+
+
+
+	/*
+	
 	{
 		const auto hitGroupPointer = ResourceManager::RequestHitProgram("HitGroup");
 		const auto shadowHitGroupPointer = ResourceManager::RequestHitProgram("ShadowHitGroup");
@@ -249,6 +234,22 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	}
 
+	*/
+
+	json fileReadTest;
+	fileReadTest << std::ifstream("Props.json");
+
+
+
+
+	GameObject test;
+
+	auto goList = fileReadTest["GameObjects"];
+
+	for (int i = 0; i < goList.size(); i++)
+	{
+		test.LoadFromJson(goList[i], worldCB);
+	}
 
 	//Create final renderer resources
 	renderer->CreateDXRResources();

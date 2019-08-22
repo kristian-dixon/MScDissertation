@@ -28,7 +28,6 @@ private:
 	float yaw = 0;
 	float pitch = 0;
 
-	float shitTimer = 0;
 
 	std::chrono::system_clock::time_point mLastFrameTime;
 
