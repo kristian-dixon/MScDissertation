@@ -316,7 +316,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
-	hitnormal = mul(transform, float4(hitnormal, 0));
+	hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
 
 
     float hitT = RayTCurrent();
@@ -357,7 +357,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
 	//float factor = 1;
     float3 lightColour = saturate(dot(hitnormal, sunDir)) * sunColour;
-    float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower)) * sunColour;
+	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower)) * sunColour;
 
     if (matColour.r < 0)
     {
@@ -390,7 +390,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
    // payload.color = hitnormal;
 	
-	hitnormal = mul(transform, float4(hitnormal, 0));
+	hitnormal = normalize(mul(float4(hitnormal, 0), transform));
 
 
     float hitT = RayTCurrent();
