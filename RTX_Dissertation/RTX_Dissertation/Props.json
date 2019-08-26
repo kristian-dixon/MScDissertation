@@ -1,45 +1,14 @@
 {
-  "GameObjects": [
-    {
-      "Name": "WALLY_BOI",
-      "Mesh": "CUBE",
-      "Transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-      "HitGroup": [ "MetalHitGroup", "ShadowHitGroup" ],
-      "Buffers": [
-        {
-          "ConstantBufferType": "Metal",
-          "Shininess": 0.5,
-          "Scatter": 0.5
-        },
-        {
-          "ConstantBufferType": "Material",
-          "MaterialColour": [ 1.0, 1.0, 0.0 ],
-          "SpecularColour": [ 0.0, 0.0, 1.0 ],
-          "SpecularPower": 5.0
-        },
-        {
-          "ConstantBufferType": "World"
-        }
-      ]
-    },
-    {
-      "Name": "SphereMan",
-      "Mesh": "SPHERE",
-      "Transform": [ 5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ],
-      "HitGroup": [ "HitGroup", "ShadowHitGroup" ],
-      "Buffers": [
-        {
-          "ConstantBufferType": "Material",
-          "MaterialColour": [ 1.0, 0.0, 0.0 ],
-          "SpecularColour": [ 0.0, 0.5, 0.0 ],
-          "SpecularPower": 5.0
-        },
-        {
-          "ConstantBufferType" : "World"
-        }
-      ]
-    }
-
-  ]
-
+	"GameObjects": 
+	[
+		{
+			"Name":"Cube",
+			"Mesh":"CUBE",
+			"Transform":[1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,5.0,0.0,0.0,0.0,1.0],
+			"HitGroups":["HitGroup","ShadowHitGroup"],
+			"Metal":{"ConstantBufferType":"","Reflectivity":0.5,"Scatter":0.0},
+			"Material":{"ConstantBufferType":"Material","MaterialColour":[1.0,0.0,0.0],"SpecularColour":[0.0,0.0,1.0],"SpecularPower":5.0},
+			"WorldData":{"ConstantBufferType":"World"}
+		}
+	]
 }
