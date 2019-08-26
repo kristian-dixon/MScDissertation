@@ -264,7 +264,7 @@ void TestGame::LoadHitPrograms()
 {
 	auto renderer = Renderer::GetInstance();
 
-	vector<D3D12_ROOT_PARAMETER> chsRootParams(5);
+	vector<D3D12_ROOT_PARAMETER> chsRootParams(6);
 	{
 		chsRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 		chsRootParams[0].Descriptor.RegisterSpace = 0;
@@ -280,14 +280,21 @@ void TestGame::LoadHitPrograms()
 
 		chsRootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		chsRootParams[3].Descriptor.RegisterSpace = 0;
-		chsRootParams[3].Descriptor.ShaderRegister = 1;
+		chsRootParams[3].Descriptor.ShaderRegister = 4;
 
 		chsRootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		chsRootParams[4].Descriptor.RegisterSpace = 0;
-		chsRootParams[4].Descriptor.ShaderRegister = 3;
+		chsRootParams[4].Descriptor.ShaderRegister = 1;
+
+		chsRootParams[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		chsRootParams[5].Descriptor.RegisterSpace = 0;
+		chsRootParams[5].Descriptor.ShaderRegister = 3;
+
+
+		
 	}
 
-	vector<D3D12_ROOT_PARAMETER> metalRootParams(6);
+	vector<D3D12_ROOT_PARAMETER> metalRootParams(7);
 	{
 		metalRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 		metalRootParams[0].Descriptor.RegisterSpace = 0;
@@ -303,15 +310,21 @@ void TestGame::LoadHitPrograms()
 
 		metalRootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		metalRootParams[3].Descriptor.RegisterSpace = 0;
-		metalRootParams[3].Descriptor.ShaderRegister = 2;
+		metalRootParams[3].Descriptor.ShaderRegister = 4;
 
 		metalRootParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		metalRootParams[4].Descriptor.RegisterSpace = 0;
-		metalRootParams[4].Descriptor.ShaderRegister = 1;
+		metalRootParams[4].Descriptor.ShaderRegister = 2;
 
 		metalRootParams[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		metalRootParams[5].Descriptor.RegisterSpace = 0;
-		metalRootParams[5].Descriptor.ShaderRegister = 3;
+		metalRootParams[5].Descriptor.ShaderRegister = 1;
+
+		metalRootParams[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		metalRootParams[6].Descriptor.RegisterSpace = 0;
+		metalRootParams[6].Descriptor.ShaderRegister = 3;
+
+		
 	}
 
 

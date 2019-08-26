@@ -40,6 +40,11 @@ cbuffer WorldBuffer : register(b3)
     float time;
 }
 
+cbuffer TransformBuffer : register(b4)
+{
+	float4x4 transform;
+}
+
 struct STriVertex
 {
     float4 vertex;
@@ -311,8 +316,9 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
-    payload.color = hitnormal;
-	
+	hitnormal = mul(transform, float4(hitnormal, 0));
+
+
     float hitT = RayTCurrent();
     float3 rayDirW = WorldRayDirection();
     float3 rayOriginW = WorldRayOrigin();
@@ -384,6 +390,9 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
    // payload.color = hitnormal;
 	
+	hitnormal = mul(transform, float4(hitnormal, 0));
+
+
     float hitT = RayTCurrent();
     float3 rayDirW = WorldRayDirection();
     float3 rayOriginW = WorldRayOrigin();

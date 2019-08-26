@@ -33,3 +33,9 @@ struct MetalBuffer
 	float scatter;
 	glm::vec3 padding2;
 };
+
+struct TransformBuffer
+{
+	glm::mat4 transform;
+	glm::mat4 transformInv;
+};

@@ -88,6 +88,9 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 					pCbDesc += 8;
 					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = tlas.pResult->GetGPUVirtualAddress();
 
+					pCbDesc += 8;
+					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = instance.GetTransformCB()->GetGPUVirtualAddress();
+
 					for(int i = 0; i < instance.GetResources().size(); i++)
 					{
 						pCbDesc += 8;
