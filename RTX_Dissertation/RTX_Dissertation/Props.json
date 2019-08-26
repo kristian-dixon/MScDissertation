@@ -1,14 +1,1 @@
-{
-	"GameObjects": 
-	[
-		{
-			"Name":"Cube",
-			"Mesh":"CUBE",
-			"Transform":[1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,5.0,0.0,0.0,0.0,1.0],
-			"HitGroups":["HitGroup","ShadowHitGroup"],
-			"Metal":{"ConstantBufferType":"","Reflectivity":0.5,"Scatter":0.0},
-			"Material":{"ConstantBufferType":"Material","MaterialColour":[1.0,0.0,0.0],"SpecularColour":[0.0,0.0,1.0],"SpecularPower":5.0},
-			"WorldData":{"ConstantBufferType":"World"}
-		}
-	]
-}
+{"GameObjects":[{"Name":"Cube","Mesh":"CUBE","Transform":[1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,50.0,0.0,0.0,0.0,1.0],"HitGroups":["HitGroup","ShadowHitGroup"],"Metal":{"ConstantBufferType":"","Reflectivity":0.5,"Scatter":0.0},"Material":{"ConstantBufferType":"Material","MaterialColour":[1.0,0.0,0.0],"SpecularColour":[0.0,0.0,1.0],"SpecularPower":5.0},"WorldData":{"ConstantBufferType":"World"}},{"Name":"Cube (1)","Mesh":"CUBE","Transform":[1.0,0.0,0.0,1.590000033378601,0.0,1.0,0.0,0.0,0.0,0.0,1.0,5.0,0.0,0.0,0.0,1.0],"HitGroups":["HitGroup","ShadowHitGroup"],"Metal":{"ConstantBufferType":"","Reflectivity":0.5,"Scatter":0.0},"Material":{"ConstantBufferType":"Material","MaterialColour":[0.0,1.0,0.0],"SpecularColour":[0.0,0.0,1.0],"SpecularPower":5.0},"WorldData":{"ConstantBufferType":"World"}},{"Name":"Cube (2)","Mesh":"CUBE","Transform":[1.0,0.0,0.0,-1.8300000429153443,0.0,10.0,0.0,0.0,0.0,0.0,1.0,5.0,0.0,0.0,0.0,1.0],"HitGroups":["HitGroup","ShadowHitGroup"],"Metal":{"ConstantBufferType":"","Reflectivity":0.5,"Scatter":0.0},"Material":{"ConstantBufferType":"Material","MaterialColour":[0.0,1.0,1.0],"SpecularColour":[1.0,0.0,1.0],"SpecularPower":5.0},"WorldData":{"ConstantBufferType":"World"}},{"Name":"Sphere","Mesh":"SPHERE","Transform":[1.0,0.0,0.0,0.0,0.0,1.0,0.0,2.0299999713897707,0.0,0.0,1.0,7.949999809265137,0.0,0.0,0.0,1.0],"HitGroups":["MetalHitGroup","ShadowHitGroup"],"Metal":{"ConstantBufferType":"Metal","Reflectivity":0.5,"Scatter":0.0},"Material":{"ConstantBufferType":"Material","MaterialColour":[0.5,0.5,0.5],"SpecularColour":[0.800000011920929,0.800000011920929,1.0],"SpecularPower":10.0},"WorldData":{"ConstantBufferType":"World"}}]}
