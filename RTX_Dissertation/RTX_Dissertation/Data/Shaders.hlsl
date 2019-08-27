@@ -119,7 +119,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(5, 0, 0);
+        payload.color = float3(10, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -390,7 +390,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
    // payload.color = hitnormal;
 	
-	hitnormal = normalize(mul(float4(hitnormal, 0), transform));
+	hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
 
 
     float hitT = RayTCurrent();
@@ -419,8 +419,8 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }
 
 //Shadow ray
-    //ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
-    //float factor = shadowPayload.hit ? 0.1 : 1;
+    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
+    float factor = shadowPayload.hit ? 0.1 : 1;
 
 
    
@@ -441,12 +441,11 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
 
 //float factor = 1;
-	
+		factor = 1;
     float colour = saturate(dot(hitnormal, sunDir));
-    float factor = 1;
     
-    payload.color = lerp(payload.color, colour * factor * matColour, shine);
-    
+    payload.color = factor * lerp(payload.color, colour * matColour, shine);
+	payload.color = lerp(payload.color, colour * factor * matColour, shine);
 
 }
 
@@ -510,7 +509,8 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 		//float factor = shadowPayload.hit ? 0.1 : 1;
 
 
-
+	ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
+	float factor = shadowPayload.hit ? 0.1 : 1;
 
 	//AO ray
 	ray.Origin = posW;
@@ -530,6 +530,7 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	//float factor = 1;
 
 	
+	payload.color = factor * lerp(payload.color, matColour, shine);
 
 
 	//payload.color = float3(r,g,b);
