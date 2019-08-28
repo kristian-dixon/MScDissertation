@@ -4,12 +4,16 @@
 #include "Renderer.h"
 #include "Vertex.h"
 
+#include <d3d12.h>
+#include <SimpleMath.h>
+
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 std::map<string, shared_ptr<HitProgram>> ResourceManager::mHitProgramDB;
 
 
 shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 {
+	
 	const auto mesh = mMeshDB.find(key);
 	if(mesh == mMeshDB.end())
 	{
@@ -292,8 +296,19 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		//CYLINDER, CONE and TORUS? (THINK PARAMETIC SHAPES)
 		else
 		{
-			//TODO:Display message saying mesh couldn't be loaded. 
+			//Attempt to load from disk
+			/*auto test = DirectX::Model::CreateFromSDKMESH(L"modelTest.skdmesh", Renderer::GetInstance()->GetDevice());
 
+			//TODO:: Update for multiple
+			vector<ID3D12ResourcePtr> vbos = { test->meshes[0]->opaqueMeshParts[0]->vertexBuffer.Resource() };
+			vector<uint32_t> vertCounts = { test->meshes[0]->opaqueMeshParts[0]->vertexBufferSize };
+			vector<ID3D12ResourcePtr> indexBuffers = { test->meshes[0]->opaqueMeshParts[0]->indexBuffer.Resource() };
+			vector<uint32_t> indexCounts = { test->meshes[0]->opaqueMeshParts[0]->indexBufferSize };
+
+
+			auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
+			mMeshDB.insert({ key, mesh });
+			return mesh;*/
 		}
 	}
 	else
