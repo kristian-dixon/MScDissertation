@@ -13,6 +13,7 @@
 #include <fstream>
 
 #include "GameObject.h"
+#include "ObjLoader.h"
 
 using json = nlohmann::json;
 
@@ -30,7 +31,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	fileReadTest << std::ifstream("Props.json");
 
 
-
+	ObjLoader::LoadOBJMesh("ObjTestFile.obj");
 
 	GameObject test;
 
