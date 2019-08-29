@@ -31,8 +31,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	fileReadTest << std::ifstream("Props.json");
 
 
-	ObjLoader::LoadOBJMesh("ObjTestFile.obj");
-
+	//1018-487
 	GameObject test;
 
 	auto goList = fileReadTest["GameObjects"];

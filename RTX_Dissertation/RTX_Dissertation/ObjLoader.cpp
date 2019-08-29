@@ -13,8 +13,8 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 
 	vector<Vertex> vertexList;
 
-	vector<int> indices;
-
+	vector<uint32_t> indices;
+	//1979-1020
 	/*try
 	{*/
 		//Open file
@@ -39,17 +39,14 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 				}
 				else if(type == "f")
 				{
-					if (vertexList.empty()) { vertexList.resize(pointList.size()); }
-
-					{
-						auto a = line.find('/') + 1;
-						auto b = line.find(' ', segmentEnd);
-
-						string s = line.substr(line.find('/') + 1, line.find(' ', segmentEnd));
-						int test = stoi(s);
-					}
-
 					int normalIndex = 0;
+					{
+						auto a = line.find('/') + 2;
+						auto b = line.find(' ', segmentEnd + 1) ;
+
+						string s = line.substr(a, b);
+						normalIndex = (stoi(s) - 1);
+					}
 
 					//          f 1//0 4//0 6//9
 
@@ -57,29 +54,31 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 					auto segmentStart = segmentEnd + 1;
 					segmentEnd = line.find('/', segmentStart);
 
-					int pointAIndex = stoi(line.substr(segmentStart, segmentEnd));
+					int pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(pointAIndex);
-					vertexList[pointAIndex] = Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex] };
+					indices.push_back(vertexList.size());
+					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
 
 
-					segmentStart = segmentEnd + 2;
+					segmentStart = line.find(' ', segmentEnd);
 					segmentEnd = line.find('/', segmentStart);
 
-					pointAIndex = stoi(line.substr(segmentStart, segmentEnd));
+					pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(pointAIndex);
-					vertexList[pointAIndex] = Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex] };
+					indices.push_back(vertexList.size());
+					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
 
 
 
-					segmentStart = segmentEnd + 2;
+
+					segmentStart = line.find(' ', segmentEnd);
 					segmentEnd = line.find('/', segmentStart);
 
-					pointAIndex = stoi(line.substr(segmentStart, segmentEnd));
+					pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(pointAIndex);
-					vertexList[pointAIndex] = Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex] };
+					indices.push_back(vertexList.size());
+					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+
 
 				}
 
@@ -87,10 +86,21 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 			}
 		}
 
+		auto inst = Renderer::GetInstance();
+		vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertexList) };
+		vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertexList.size()) };
+		vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
+		vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
+
+		auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
+		return mesh;
 	/*}
 	catch(...)
 	{
 	}*/
+
+
+
 	return nullptr;
 
 }
@@ -106,10 +116,10 @@ glm::vec3 ObjLoader::GetVectorFromString(string& input, string::size_type offset
 	offset = input.find(' ', segmentStart);
 
 	const float y = std::stof(input.substr(segmentStart, offset));
-
+	
 	segmentStart = offset + 1;
 	offset = input.find(' ', segmentStart);
-
+	
 	const float z = std::stof(input.substr(segmentStart, offset));
 
 	return vec3(x, y, z);
