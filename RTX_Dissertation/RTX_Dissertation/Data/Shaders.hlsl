@@ -99,7 +99,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 1;
+    int sampleCount = 8;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -119,7 +119,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(3, 0, 0);
+        payload.color = float3(2, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -330,7 +330,9 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     float seed = dot(posW, posW);
     //float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
 	//Shadow ray
-    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
+	float softnessScatter = 0.02f;
+
+    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
     float factor = shadowPayload.hit ? 0.1 : 1;
 
 
@@ -359,17 +361,46 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     float3 lightColour = saturate(dot(hitnormal, sunDir)) * sunColour;
 	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower)) * sunColour;
 
+	
+	if (payload.color.r > 0)
+	{
+		float raydepth = payload.color.r;
+
+		for (int i = 0; i < 1; i++)
+		{
+			ray.Origin = posW;
+			ray.Direction = hitnormal + RandomUnitInSphere(seed * (i + 1 + raydepth)) * 0.25;
+			ray.TMin = 0.001;
+			ray.TMax = 100000;
+
+			//AO ray
+			ray.Origin = posW;
+			ray.TMin = 0.001;
+			ray.TMax = 10;
+
+			TraceRay(gRtScene, 0, 0xFF, 0, 0, 1, ray, payload);
+		}
+
+		payload.color /= 5.f;
+	}
+
     if (matColour.r < 0)
     {
         float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal, time), 0.5f);
         funColour.yz *= 0.25;
 
-        payload.color = saturate(lerp(payload.color, lightColour * funColour + (lightSpecular * specularColour), 1.f) * factor);
+        payload.color += lightColour * funColour + (lightSpecular * specularColour) *  factor;
     }
+	else if (matColour.r > 1)
+	{
+		payload.color = matColour;
+
+	}
     else
     {
-        payload.color = saturate(lerp(payload.color, lightColour * matColour + (lightSpecular * specularColour), 1.f) * factor);
+        payload.color += (lightColour * matColour + (lightSpecular * specularColour)) * factor;
     }
+
 
     //Test specular
 

@@ -24,7 +24,7 @@ public:
 
 	size_t animationTestHook;
 private:
-	float mMovSpeed = 0.2f;
+	float mMovSpeed = 1.2f;
 	float yaw = 0;
 	float pitch = 0;
 
