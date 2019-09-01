@@ -119,7 +119,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(10, 0, 0);
+        payload.color = float3(3, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -403,7 +403,9 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
     RayDesc ray;
     ray.Origin = posW;
-    ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
+    //ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
+	ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * 0, hitnormal);
+
     ray.TMin = 0.1;
     ray.TMax = 100000;
 	

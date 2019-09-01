@@ -3,6 +3,8 @@
 #include <fstream>
 #include <string>
 #include "Vertex.h"
+#include <map>
+#include <tuple>
 
 using namespace std;
 
@@ -12,6 +14,8 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 	vector<vec3> normalList;
 
 	vector<Vertex> vertexList;
+
+	map<tuple<int, int>, int> vertexMap;
 
 	vector<uint32_t> indices;
 	//1979-1020
@@ -39,9 +43,10 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 				}
 				else if(type == "f")
 				{
+					//Get Normal index
 					int normalIndex = 0;
 					{
-						auto a = line.find('/') + 2;
+						auto a = line.find('/',segmentEnd) + 2;
 						auto b = line.find(' ', segmentEnd + 1) ;
 
 						string s = line.substr(a, b);
@@ -56,28 +61,78 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 
 					int pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(vertexList.size());
-					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					auto vertexMapIndex = vertexMap.find(std::make_tuple(pointAIndex, normalIndex));
+					
+					if(vertexMapIndex != vertexMap.end())
+					{
+						indices.push_back(vertexMapIndex->second);
+					}
+					else
+					{
+						vertexMap.insert({ make_tuple(pointAIndex, normalIndex), vertexList.size() });
+						indices.push_back(vertexList.size());
+						vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					}
+
+
+					
 
 
 					segmentStart = line.find(' ', segmentEnd);
 					segmentEnd = line.find('/', segmentStart);
 
+					normalIndex = 0;
+					{
+						auto a = line.find('/', segmentEnd) + 2;
+						auto b = line.find(' ', segmentEnd + 1);
+
+						string s = line.substr(a, b);
+						normalIndex = (stoi(s) - 1);
+					}
+
 					pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(vertexList.size());
-					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					vertexMapIndex = vertexMap.find(std::make_tuple(pointAIndex, normalIndex));
 
-
+					if (vertexMapIndex != vertexMap.end())
+					{
+						indices.push_back(vertexMapIndex->second);
+					}
+					else
+					{
+						vertexMap.insert({ make_tuple(pointAIndex, normalIndex), vertexList.size() });
+						indices.push_back(vertexList.size());
+						vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					}
+					
 
 
 					segmentStart = line.find(' ', segmentEnd);
 					segmentEnd = line.find('/', segmentStart);
 
+					normalIndex = 0;
+					{
+						auto a = line.find('/', segmentEnd) + 2;
+						auto b = line.find(' ', segmentEnd + 1);
+
+						string s = line.substr(a, b);
+						normalIndex = (stoi(s) - 1);
+					}
+
 					pointAIndex = stoi(line.substr(segmentStart, segmentEnd)) - 1;
 
-					indices.push_back(vertexList.size());
-					vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					vertexMapIndex = vertexMap.find(std::make_tuple(pointAIndex, normalIndex));
+
+					if (vertexMapIndex != vertexMap.end())
+					{
+						indices.push_back(vertexMapIndex->second);
+					}
+					else
+					{
+						vertexMap.insert({ make_tuple(pointAIndex, normalIndex), vertexList.size() });
+						indices.push_back(vertexList.size());
+						vertexList.push_back(Vertex{ vec4(pointList[pointAIndex], 0), normalList[normalIndex], 0 });
+					}
 
 
 				}
