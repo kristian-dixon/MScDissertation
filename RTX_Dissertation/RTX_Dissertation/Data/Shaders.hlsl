@@ -245,34 +245,47 @@ float3 RandomUnitInSphere(float seed)
     return p;
 }
 
+float3 GetHitNormal(int vertId, float3 barycentrics)
+{
+	float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
+		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
+		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
+
+	return hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
+
+}
+
+float3 GetWorldHitPosition()
+{
+	float hitT = RayTCurrent();
+	float3 rayDirW = normalize(WorldRayDirection());
+	float3 rayOriginW = WorldRayOrigin();
+	float3 posW = rayOriginW + hitT * rayDirW;
+	return posW;
+}
 
 [shader("closesthit")]
 void fancyPants(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
     payload.color.r -= 1;
 
-    float hitT = RayTCurrent();
-    float3 rayDirW = WorldRayDirection();
-    float3 rayOriginW = WorldRayOrigin();
-    float3 posW = rayOriginW + hitT * rayDirW;
+	float3 posW = GetWorldHitPosition();
 
 
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
     uint vertId = PrimitiveIndex() * 3;
-    float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
-		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
-		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
 
     if (payload.color.r > 0)
     {
-        float seed = hitT + dot(rayDirW, rayDirW) + dot(rayOriginW, rayOriginW) + dot(posW, posW);
+        float seed = dot(posW + posW.zxy + float3(5,2,1), posW - float3(51.12, 1.63, 213));
 
         RayDesc ray;
         ray.Origin = posW;
         if (true)
         {
-            ray.Direction = reflect(rayDirW /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
+            ray.Direction = reflect(WorldRayDirection() /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
         }
         else
         {
@@ -310,29 +323,25 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     payload.color.r -= 1;
 
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-
     uint vertId = PrimitiveIndex() * 3;
-    float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
-		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
-		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
+   
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
 
-	hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
-
-
-    float hitT = RayTCurrent();
-    float3 rayDirW = WorldRayDirection();
-    float3 rayOriginW = WorldRayOrigin();
+    //float hitT = RayTCurrent();
+    //float3 rayDirW = WorldRayDirection();
+    //float3 rayOriginW = WorldRayOrigin();
 
 	// Find the world-space hit position
-    float3 posW = rayOriginW + hitT * rayDirW;
+	float3 posW = GetWorldHitPosition();
 
 	
     float seed = dot(posW, posW);
-    //float3 sunDir = normalize(float3(-0.2, 0.5, -0.5));
+	
+	
 	//Shadow ray
 	float softnessScatter = 0.02f;
 
-    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
+    ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
     float factor = shadowPayload.hit ? 0.1 : 1;
 
 
@@ -350,19 +359,19 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
     for (int i = 1; i < 1 && shadowPayload.hit == false; ++i)
     {
-        ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i + 1))); //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+        ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i + 1))); 
         TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
 
         factor *= shadowPayload.hit ? 0.1 : 1.0;
     }
-	
+
 
 	//float factor = 1;
     float3 lightColour = saturate(dot(hitnormal, sunDir)) * sunColour;
-	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), normalize(posW - rayOriginW)), specularPower)) * sunColour;
+	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
 
 	
-	if (payload.color.r > 0)
+	/*if (payload.color.r > 0)
 	{
 		float raydepth = payload.color.r;
 
@@ -382,23 +391,22 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 		}
 
 		payload.color /= 5.f;
-	}
+	}*/
 
     if (matColour.r < 0)
     {
         float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal, time), 0.5f);
         funColour.yz *= 0.25;
 
-        payload.color += lightColour * funColour + (lightSpecular * specularColour) *  factor;
+        payload.color = lightColour * funColour + (lightSpecular * specularColour) *  factor;
     }
 	else if (matColour.r > 1)
 	{
 		payload.color = matColour;
-
 	}
     else
     {
-        payload.color += (lightColour * matColour + (lightSpecular * specularColour)) * factor;
+        payload.color = (lightColour * matColour + (lightSpecular * specularColour)) * factor;
     }
 
 
@@ -415,27 +423,17 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 
     uint vertId = PrimitiveIndex() * 3;
-    float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
-		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
-		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
 
-   // payload.color = hitnormal;
-	
-	hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
-
-
-    float hitT = RayTCurrent();
-    float3 rayDirW = WorldRayDirection();
-    float3 rayOriginW = WorldRayOrigin();
 
 	// Find the world-space hit position
-    float3 posW = rayOriginW + hitT * rayDirW;
+	float3 posW = GetWorldHitPosition();
     float seed = dot(posW, posW);
 
     RayDesc ray;
     ray.Origin = posW;
     //ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
-	ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * 0, hitnormal);
+	ray.Direction = reflect(WorldRayDirection() + RandomUnitInSphere(seed) * 0, hitnormal);
 
     ray.TMin = 0.1;
     ray.TMax = 100000;
@@ -452,8 +450,10 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }
 
 //Shadow ray
-    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
-    float factor = shadowPayload.hit ? 0.1 : 1;
+	float softnessScatter = 0.02f;
+
+	ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
+	float factor = shadowPayload.hit ? 0.1 : 1;
 
 
    
@@ -473,8 +473,6 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }*/
 
 
-//float factor = 1;
-		factor = 1;
     float colour = saturate(dot(hitnormal, sunDir));
     
     payload.color = factor * lerp(payload.color, colour * matColour, shine);
@@ -542,7 +540,10 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 		//float factor = shadowPayload.hit ? 0.1 : 1;
 
 
-	ShadowPayload shadowPayload = FireShadowRay(posW, sunDir);
+	//Shadow ray
+	float softnessScatter = 0.02f;
+
+	ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
 	float factor = shadowPayload.hit ? 0.1 : 1;
 
 	//AO ray
