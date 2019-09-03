@@ -366,7 +366,7 @@ void Camera::UpdateCamera()
 	matrices[0] = DirectX::XMMatrixLookAtRH(DXEye, DXAt, DXUp);
 
 	float fovAngleY = 45.0f * DirectX::XM_PI / 180.0f;
-	matrices[1] = DirectX::XMMatrixPerspectiveFovRH(fovAngleY, 2.07f, 0.1f, 1000.0f);
+	matrices[1] = DirectX::XMMatrixPerspectiveFovRH(fovAngleY, 1.77f, 0.1f, 1000.0f);
 
 	// Raytracing has to do the contrary of rasterization: rays are defined in camera space, and are
 	// transformed into world space. To do this, we need to store the inverse matrices as well.
