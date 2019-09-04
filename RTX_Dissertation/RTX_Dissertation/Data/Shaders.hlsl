@@ -99,7 +99,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 8;
+    int sampleCount = 2;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -371,7 +371,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
 
 	
-	/*if (payload.color.r > 0)
+	if (payload.color.r > 0)
 	{
 		float raydepth = payload.color.r;
 
@@ -379,34 +379,32 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 		{
 			ray.Origin = posW;
 			ray.Direction = hitnormal + RandomUnitInSphere(seed * (i + 1 + raydepth)) * 0.25;
-			ray.TMin = 0.001;
-			ray.TMax = 100000;
 
 			//AO ray
 			ray.Origin = posW;
 			ray.TMin = 0.001;
-			ray.TMax = 10;
+			ray.TMax = 5;
 
 			TraceRay(gRtScene, 0, 0xFF, 0, 0, 1, ray, payload);
 		}
 
 		payload.color /= 5.f;
-	}*/
+	}
 
     if (matColour.r < 0)
     {
         float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal, time), 0.5f);
         funColour.yz *= 0.25;
 
-        payload.color = lightColour * funColour + (lightSpecular * specularColour) *  factor;
+        payload.color += lightColour * funColour + (lightSpecular * specularColour) *  factor;
     }
 	else if (matColour.r > 1)
 	{
-		payload.color = matColour;
+		payload.color += matColour;
 	}
     else
     {
-        payload.color = (lightColour * matColour + (lightSpecular * specularColour)) * factor;
+        payload.color += (lightColour * matColour + (lightSpecular * specularColour)) * factor;
     }
 
 
@@ -432,8 +430,8 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
     RayDesc ray;
     ray.Origin = posW;
-    //ray.Direction = reflect(rayDirW + RandomUnitInSphere(seed) * scatter, hitnormal);
-	ray.Direction = reflect(WorldRayDirection() + RandomUnitInSphere(seed) * 0, hitnormal);
+    ray.Direction = reflect(WorldRayDirection() + RandomUnitInSphere(seed) * scatter, hitnormal);
+    //ray.Direction = reflect(WorldRayDirection(), hitnormal + RandomUnitInSphere(seed) * scatter);
 
     ray.TMin = 0.1;
     ray.TMax = 100000;
