@@ -234,12 +234,12 @@ float3 RandomUnitInSphere(float seed)
     float y = random(float2(seed * 10, 5216));
     float z = random(float2(1231, seed * 10));
     
-    float3 dir = float3(x, y, z);
+    float3 dir = (2.0 * float3(x, y, z)) - float3(1, 1, 1);
 
-    /*if (x * x + y * y + z * z > 1)
+    if (dot(dir, dir) > 1)
     {
         dir = normalize(dir);
-    }*/
+    }
 
     p = 2.0 * dir - float3(1, 1, 1);
     return p;
