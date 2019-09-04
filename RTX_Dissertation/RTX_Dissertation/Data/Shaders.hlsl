@@ -99,7 +99,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 2;
+    int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -119,7 +119,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(2, 0, 0);
+        payload.color = float3(8, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -222,7 +222,8 @@ float3 SkyboxColour(float3 rayDir, float t)
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-    payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
+    payload.color = 0.5f;
+    //payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
 }
 
 //Raytracing in a weekend
@@ -283,13 +284,13 @@ void fancyPants(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
         RayDesc ray;
         ray.Origin = posW;
-        if (true)
+        if (false)
         {
             ray.Direction = reflect(WorldRayDirection() /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
         }
         else
         {
-			//ray.Direction = (hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
+			ray.Direction = (hitnormal + RandomUnitInSphere(seed));  //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
         }
         ray.TMin = 0.001;
         ray.TMax = 100000;
@@ -354,12 +355,18 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 	//AO ray
     ray.Origin = posW;
     ray.TMin = 0.001;
-    ray.TMax = 0.15;
+    ray.TMax = 0.05;
 
-
-    for (int i = 1; i < 1 && shadowPayload.hit == false; ++i)
+    for (int i = 0; i < 1; ++i)
     {
-        ray.Direction = normalize(hitnormal + RandomUnitInSphere(seed * (i + 1))); 
+        float3 rndRayDir = RandomUnitInSphere(seed * (i + 1));
+
+        if (dot(rndRayDir, hitnormal) < 0)
+        {
+            rndRayDir *= -1;
+        }
+
+        ray.Direction = normalize(hitnormal + rndRayDir);
         TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
 
         factor *= shadowPayload.hit ? 0.1 : 1.0;
@@ -367,11 +374,11 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
 
 	//float factor = 1;
-    float3 lightColour = saturate(dot(hitnormal, sunDir)) * sunColour;
+    float3 lightColour = saturate(max(0.1, dot(hitnormal, sunDir))) * sunColour;
 	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
 
 	
-	if (payload.color.r > 0)
+	/*if (payload.color.r > 0)
 	{
 		float raydepth = payload.color.r;
 
@@ -385,28 +392,28 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 			ray.TMin = 0.001;
 			ray.TMax = 5;
 
-			TraceRay(gRtScene, 0, 0xFF, 0, 0, 1, ray, payload);
+			TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		}
 
-		payload.color /= 5.f;
-	}
+		payload.color /= 10.f;
+	}*/
 
     if (matColour.r < 0)
     {
         float3 funColour = (1).rrr - pow(SkyboxColour(hitnormal, time), 0.5f);
         funColour.yz *= 0.25;
 
-        payload.color += lightColour * funColour + (lightSpecular * specularColour) *  factor;
+        payload.color = lightColour * funColour + (lightSpecular * specularColour) *  factor;
     }
 	else if (matColour.r > 1)
 	{
-		payload.color += matColour;
+		payload.color = matColour;
 	}
     else
     {
-        payload.color += (lightColour * matColour + (lightSpecular * specularColour)) * factor;
+        payload.color = (lightColour * matColour + (lightSpecular * specularColour)) * factor;
     }
-
+    //payload.color = factor;
 
     //Test specular
 
