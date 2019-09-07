@@ -272,5 +272,7 @@ void TestGame::MouseInput()
 		camera.Dir = (forward);
 
 		mForward = forward;
+
+		mMovSpeed = state.scrollWheelValue * 0.0005 + 1.2f;
 	}
 }
