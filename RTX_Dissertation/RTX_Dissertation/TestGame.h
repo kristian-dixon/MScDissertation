@@ -25,14 +25,17 @@ public:
 	size_t animationTestHook;
 private:
 	float mMovSpeed = 1.2f;
-	float yaw = 0;
-	float pitch = 0;
+	float cameraYaw = 0;
+	float cameraPitch = 0;
+
+	float sunYaw = 0;
+	float sunPitch = 0;
 
 
 	std::chrono::system_clock::time_point mLastFrameTime;
 
 	glm::vec3 mForward;
-	
+	glm::vec3 mSunDir;
 
 	std::unique_ptr<DirectX::Mouse> mMouse;
 

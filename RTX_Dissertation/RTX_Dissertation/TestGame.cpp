@@ -140,7 +140,7 @@ void TestGame::Update()
 	auto thisFrameTime = std::chrono::system_clock::now();
 	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
 
-	mPerfCapture.Update(dt);
+	//mPerfCapture.Update(dt);
 
 
 	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
@@ -214,6 +214,29 @@ void TestGame::KeyboardInput(int key)
 		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
 	}
 
+	if(key == 37 || key == 38 || key == 39 || key == 40)
+	{
+		if(key == 37 || key == 39)
+		{
+			sunYaw += key == 37 ? 0.01 : -0.01;
+		}
+		else
+		{
+			sunPitch += key == 38 ? 0.01 : -0.01;
+		}
+
+		//Sun positioning
+		auto forward = glm::vec3(0, 0, 1);
+		auto up = glm::vec3(0, 1, 0);
+
+		mat4 yawRot = glm::rotate(-sunYaw, vec3(0, 1, 0));
+		mat4 pitchRot = glm::rotate(sunPitch, vec3(1, 0, 0));
+
+		forward = mat3(pitchRot) * forward;
+		forward = mat3(yawRot) * forward;
+		worldBuffer.sunDir = forward;
+	}
+
 
 	//Toggle Framerate capture (period)
 	if (key == 190)
@@ -230,15 +253,15 @@ void TestGame::MouseInput()
 		mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 
 		auto state = mMouse->GetState();
-		yaw += state.x * 0.001f;
-		pitch += state.y * 0.001f;
+		cameraYaw += state.x * 0.001f;
+		cameraPitch += state.y * 0.001f;
 
 	
 		auto forward = glm::vec3(0, 0, 1);
 		auto up = glm::vec3(0, 1, 0);
 
-		mat4 yawRot = glm::rotate(-yaw, vec3(0, 1, 0));
-		mat4 pitchRot = glm::rotate(pitch, vec3(1, 0, 0));
+		mat4 yawRot = glm::rotate(-cameraYaw, vec3(0, 1, 0));
+		mat4 pitchRot = glm::rotate(cameraPitch, vec3(1, 0, 0));
 
 		forward = mat3(pitchRot) * forward;
 		forward = mat3(yawRot) * forward;

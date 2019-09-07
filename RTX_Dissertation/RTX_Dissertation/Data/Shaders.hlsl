@@ -99,7 +99,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 8;
+    int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
