@@ -25,7 +25,12 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 
 		for(int i = 0; i < hitGroupArray.size(); i++)
 		{
-			hitGroups.push_back(ResourceManager::RequestHitProgram(hitGroupArray[i]));
+			auto hitGroup = ResourceManager::RequestHitProgram(hitGroupArray[i]);
+
+			if (hitGroup == nullptr) { return; }
+			hitGroups.push_back(hitGroup);
+
+			
 		}
 
 		//Get CBuffers

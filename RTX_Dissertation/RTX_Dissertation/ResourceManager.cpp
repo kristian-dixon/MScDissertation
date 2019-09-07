@@ -7,6 +7,7 @@
 #include <d3d12.h>
 //#include <SimpleMath.h>
 #include "ObjLoader.h"
+#include "RendererUtil.h"
 
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 std::map<string, shared_ptr<HitProgram>> ResourceManager::mHitProgramDB;
@@ -26,13 +27,16 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 		{
 			mMeshDB.insert({ key, mesh });
 		}
+		else
+		{
+			RendererUtil::DisplayMessage(Renderer::GetInstance()->GetWindowHandle(), key + " mesh could not be found! ", "Warning");
+		}
 		return mesh;
 	}
 	else
 	{
 		return mesh->second;
 	}
-	return shared_ptr<Mesh>();
 }
 
 shared_ptr<Mesh> ResourceManager::AddNewMesh(const string& key, const vector<glm::vec3> verts)
@@ -57,6 +61,11 @@ shared_ptr<HitProgram> ResourceManager::RequestHitProgram(const string& key)
 	if(hitProgram != mHitProgramDB.end())
 	{
 		return hitProgram->second;
+	}
+	else
+	{
+		RendererUtil::DisplayMessage(Renderer::GetInstance()->GetWindowHandle(), key + " hitgroup could not be found! ", "Warning");
+		//TODO:: Set error shader?
 	}
 	return nullptr;
 }
