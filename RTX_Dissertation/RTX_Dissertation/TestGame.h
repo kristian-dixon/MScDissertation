@@ -16,7 +16,8 @@ public:
 	void Render() override;
 	void Shutdown() override;
 
-	void KeyboardInput(int key) override;
+	void KeyDown(int key) override;
+	void KeyUp(int key) override;
 
 	void SetMouse(HWND winHandle) { mMouse = std::make_unique<DirectX::Mouse>(); mMouse->SetWindow(winHandle); };// mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 
@@ -30,6 +31,10 @@ private:
 
 	float sunYaw = 0;
 	float sunPitch = 0;
+
+
+	int zCamVel = 0;
+	int xCamVel = 0;
 
 
 	std::chrono::system_clock::time_point mLastFrameTime;

@@ -25,7 +25,12 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		if (wParam == VK_ESCAPE) PostQuitMessage(0);
 		else
 		{
-			game.KeyboardInput(wParam);
+			game.KeyDown(wParam);
+		}
+		return 0;
+	case WM_KEYUP:
+		{
+			game.KeyUp(wParam);
 		}
 		return 0;
 	case WM_ACTIVATEAPP:

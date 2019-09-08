@@ -11,7 +11,9 @@ public:
 	virtual void Render() = 0;
 	virtual void Shutdown() = 0;
 
-	virtual void KeyboardInput(int key) = 0;
+	virtual void KeyDown(int key) = 0;
+	virtual void KeyUp(int key) = 0;
+
 
 	virtual void MouseInput() = 0;
 };

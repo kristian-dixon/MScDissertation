@@ -135,10 +135,15 @@ void TestGame::LoadHitPrograms()
 
 void TestGame::Update()
 {
-
-
 	auto thisFrameTime = std::chrono::system_clock::now();
 	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
+
+
+	auto& camera = Renderer::GetInstance()->GetCamera();
+	//Update Camera
+	camera.Eye += (glm::cross(mForward, vec3(0, xCamVel, 0)) + mForward * (float)zCamVel) * mMovSpeed * dt;
+
+
 
 	//mPerfCapture.Update(dt);
 
@@ -182,13 +187,31 @@ void TestGame::Shutdown()
 	Renderer::GetInstance()->Shutdown();
 }
 
-void TestGame::KeyboardInput(int key)
+void TestGame::KeyDown(int key)
 {
 	auto& camera = Renderer::GetInstance()->GetCamera();
 
 	//TODO:: FACTOR IN DT
 
 	if(key == 'A')
+	{
+		xCamVel = -1;
+	}
+	else if (key == 'D')
+	{
+		xCamVel = 1;
+	}
+
+	if (key == 'W')
+	{
+		zCamVel = 1;
+	}
+	else if (key == 'S')
+	{
+		zCamVel = -1;
+	}
+
+	/*if(key == 'A')
 	{
 		//MOVE LEFT
 		camera.Eye += glm::cross(mForward, vec3(0, 1, 0)) * (mMovSpeed * -1);
@@ -213,7 +236,7 @@ void TestGame::KeyboardInput(int key)
 	{
 		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
 	}
-
+	*/
 	if(key == 37 || key == 38 || key == 39 || key == 40)
 	{
 		if(key == 37 || key == 39)
@@ -226,7 +249,7 @@ void TestGame::KeyboardInput(int key)
 		}
 
 		//Sun positioning
-		auto forward = glm::vec3(0, 0, 1);
+		auto forward = vec3(-0.2, 0.5, -0.5);
 		auto up = glm::vec3(0, 1, 0);
 
 		mat4 yawRot = glm::rotate(-sunYaw, vec3(0, 1, 0));
@@ -245,6 +268,19 @@ void TestGame::KeyboardInput(int key)
 	}
 
 }
+
+void TestGame::KeyUp(int key)
+{
+	if (key == 'A' || key == 'D')
+	{
+		xCamVel = 0;
+	}
+	else if (key == 'W' || key == 'S')
+	{
+		zCamVel = 0;
+	}
+}
+
 
 void TestGame::MouseInput()
 {
