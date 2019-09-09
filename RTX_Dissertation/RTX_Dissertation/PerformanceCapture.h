@@ -16,7 +16,7 @@ private:
 
 
 private:
-	bool m_RecordEnabled;
+	bool m_RecordEnabled = false;
 
 	const float m_WriteFrequency = 1.0f;
 

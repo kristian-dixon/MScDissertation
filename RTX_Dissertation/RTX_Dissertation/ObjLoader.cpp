@@ -19,8 +19,8 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 
 	vector<uint32_t> indices;
 	//1979-1020
-	/*try
-	{*/
+	try
+	{
 		//Open file
 		string line;
 		ifstream objFile(fileName);
@@ -139,20 +139,22 @@ std::shared_ptr<Mesh> ObjLoader::LoadOBJMesh(string fileName)
 
 
 			}
+
+			auto inst = Renderer::GetInstance();
+			vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertexList) };
+			vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertexList.size()) };
+			vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
+			vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
+
+			auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
+			return mesh;
 		}
 
-		auto inst = Renderer::GetInstance();
-		vector<ID3D12ResourcePtr> vbos = { inst->CreateVertexBuffer(vertexList) };
-		vector<uint32_t> vertCounts = { static_cast<uint32_t>(vertexList.size()) };
-		vector<ID3D12ResourcePtr> indexBuffers = { inst->CreateIndexBuffer(indices) };
-		vector<uint32_t> indexCounts = { static_cast<uint32_t>(indices.size()) };
-
-		auto mesh = std::make_shared<Mesh>(vbos, vertCounts, indexBuffers, indexCounts);
-		return mesh;
-	/*}
+		
+	}
 	catch(...)
 	{
-	}*/
+	}
 
 
 

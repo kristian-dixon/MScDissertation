@@ -135,12 +135,17 @@ void TestGame::LoadHitPrograms()
 
 void TestGame::Update()
 {
-
-
 	auto thisFrameTime = std::chrono::system_clock::now();
 	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
 
-	mPerfCapture.Update(dt);
+
+	auto& camera = Renderer::GetInstance()->GetCamera();
+	//Update Camera
+	camera.Eye += (glm::cross(mForward, vec3(0, xCamVel, 0)) + mForward * (float)zCamVel) * mMovSpeed * dt;
+
+
+
+	//mPerfCapture.Update(dt);
 
 
 	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
@@ -182,13 +187,31 @@ void TestGame::Shutdown()
 	Renderer::GetInstance()->Shutdown();
 }
 
-void TestGame::KeyboardInput(int key)
+void TestGame::KeyDown(int key)
 {
 	auto& camera = Renderer::GetInstance()->GetCamera();
 
 	//TODO:: FACTOR IN DT
 
 	if(key == 'A')
+	{
+		xCamVel = -1;
+	}
+	else if (key == 'D')
+	{
+		xCamVel = 1;
+	}
+
+	if (key == 'W')
+	{
+		zCamVel = 1;
+	}
+	else if (key == 'S')
+	{
+		zCamVel = -1;
+	}
+
+	/*if(key == 'A')
 	{
 		//MOVE LEFT
 		camera.Eye += glm::cross(mForward, vec3(0, 1, 0)) * (mMovSpeed * -1);
@@ -213,6 +236,29 @@ void TestGame::KeyboardInput(int key)
 	{
 		camera.Eye += glm::vec3(0, -1, 0) * mMovSpeed;
 	}
+	*/
+	if(key == 37 || key == 38 || key == 39 || key == 40)
+	{
+		if(key == 37 || key == 39)
+		{
+			sunYaw += key == 37 ? 0.01 : -0.01;
+		}
+		else
+		{
+			sunPitch += key == 38 ? 0.01 : -0.01;
+		}
+
+		//Sun positioning
+		auto forward = vec3(-0.2, 0.5, -0.5);
+		auto up = glm::vec3(0, 1, 0);
+
+		mat4 yawRot = glm::rotate(-sunYaw, vec3(0, 1, 0));
+		mat4 pitchRot = glm::rotate(sunPitch, vec3(1, 0, 0));
+
+		forward = mat3(pitchRot) * forward;
+		forward = mat3(yawRot) * forward;
+		worldBuffer.sunDir = forward;
+	}
 
 
 	//Toggle Framerate capture (period)
@@ -223,6 +269,19 @@ void TestGame::KeyboardInput(int key)
 
 }
 
+void TestGame::KeyUp(int key)
+{
+	if (key == 'A' || key == 'D')
+	{
+		xCamVel = 0;
+	}
+	else if (key == 'W' || key == 'S')
+	{
+		zCamVel = 0;
+	}
+}
+
+
 void TestGame::MouseInput()
 {
 	if (mMouse)
@@ -230,15 +289,15 @@ void TestGame::MouseInput()
 		mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 
 		auto state = mMouse->GetState();
-		yaw += state.x * 0.001f;
-		pitch += state.y * 0.001f;
+		cameraYaw += state.x * 0.001f;
+		cameraPitch += state.y * 0.001f;
 
 	
 		auto forward = glm::vec3(0, 0, 1);
 		auto up = glm::vec3(0, 1, 0);
 
-		mat4 yawRot = glm::rotate(-yaw, vec3(0, 1, 0));
-		mat4 pitchRot = glm::rotate(pitch, vec3(1, 0, 0));
+		mat4 yawRot = glm::rotate(-cameraYaw, vec3(0, 1, 0));
+		mat4 pitchRot = glm::rotate(cameraPitch, vec3(1, 0, 0));
 
 		forward = mat3(pitchRot) * forward;
 		forward = mat3(yawRot) * forward;
@@ -249,5 +308,7 @@ void TestGame::MouseInput()
 		camera.Dir = (forward);
 
 		mForward = forward;
+
+		mMovSpeed = state.scrollWheelValue * 0.0005 + 1.2f;
 	}
 }
