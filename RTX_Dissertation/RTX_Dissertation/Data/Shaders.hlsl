@@ -1,7 +1,19 @@
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+/*
+  ________   _________ ______ _____  _   _          _        _____       _______                  _____ _______ _____  _    _  _____ _______ _____ 
+ |  ____\ \ / /__   __|  ____|  __ \| \ | |   /\   | |      |  __ \   /\|__   __|/\        _     / ____|__   __|  __ \| |  | |/ ____|__   __/ ____|
+ | |__   \ V /   | |  | |__  | |__) |  \| |  /  \  | |      | |  | | /  \  | |  /  \     _| |_  | (___    | |  | |__) | |  | | |       | | | (___  
+ |  __|   > <    | |  |  __| |  _  /| . ` | / /\ \ | |      | |  | |/ /\ \ | | / /\ \   |_   _|  \___ \   | |  |  _  /| |  | | |       | |  \___ \ 
+ | |____ / . \   | |  | |____| | \ \| |\  |/ ____ \| |____  | |__| / ____ \| |/ ____ \    |_|    ____) |  | |  | | \ \| |__| | |____   | |  ____) |
+ |______/_/ \_\  |_|  |______|_|  \_\_| \_/_/    \_\______| |_____/_/    \_\_/_/    \_\         |_____/   |_|  |_|  \_\\____/ \_____|  |_| |_____/ 
+                                                                                                                                                   
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
 RaytracingAccelerationStructure gRtScene : register(t0);
 RWTexture2D<float4> gOutput : register(u0);
-
 
 // #DXR Extra: Perspective Camera
 cbuffer CameraParams : register(b0)
@@ -55,7 +67,34 @@ struct STriVertex
 StructuredBuffer<STriVertex> BTriVertex : register(t1);
 StructuredBuffer<int> indices : register(t2);
 
+struct RayPayload
+{
+    float3 color;
+};
 
+
+struct ShadowPayload
+{
+    bool hit;
+};
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+/*
+  ______ _    _ _   _  _____ _______ _____ ____  _   _  _____ 
+ |  ____| |  | | \ | |/ ____|__   __|_   _/ __ \| \ | |/ ____|
+ | |__  | |  | |  \| | |       | |    | || |  | |  \| | (___  
+ |  __| | |  | | . ` | |       | |    | || |  | | . ` |\___ \ 
+ | |    | |__| | |\  | |____   | |   _| || |__| | |\  |____) |
+ |_|     \____/|_| \_|\_____|  |_|  |_____\____/|_| \_|_____/ 
+                                                              
+*/
+//////////////////////////////////////////////////////////////////////////////////
 
 float random(in float2 st)
 {
@@ -73,69 +112,6 @@ float3 linearToSrgb(float3 c)
     float3 srgb = 0.662002687 * sq1 + 0.684122060 * sq2 - 0.323583601 * sq3 - 0.0225411470 * c;
     return srgb;
 }
-
-struct RayPayload
-{
-    float3 color;
-};
-
-
-
-struct ShadowPayload
-{
-    bool hit;
-};
-
-[shader("raygeneration")]
-void rayGen()
-{
-    uint3 launchIndex = DispatchRaysIndex();
-    uint3 launchDim = DispatchRaysDimensions();
-
-	
-
-	// #DXR Extra: Perspective Camera
-	// Perspective
-
-    float3 col = float3(0, 0, 0);
-
-    int sampleCount = 16;
-    for (int i = 0; i < sampleCount; i++)
-    {
-        float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
-        float2 dims = float2(launchDim.xy);
-
-        float2 d = ((crd / dims) * 2.f - 1.f);
-        float aspectRatio = dims.x / dims.y;
-
-
-        RayDesc ray;
-        ray.Origin = mul(viewI, float4(0, 0, 0, 1));
-        float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
-        ray.Direction = normalize(mul(viewI, float4(target.xyz, 0)));
-
-		
-        ray.TMin = 0;
-        ray.TMax = 100000;
-
-        RayPayload payload;
-        payload.color = float3(2, 0, 0);
-        TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
-        col += payload.color;
-    }
-
-    col /= sampleCount;
-
-	//col = sqrt(col);
-    col = linearToSrgb(col);
-    gOutput[launchIndex.xy] = float4(col, 1);
-}
-
-
-
-
-
-
 
 // Based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
@@ -216,16 +192,6 @@ float3 SkyboxColour(float3 rayDir, float t)
 }
 
 
-
-
-
-[shader("miss")]
-void miss(inout RayPayload payload)
-{
-    payload.color = 0.5f;
-    //payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
-}
-
 //Raytracing in a weekend
 float3 RandomUnitInSphere(float seed)
 {
@@ -248,21 +214,21 @@ float3 RandomUnitInSphere(float seed)
 
 float3 GetHitNormal(int vertId, float3 barycentrics)
 {
-	float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
+    float3 hitnormal = BTriVertex[indices[vertId + 0]].normal.xyz * barycentrics.x +
 		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
-	return hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
+    return hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
 
 }
 
 float3 GetWorldHitPosition()
 {
-	float hitT = RayTCurrent();
-	float3 rayDirW = WorldRayDirection();
-	float3 rayOriginW = WorldRayOrigin();
-	float3 posW = rayOriginW + hitT * rayDirW;
-	return posW;
+    float hitT = RayTCurrent();
+    float3 rayDirW = WorldRayDirection();
+    float3 rayOriginW = WorldRayOrigin();
+    float3 posW = rayOriginW + hitT * rayDirW;
+    return posW;
 }
 
 
@@ -279,6 +245,82 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
     return shadowPayload;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+/*
+  _____        __     __   _____ ______ _   _    _____ _    _          _____  ______ _____   _____ 
+ |  __ \     /\\ \   / /  / ____|  ____| \ | |  / ____| |  | |   /\   |  __ \|  ____|  __ \ / ____|
+ | |__) |   /  \\ \_/ /  | |  __| |__  |  \| | | (___ | |__| |  /  \  | |  | | |__  | |__) | (___  
+ |  _  /   / /\ \\   /   | | |_ |  __| | . ` |  \___ \|  __  | / /\ \ | |  | |  __| |  _  / \___ \ 
+ | | \ \  / ____ \| |    | |__| | |____| |\  |  ____) | |  | |/ ____ \| |__| | |____| | \ \ ____) |
+ |_|  \_\/_/    \_\_|     \_____|______|_| \_| |_____/|_|  |_/_/    \_\_____/|______|_|  \_\_____/ 
+                                                                                                   
+*/
+//////////////////////////////////////////////////////////////////////////////
+
+[shader("raygeneration")]
+void rayGen()
+{
+    uint3 launchIndex = DispatchRaysIndex();
+    uint3 launchDim = DispatchRaysDimensions();
+
+	
+
+	// #DXR Extra: Perspective Camera
+	// Perspective
+
+    float3 col = float3(0, 0, 0);
+
+    int sampleCount = 16;
+    for (int i = 0; i < sampleCount; i++)
+    {
+        float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
+        float2 dims = float2(launchDim.xy);
+
+        float2 d = ((crd / dims) * 2.f - 1.f);
+        float aspectRatio = dims.x / dims.y;
+
+
+        RayDesc ray;
+        ray.Origin = mul(viewI, float4(0, 0, 0, 1));
+        float4 target = mul(projectionI, float4(d.x, -d.y, 1, 1));
+        ray.Direction = normalize(mul(viewI, float4(target.xyz, 0)));
+
+		
+        ray.TMin = 0;
+        ray.TMax = 100000;
+
+        RayPayload payload;
+        payload.color = float3(2, 0, 0);
+        TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+        col += payload.color;
+    }
+
+    col /= sampleCount;
+
+	//col = sqrt(col);
+    col = linearToSrgb(col);
+    gOutput[launchIndex.xy] = float4(col, 1);
+}
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+  _    _ _____ _______    _____ _    _          _____  ______ _____   _____ 
+ | |  | |_   _|__   __|  / ____| |  | |   /\   |  __ \|  ____|  __ \ / ____|
+ | |__| | | |    | |    | (___ | |__| |  /  \  | |  | | |__  | |__) | (___  
+ |  __  | | |    | |     \___ \|  __  | / /\ \ | |  | |  __| |  _  / \___ \ 
+ | |  | |_| |_   | |     ____) | |  | |/ ____ \| |__| | |____| | \ \ ____) |
+ |_|  |_|_____|  |_|    |_____/|_|  |_/_/    \_\_____/|______|_|  \_\_____/ 
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 [shader("closesthit")]
  void chs(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
@@ -340,7 +382,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
 
 	
-	/*if (payload.color.r > 1)
+	/*if (payload.color.r > 0)
 	{
 		float raydepth = payload.color.r;
 
@@ -568,15 +610,35 @@ void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttr
     payload.hit = true;
 }
 
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+  __  __ _____  _____ _____    _____ _    _          _____  ______ _____   _____ 
+ |  \/  |_   _|/ ____/ ____|  / ____| |  | |   /\   |  __ \|  ____|  __ \ / ____|
+ | \  / | | | | (___| (___   | (___ | |__| |  /  \  | |  | | |__  | |__) | (___  
+ | |\/| | | |  \___ \\___ \   \___ \|  __  | / /\ \ | |  | |  __| |  _  / \___ \ 
+ | |  | |_| |_ ____) |___) |  ____) | |  | |/ ____ \| |__| | |____| | \ \ ____) |
+ |_|  |_|_____|_____/_____/  |_____/|_|  |_/_/    \_\_____/|______|_|  \_\_____/ 
+                                                                                 
+*/                                                                                 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+[shader("miss")]
+void miss(inout RayPayload payload)
+{
+    payload.color = 0.5f;
+    //payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
+}
+
+
 [shader("miss")] 
 void shadowMiss (inout ShadowPayload payload)
 {
     payload.hit = false;
 }
-
-//FOR WHEN WE IMPLEMENT INDEX BASED 
-//https://developer.nvidia.com/rtx/raytracing/dxr/DX12-Raytracing-tutorial/Extra/dxr_tutorial_extra_indexed_geometry
-
 
 
 
