@@ -273,7 +273,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
     RayDesc ray;
     ray.Origin = origin;
     ray.Direction = dir;
-    ray.TMin = 0.1;
+    ray.TMin = 0.0001;
     ray.TMax = 100000;
     ShadowPayload shadowPayload;
     TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
@@ -316,7 +316,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 
 	//AO ray
     ray.Origin = posW;
-    ray.TMin = 0.001;
+    ray.TMin = 0.0001;
     ray.TMax = 0.005;
 
     for (int i = 0; i < 1; ++i)
@@ -340,7 +340,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
 
 	
-	/*if (payload.color.r > 0)
+	/*if (payload.color.r > 1)
 	{
 		float raydepth = payload.color.r;
 
