@@ -272,7 +272,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 16;
+    int sampleCount = 4;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -417,6 +417,13 @@ void rayGen()
     {
         payload.color = (lightColour * matColour + (lightSpecular * specularColour)) * factor;
     }
+
+    float3 rndDir = normalize(hitnormal + RandomUnitInSphere(seed) * 0.05);
+    float3 sky = SkyboxColour(rndDir, 1);
+    sky *= lerp(float3(1, 1, 1), float3(0, 0, 1), 1 - pow(1 - abs(dot(rndDir, float3(0, 1, 0))), 5));
+
+    payload.color = saturate(lerp(payload.color, sky, 0.1)) * factor;
+
     //payload.color = factor;
 
     //Test specular
@@ -573,7 +580,7 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	//float factor = 1;
 
 	
-	payload.color = factor * lerp(payload.color, matColour, shine);
+	payload.color = factor * lerp(payload.color, matColour, 0);
 
 
 	//payload.color = float3(r,g,b);
@@ -630,7 +637,11 @@ void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttr
 void miss(inout RayPayload payload)
 {
     payload.color = 0.5f;
-    //payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
+
+    payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
+
+    payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), 1 - pow( 1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5));
+
 }
 
 
