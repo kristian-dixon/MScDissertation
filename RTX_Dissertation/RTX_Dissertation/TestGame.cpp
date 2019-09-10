@@ -28,7 +28,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
 
 	json fileReadTest;
-	fileReadTest << std::ifstream("Props.json");
+	std::ifstream("Props.json") >> fileReadTest;
 
 
 	//1018-487
