@@ -360,22 +360,18 @@ void Renderer::CreateDXRResources()
 
 		auto hitGroups = ResourceManager::GetHitProgramDB();
 
-		for (auto hitGroup : hitGroups)
+		for (auto& hitGroup : hitGroups)
 		{
 			rtspo.AddHitProgram(hitGroup.second);
 		}
 
-		/*auto hitGroup = HitProgram(nullptr, L"chs", L"HitGroup", &rgsRootSignature);
-		auto hitGroup2 = HitProgram(nullptr, L"shadowChs", L"ShadowHitGroup");
-		*/
+		auto missGroups = ResourceManager::GetMissProgramDB();
+		for (auto& missProgram : missGroups)
+		{
+			rtspo.AddMissProgram(missProgram.second);
+			mShaderTable.AddMissProgram(missProgram.second);
+		}
 
-		auto miss1 = MissProgram(L"miss");
-		auto miss2 = MissProgram(L"shadowMiss");
-		rtspo.AddMissProgram(miss1);
-		rtspo.AddMissProgram(miss2);
-
-		mShaderTable.AddMissProgram(miss1);
-		mShaderTable.AddMissProgram(miss2);
 
 
 		rtspo.BuildPipeline(mWinHandle, mpDevice);

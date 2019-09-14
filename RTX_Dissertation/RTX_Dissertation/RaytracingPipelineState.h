@@ -12,7 +12,7 @@ public:
 	RaytracingPipelineState(wstring& shaderFileName);
 
 	void AddHitProgram(shared_ptr<HitProgram> hitProgram);
-	void AddMissProgram(MissProgram& missProgram);
+	void AddMissProgram(shared_ptr<MissProgram> missProgram);
 
 	void GetEntryPoints(vector<const WCHAR*>& entryPoints);
 	void BuildPipeline(HWND winHandle, ID3D12Device5Ptr device);
@@ -24,8 +24,8 @@ private:
 
 	vector<shared_ptr<HitProgram>> mHitPrograms;
 	vector<shared_ptr<HitProgram>> mEmptyHitPrograms;
-	vector<MissProgram*> mMissPrograms;
-	vector<MissProgram*> mEmptyMissPrograms;
+	vector<shared_ptr<MissProgram>> mMissPrograms;
+	vector<shared_ptr<MissProgram>> mEmptyMissPrograms;
 
 	ShaderConfig mShaderConfig;
 	PipelineConfig mPipelineConfig;

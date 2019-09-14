@@ -9,7 +9,7 @@ public:
 	//Get largest RTSPO use that
 
 	//Figure out shader table size
-	void AddMissProgram(MissProgram val) { missPrograms.push_back(val); };
+	void AddMissProgram(std::shared_ptr<MissProgram> val) { missPrograms.push_back(val); };
 
 	//Raygen shader
 	//List of miss shaders
@@ -28,7 +28,7 @@ private:
 	uint32_t mShaderTableEntrySize = 0;
 	uint32_t mShaderTableEntryCount = 0;
 
-	std::vector<MissProgram> missPrograms;
+	std::vector<std::shared_ptr<MissProgram> > missPrograms;
 
 
 

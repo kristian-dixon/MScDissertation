@@ -58,7 +58,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	//TODO: Support binding necessary data
 	for (int i = 0; i < missPrograms.size(); i++)
 	{
-		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i].missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i]->missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	}
 
 	//Bind each VBO to a shader entry

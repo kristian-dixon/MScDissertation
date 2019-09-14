@@ -23,7 +23,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	LoadHitPrograms();
+	LoadShaderPrograms();
 	worldBuffer = { vec3(-0.2, 0.5, -0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
 	worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
 
@@ -50,7 +50,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 }
 
-void TestGame::LoadHitPrograms()
+void TestGame::LoadShaderPrograms()
 {
 	auto renderer = Renderer::GetInstance();
 
@@ -117,10 +117,17 @@ void TestGame::LoadHitPrograms()
 		
 	}
 
+	vector<D3D12_ROOT_PARAMETER> missRootParams(1);
+	{
+		missRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		missRootParams[0].Descriptor.RegisterSpace = 0;
+		missRootParams[0].Descriptor.ShaderRegister = 3;
+	}
 
-
-	LocalRootSignature* reflectiveRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
 	LocalRootSignature* defaultMatRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
+	LocalRootSignature* reflectiveRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
+	LocalRootSignature* timeBasicRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(missRootParams).desc);
+
 
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
@@ -130,7 +137,14 @@ void TestGame::LoadHitPrograms()
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
+	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
+	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData ));
+	
+	
+	//ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss"));
 
+
+	ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss"));
 }
 
 void TestGame::Update()

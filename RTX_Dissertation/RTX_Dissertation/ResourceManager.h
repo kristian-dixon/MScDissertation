@@ -28,6 +28,8 @@ public:
 	static void AddMissProgram(const string& key, shared_ptr<MissProgram> missProgram);
 
 	static std::map<string, shared_ptr<HitProgram>> GetHitProgramDB() { return mHitProgramDB; };
+	static std::map<string, shared_ptr<MissProgram>> GetMissProgramDB() { return mMissProgramDB; };
+
 
 private:
 	static std::map<string, shared_ptr<Mesh>> mMeshDB;

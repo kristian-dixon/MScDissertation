@@ -22,18 +22,17 @@ void RaytracingPipelineState::AddHitProgram(shared_ptr<HitProgram> hitProgram)
 	}
 }
 
-void RaytracingPipelineState::AddMissProgram(MissProgram& missProgram)
+void RaytracingPipelineState::AddMissProgram(shared_ptr<MissProgram> missProgram)
 {
-	//TODO:: Consider that this may break (fun ref to memory - what happens if it gets deleted?)
-	if (missProgram.localRootSignature == nullptr)
+	if (missProgram->localRootSignature == nullptr)
 	{
 		//Add to empty list
-		mEmptyMissPrograms.push_back(&missProgram);
+		mEmptyMissPrograms.push_back(missProgram);
 	}
 	else
 	{
 		//Add to list that'll mount the root signature later
-		mMissPrograms.push_back(&missProgram);
+		mMissPrograms.push_back(missProgram);
 	}
 }
 
