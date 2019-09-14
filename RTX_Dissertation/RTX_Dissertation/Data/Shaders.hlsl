@@ -272,7 +272,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 4;
+    int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -292,7 +292,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(2, 0, 0);
+        payload.color = float3(4, 0, 0);
         TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -491,8 +491,8 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
     float colour = saturate(dot(hitnormal, sunDir));
     
-    payload.color = factor * lerp(payload.color, colour * matColour, shine);
-	payload.color = lerp(payload.color, colour * factor * matColour, shine);
+    payload.color = factor * lerp(payload.color, colour * matColour, 0.25);
+	//payload.color = lerp(payload.color, colour * factor * matColour, 0.75);
 
 }
 
@@ -638,12 +638,17 @@ void miss(inout RayPayload payload)
 {
     payload.color = 0.5f;
 
-    payload.color = SkyboxColour(normalize(WorldRayDirection()), 1);
+    payload.color = SkyboxColour(normalize(WorldRayDirection()), time);
 
     payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), 1 - pow( 1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5));
 
 }
 
+[shader("miss")]
+void skyrim(inout RayPayload payload)
+{
+	payload.color = random(WorldRayDirection().xz);
+}
 
 [shader("miss")] 
 void shadowMiss (inout ShadowPayload payload)

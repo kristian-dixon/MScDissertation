@@ -52,13 +52,22 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	memcpy(pData, pRtsoProps->GetShaderIdentifier(kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
 	*(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-	// This is where we need to set the descriptor data for the ray-gen shader. We'll get to it in the next tutorial
 
 	// Entry 1 - miss program
 	//TODO: Support binding necessary data
 	for (int i = 0; i < missPrograms.size(); i++)
 	{
-		memcpy(pData + (mShaderTableEntrySize * (i + 1)), pRtsoProps->GetShaderIdentifier(missPrograms[i]->missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		uint8_t* pMissEntry = pData + (mShaderTableEntrySize * (i + 1));
+		memcpy(pMissEntry, pRtsoProps->GetShaderIdentifier(missPrograms[i]->missShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+		uint8_t* pCbDesc = pMissEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+		
+		for(int j = 0; j < missPrograms[i]->boundData.size(); j++)
+		{
+			*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = missPrograms[i]->boundData[j]->GetGPUVirtualAddress();
+			pCbDesc += 8;
+		}
 	}
 
 	//Bind each VBO to a shader entry

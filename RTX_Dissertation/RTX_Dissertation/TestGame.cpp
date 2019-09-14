@@ -23,10 +23,13 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
 	renderer->InitDXR();
 
-	LoadShaderPrograms();
 	worldBuffer = { vec3(-0.2, 0.5, -0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
 	worldCB = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &worldBuffer, sizeof(WorldBuffer));
 
+
+
+	LoadShaderPrograms();
+	
 	json fileReadTest;
 	std::ifstream("Props.json") >> fileReadTest;
 
@@ -128,7 +131,6 @@ void TestGame::LoadShaderPrograms()
 	LocalRootSignature* reflectiveRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
 	LocalRootSignature* timeBasicRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(missRootParams).desc);
 
-
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
 
@@ -139,7 +141,8 @@ void TestGame::LoadShaderPrograms()
 
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
 	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData ));
-	
+	//ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss", timeBasicRGS, missData));
+
 	
 	//ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss"));
 

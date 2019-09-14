@@ -165,7 +165,25 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 		counter++;
 	}
 
+	vector<LocalRootSignature> missRootSignatures(mMissPrograms.size());
+	vector<ExportAssociation> missExportAssociations(mMissPrograms.size());
+	counter = 0;
+	for(auto& missProgram : mMissPrograms)
+	{
+		missRootSignatures[counter] = *missProgram->localRootSignature;
+		subobjects[index] = missRootSignatures[counter].subobject;
 
+		uint32_t hitRootIndex = index++; // 5
+
+		ExportAssociation association(&missProgram->missShader, &(subobjects[hitRootIndex]));
+		missExportAssociations[counter].association = association.association;
+
+
+		subobjects[index++] = missExportAssociations[counter].subobject; // 6 Associate Triangle Root Sig to Triangle Hit Group
+
+		counter++;
+
+	}
 	
 
 	//Create things that'll use the empty-root signature and the association object
@@ -177,19 +195,19 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 	uint32_t hitMissRootIndex = index++; // 8
 	
-	vector<const WCHAR*> missHitExportName;
+	vector<const WCHAR*> empties;
 	for(auto& t : mEmptyHitPrograms)
 	{
-		missHitExportName.push_back(t->exportStr);
+		empties.push_back(t->exportStr);
 	}
 
 	for (auto& t : mEmptyMissPrograms)
 	{
-		missHitExportName.push_back(t->missShader);
+		empties.push_back(t->missShader);
 	}
 	
-	ExportAssociation missHitRootAssociation(missHitExportName.data(), static_cast<int>(missHitExportName.size()), &(emptyRootSignature.subobject));
-	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
+	ExportAssociation emptyRootAssociation(empties.data(), static_cast<int>(empties.size()), &(emptyRootSignature.subobject));
+	subobjects[index++] = emptyRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	
 	
@@ -204,7 +222,6 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 
 	uint32_t shaderConfigIndex = index++; // 10
-	//const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
 	ExportAssociation configAssociation(shaderEntryPoints.data(), static_cast<int>(shaderEntryPoints.size()), &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
