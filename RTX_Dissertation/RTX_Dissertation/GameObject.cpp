@@ -67,7 +67,7 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 		}
 
 		Instance inst{ transform, hitGroups, constantBuffers };
-		mRendererInstanceIndex = mesh->AddInstance(inst);
+		mRendererInstanceIndex = static_cast<int>(mesh->AddInstance(inst));
 	}
 
 	

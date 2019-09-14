@@ -13,7 +13,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	//Raygen 
 	int entryCount = 1;
 
-	entryCount += missPrograms.size();
+	entryCount += static_cast<int>(missPrograms.size());
 
 	auto meshDB = ResourceManager::GetMeshDB();
 	int largestHitGroupSize = 0;
@@ -22,7 +22,7 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 	{
 		for (auto& instances : mesh.second->GetInstances())
 		{
-			entryCount += instances.GetHitPrograms().size();
+			entryCount += static_cast<int>(instances.GetHitPrograms().size());
 
 			/*if (instances.GetHitPrograms().size() > largestHitGroupSize)
 			{

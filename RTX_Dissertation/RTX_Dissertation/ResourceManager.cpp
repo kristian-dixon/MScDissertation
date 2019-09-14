@@ -11,6 +11,8 @@
 
 std::map<string, shared_ptr<Mesh>> ResourceManager::mMeshDB;
 std::map<string, shared_ptr<HitProgram>> ResourceManager::mHitProgramDB;
+std::map<string, shared_ptr<MissProgram>> ResourceManager::mMissProgramDB;
+
 
 
 shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
@@ -75,3 +77,7 @@ void ResourceManager::AddHitProgram(const string& key, shared_ptr<HitProgram> hi
 	 mHitProgramDB.insert({ key, hitProgram }); 
 }
 
+void ResourceManager::AddMissProgram(const string& key, shared_ptr<MissProgram> missProgram)
+{
+	mMissProgramDB.insert({ key, missProgram });
+}

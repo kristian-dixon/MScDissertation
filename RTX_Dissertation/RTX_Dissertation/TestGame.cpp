@@ -118,14 +118,14 @@ void TestGame::LoadHitPrograms()
 	}
 
 
-	LocalRootSignature* rgsRootSignature2 = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
 
-	LocalRootSignature* rgsRootSignature = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
+	LocalRootSignature* reflectiveRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
+	LocalRootSignature* defaultMatRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
 
-	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", rgsRootSignature2));
-	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", rgsRootSignature2));
+	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
+	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
 
-	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", rgsRootSignature));
+	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", defaultMatRGS));
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
@@ -241,11 +241,11 @@ void TestGame::KeyDown(int key)
 	{
 		if(key == 37 || key == 39)
 		{
-			sunYaw += key == 37 ? 0.01 : -0.01;
+			sunYaw += key == 37 ? 0.01f : -0.01f;
 		}
 		else
 		{
-			sunPitch += key == 38 ? 0.01 : -0.01;
+			sunPitch += key == 38 ? 0.01f : -0.01f;
 		}
 
 		//Sun positioning
@@ -309,6 +309,6 @@ void TestGame::MouseInput()
 
 		mForward = forward;
 
-		mMovSpeed = state.scrollWheelValue * 0.0005 + 1.2f;
+		mMovSpeed = state.scrollWheelValue * 0.0005f + 1.2f;
 	}
 }

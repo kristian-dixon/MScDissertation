@@ -168,7 +168,7 @@ DxilLibrary RendererUtil::CreateDxilLibrary(HWND mWinHandle, std::wstring& shade
 {
 	// Compile the shader
 	ID3DBlobPtr pDxilLib = CompileLibrary(mWinHandle, shaderFilename.c_str(), L"lib_6_3");
-	return DxilLibrary(pDxilLib, entryPoints, entryPoints.size());
+	return DxilLibrary(pDxilLib, entryPoints, static_cast<uint32_t>(entryPoints.size()));
 }
 
 ID3DBlobPtr RendererUtil::CompileLibrary(HWND winHandle, const WCHAR* filename, const WCHAR* targetString)
@@ -283,7 +283,7 @@ RootSignatureDesc RendererUtil::CreateHitRootDesc(std::vector<D3D12_ROOT_PARAMET
 	desc.rootParams = params;
 
 	
-	desc.desc.NumParameters = params.size();
+	desc.desc.NumParameters = static_cast<int>(params.size());
 	desc.desc.pParameters = desc.rootParams.data();
 	desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 

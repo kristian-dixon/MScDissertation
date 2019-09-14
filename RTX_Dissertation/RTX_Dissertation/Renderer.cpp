@@ -240,7 +240,7 @@ void Renderer::BuildTLAS(const std::map<std::string, std::shared_ptr<Mesh>>& mes
 			instanceDescs[instanceIndex].InstanceMask = 0xFF;
 			instanceIndex++;
 
-			hitContributionToHitGroupIndex += instance.GetHitPrograms().size();
+			hitContributionToHitGroupIndex += static_cast<int>(instance.GetHitPrograms().size());
 
 		}
 		
@@ -451,10 +451,10 @@ void Renderer::Render()
 	size_t missOffset = mShaderTable.GetShaderTableEntrySize();
 	raytraceDesc.MissShaderTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + missOffset;
 	raytraceDesc.MissShaderTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
-	raytraceDesc.MissShaderTable.SizeInBytes = mShaderTable.GetShaderTableEntrySize() * mShaderTable.GetMissShaderCount();   // Only two miss-entries
+	raytraceDesc.MissShaderTable.SizeInBytes = static_cast<UINT64>(mShaderTable.GetMissShaderCount()) * static_cast<UINT64>(mShaderTable.GetShaderTableEntrySize());   // Only two miss-entries
 
 	// Hit is the third entry in the shader-table
-	size_t hitOffset = (mShaderTable.GetMissShaderCount() + 1) * mShaderTable.GetShaderTableEntrySize();
+	size_t hitOffset = mShaderTable.GetShaderTableEntrySize() * (mShaderTable.GetMissShaderCount() + 1);
 	raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
 	raytraceDesc.HitGroupTable.StrideInBytes = mShaderTable.GetShaderTableEntrySize();
 
@@ -464,7 +464,7 @@ void Renderer::Render()
 	{
 		for (auto& instances : mesh.second->GetInstances())
 		{
-			hitGroupsCount += instances.GetHitPrograms().size();
+			hitGroupsCount += static_cast<int>(instances.GetHitPrograms().size());
 		}
 	}
 	raytraceDesc.HitGroupTable.SizeInBytes = mShaderTable.GetShaderTableEntrySize() * hitGroupsCount;

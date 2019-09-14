@@ -139,6 +139,8 @@ struct ExportAssociation
 	{
 		subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
 		subobject.pDesc = &association;
+
+		association = D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION();
 	}
 
 	D3D12_STATE_SUBOBJECT subobject;
@@ -309,6 +311,7 @@ struct HitProgram
 	{
 		desc = {};
 		desc.AnyHitShaderImport = nullptr;
+		desc.IntersectionShaderImport = nullptr;
 		desc.ClosestHitShaderImport = chsExport;
 		desc.HitGroupExport = exportName.c_str();
 
@@ -333,6 +336,12 @@ struct MissProgram
 		
 	}
 
+	MissProgram(const WCHAR* missExport, LocalRootSignature* lrs, std::vector<ID3D12ResourcePtr>& data) : missShader(missExport), localRootSignature(lrs), boundData(data)
+	{
+
+	}
+
 	const WCHAR* missShader;
 	LocalRootSignature* localRootSignature = nullptr;
+	std::vector<ID3D12ResourcePtr> boundData;
 };

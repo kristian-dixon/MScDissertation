@@ -24,6 +24,7 @@ void RaytracingPipelineState::AddHitProgram(shared_ptr<HitProgram> hitProgram)
 
 void RaytracingPipelineState::AddMissProgram(MissProgram& missProgram)
 {
+	//TODO:: Consider that this may break (fun ref to memory - what happens if it gets deleted?)
 	if (missProgram.localRootSignature == nullptr)
 	{
 		//Add to empty list
@@ -188,7 +189,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 		missHitExportName.push_back(t->missShader);
 	}
 	
-	ExportAssociation missHitRootAssociation(missHitExportName.data(), missHitExportName.size(), &(emptyRootSignature.subobject));
+	ExportAssociation missHitRootAssociation(missHitExportName.data(), static_cast<int>(missHitExportName.size()), &(emptyRootSignature.subobject));
 	subobjects[index++] = missHitRootAssociation.subobject; // 9 Associate Root Sig to Miss and CHS
 
 	
@@ -205,7 +206,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 	uint32_t shaderConfigIndex = index++; // 10
 	//const WCHAR* shaderExports[] = { kMissShader, kClosestHitShader, kRayGenShader, kShadowChs, kShadowMiss };
-	ExportAssociation configAssociation(shaderEntryPoints.data(), shaderEntryPoints.size(), &(subobjects[shaderConfigIndex]));
+	ExportAssociation configAssociation(shaderEntryPoints.data(), static_cast<int>(shaderEntryPoints.size()), &(subobjects[shaderConfigIndex]));
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config

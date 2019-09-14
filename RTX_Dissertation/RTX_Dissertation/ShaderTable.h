@@ -19,7 +19,7 @@ public:
 
 	ID3D12ResourcePtr GetShaderTable() { return mpShaderTable; };
 
-	uint32_t GetMissShaderCount() { return missPrograms.size(); };
+	uint32_t GetMissShaderCount() { return static_cast<uint32_t>(missPrograms.size()); };
 	uint32_t GetShaderTableEntryCount() { return mShaderTableEntryCount; };
 	uint32_t GetShaderTableEntrySize() { return mShaderTableEntrySize; };
 
