@@ -636,18 +636,58 @@ void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttr
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-    payload.color = 0.5f;
+	float3 rayDirNormalized = normalize(WorldRayDirection());
+    
+	float brightness = dot(sunDir, float3(0, 1, 0));
 
-    payload.color = SkyboxColour(normalize(WorldRayDirection()), time);
 
-    payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), 1 - pow( 1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5));
+	float sunAngle = dot(rayDirNormalized, normalize(sunDir));
+	float sunStrength = pow(sunAngle, 100 - (saturate(1-brightness)) * 90);
+	float3 sunCol = lerp(float3(.75, .4, .4), float3(1, 1, 1), abs(sunStrength)) * sunStrength;
+
+
+	float3 smallClouds = SkyboxColour(rayDirNormalized * 5, time * 0.1);
+	float cloudMult = smallClouds.r + smallClouds.b;
+	smallClouds = lerp(float3(0.5, 1, 0.52), float3(.12, 0.031, 1), 1 - pow(1 - frac(cloudMult), 5)) * step(1, cloudMult);
+
+	payload.color = SkyboxColour(rayDirNormalized, time * 0.01);
+
+	float horizon = 1 - pow(1 - abs(dot(rayDirNormalized, float3(0, 1, 0))), 5);
+
+	payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), horizon) + float3(smallClouds.xx, smallClouds.z);
+
+
+	payload.color *= max(0.1,(brightness + .25));
+
+	payload.color += max(float3(0, 0, 0), sunCol);
 
 }
 
 [shader("miss")]
 void skyrim(inout RayPayload payload)
 {
-	payload.color = random(WorldRayDirection().xz);
+	float3 rayDirN = normalize(WorldRayDirection());
+
+	float horizon = smoothstep(0.2, 0.75, rayDirN.y);
+
+	float starsDense = ( pow(fbm(rayDirN.xz * 500), 20)) * horizon;
+	float3 clouds = SkyboxColour(normalize(WorldRayDirection()), time);
+
+	float fun = clouds.r + clouds.b;
+	float fun2 = sin(clouds.g + clouds.r);
+
+
+	float3 aurora = lerp(float3(0.5, 1, 0.52), float3(.12, 0.031, 0.5 + 0.5 * abs(cos(time))), 1 - pow(1 - frac(fun), 5)) * step(1, fun);
+
+
+
+
+
+	//payload.color = //starsDense * (1 - frac(clouds.r + clouds.b));	
+		//float3(0, 0, step(1, fun) * frac(fun));
+
+	payload.color = (starsDense * (rayDirN.y + 1)) + aurora;
+
 }
 
 [shader("miss")] 
