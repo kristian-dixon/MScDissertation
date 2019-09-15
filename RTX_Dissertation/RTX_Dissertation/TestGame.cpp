@@ -140,14 +140,14 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
-	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData ));
+	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData));
 	//ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss", timeBasicRGS, missData));
 
 	
 	//ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss"));
 
 
-	ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss"));
+	ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss"/*, timeBasicRGS, missData*/));
 }
 
 void TestGame::Update()

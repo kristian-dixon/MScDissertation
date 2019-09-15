@@ -75,7 +75,7 @@ struct RayPayload
 
 struct ShadowPayload
 {
-    bool hit;
+    float hit;
 };
 
 
@@ -347,7 +347,7 @@ void rayGen()
 	float softnessScatter = 0.02f;
 
     ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
-    float factor = shadowPayload.hit ? 0.1 : 1;
+    float factor = shadowPayload.hit;
 
 
     RayDesc ray;
@@ -373,7 +373,7 @@ void rayGen()
         ray.Direction = normalize(hitnormal + rndRayDir);
         TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, shadowPayload);
 
-        factor *= shadowPayload.hit ? 0.1 : 1.0;
+        factor *= shadowPayload.hit;
     }
 
 
@@ -469,7 +469,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 	float softnessScatter = 0.02f;
 
 	ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
-	float factor = shadowPayload.hit ? 0.1 : 1;
+	float factor = shadowPayload.hit;
 
 
    
@@ -560,7 +560,7 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	float softnessScatter = 0.02f;
 
 	ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
-	float factor = shadowPayload.hit ? 0.1 : 1;
+	float factor = shadowPayload.hit;
 
 	//AO ray
 	ray.Origin = posW;
@@ -614,7 +614,7 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
 [shader("closesthit")] 
 void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
 {
-    payload.hit = true;
+    payload.hit = 0.25;
 }
 
 
@@ -650,16 +650,23 @@ void miss(inout RayPayload payload)
 	float cloudMult = smallClouds.r + smallClouds.b;
 	smallClouds = lerp(float3(0.5, 1, 0.52), float3(.12, 0.031, 1), 1 - pow(1 - frac(cloudMult), 5)) * step(1, cloudMult);
 
-	payload.color = SkyboxColour(rayDirNormalized, time * 0.01);
 
 	float horizon = 1 - pow(1 - abs(dot(rayDirNormalized, float3(0, 1, 0))), 5);
 
-	payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), horizon) + float3(smallClouds.xx, smallClouds.z);
+	float starsDense = (pow(fbm(rayDirNormalized.xz * 500), 20))* (horizon) * (1-brightness);
 
 
-	payload.color *= max(0.1,(brightness + .25));
+	payload.color = SkyboxColour(rayDirNormalized, time * 0.01) * (sunAngle + 1);
 
-	payload.color += max(float3(0, 0, 0), sunCol);
+
+	payload.color *= lerp(float3(1, 1, 1), float3(0, 0, 1), horizon);
+
+
+	payload.color *= max(0.0025,(brightness + .25));
+
+	payload.color += max(0.025, (brightness + .25)) * float3(smallClouds.xx, smallClouds.z);
+
+	payload.color += max(float3(0, 0, 0), sunCol) + (starsDense * (clamp(1 - smallClouds.z, 0, 1)) * smoothstep(0.2,0.8, rayDirNormalized.y));
 
 }
 
@@ -693,7 +700,16 @@ void skyrim(inout RayPayload payload)
 [shader("miss")] 
 void shadowMiss (inout ShadowPayload payload)
 {
-    payload.hit = false;
+	/*float3 rayDirNormalized = normalize(WorldRayDirection());
+
+	float3 smallClouds = SkyboxColour(rayDirNormalized * 5, time * 0.1);
+	float cloudMult = smallClouds.r + smallClouds.b;
+	smallClouds = lerp(float3(0.5, 1, 0.52), float3(.12, 0.031, 1), 1 - pow(1 - frac(cloudMult), 5)) * step(1, cloudMult);
+
+    payload.hit = 1 - saturate(smallClouds.b);*/
+
+	payload.hit = 1;
+
 }
 
 
