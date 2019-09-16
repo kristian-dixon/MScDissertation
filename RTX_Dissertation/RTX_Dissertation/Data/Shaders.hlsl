@@ -247,6 +247,7 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 }
 
 
+
 //////////////////////////////////////////////////////////////////////////////
 /*
   _____        __     __   _____ ______ _   _    _____ _    _          _____  ______ _____   _____ 
@@ -272,7 +273,7 @@ void rayGen()
 
     float3 col = float3(0, 0, 0);
 
-    int sampleCount = 1;
+	int sampleCount = 4;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -292,8 +293,8 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(4, 0, 0);
-        TraceRay(gRtScene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+        payload.color = float3(8, 0, 0);
+        TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
 
@@ -358,7 +359,7 @@ void rayGen()
 
 	//AO ray
     ray.Origin = posW;
-    ray.TMin = 0.0001;
+    ray.TMin = 1;
     ray.TMax = 0.005;
 
     for (int i = 0; i < 1; ++i)
@@ -587,10 +588,6 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 }
 
 
-
-
-
-
 [shader("closesthit")] 
 void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -617,6 +614,130 @@ void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttr
     payload.hit = 0.25;
 }
 
+float shlick(float cosine, float ref_idx)
+{
+	float r0 = (1 - ref_idx) / (1 + ref_idx);
+	r0 = r0 * r0;
+	return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
+bool Refract(float3 v, float3 n, float ni_over_nt, inout float3 refracted)
+{
+	float3 uv = normalize(v);
+	float dt = dot(uv, n);
+	float discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
+	if (discriminant > 0)
+	{
+		refracted = ni_over_nt * (uv - n * dt) - n * sqrt(discriminant);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+[shader("closesthit")]
+void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
+{
+	payload.color.r--;
+
+	if (payload.color.r < 1) { payload.color = float3(0, 0, 0); return; }
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 outwardNormal;
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
+
+	float3 rayDirN = (WorldRayDirection());
+	float3 reflected = reflect(rayDirN, hitnormal);
+	
+	float ni_over_nt;
+
+	float3 attenuation = float3(1, 1, 1);
+
+	float3 refracted;
+	float reflect_prob;
+	float cosine;
+
+	if (dot(rayDirN, hitnormal) > 0)
+	{
+		outwardNormal = -hitnormal;
+		ni_over_nt = scatter;
+		cosine = scatter * dot(rayDirN, hitnormal) / length(rayDirN);
+	}
+	else
+	{
+		outwardNormal = hitnormal;
+		ni_over_nt = 1.0 / scatter;
+		cosine = -dot(rayDirN, hitnormal) / length(rayDirN);
+	}
+
+	if (Refract(rayDirN, outwardNormal, ni_over_nt, refracted))
+	{
+		reflect_prob = shlick(cosine, scatter);
+	}
+	else
+	{
+		reflect_prob = 1.0;
+	}
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.TMin = 0.25;
+	ray.TMax = 100000;
+	if (random(float2(seed * (payload.color.r + 412), seed)) < reflect_prob)
+	{
+		//Fire reflection ray
+		ray.Direction = reflected;
+	}
+	else
+	{
+		//Fire refraction ray
+		ray.Direction = refracted;
+
+		//payload.color = float3(1, 0, 0);
+	}
+
+	TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+}
+
+
+[shader("closesthit")]
+void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color.r--;
+
+	if (payload.color.r > 0)
+	{
+		float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+		uint vertId = PrimitiveIndex() * 3;
+
+		float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+		float3 posW = GetWorldHitPosition();
+		//float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
+
+		RayDesc ray;
+		ray.Origin = posW;
+		ray.Direction = hitnormal;// +RandomUnitInSphere(seed) * 0.05;
+
+		ray.TMin = 0.01;
+		ray.TMax = 100000;
+
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		payload.color *= 0.5;
+	}
+	else
+	{
+		payload.color = float3(0, 0, 0);
+	}
+}
 
 
 
@@ -730,42 +851,3 @@ void shadowMiss (inout ShadowPayload payload)
 
 
 
-
-
-[shader("closesthit")]
-void fancyPants(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-    payload.color.r -= 1;
-
-    float3 posW = GetWorldHitPosition();
-
-
-    float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-
-    uint vertId = PrimitiveIndex() * 3;
-    float3 hitnormal = GetHitNormal(vertId, barycentrics);
-
-    if (payload.color.r > 0)
-    {
-        float seed = 1;
-        RayDesc ray;
-        ray.Origin = posW;
-        if (false)
-        {
-            ray.Direction = reflect(WorldRayDirection() /*+ RandomUnitInSphere(seed * (1 + 1)) * 0.05)*/, hitnormal + RandomUnitInSphere(seed) * 0.025); //normalize(float3(0.25, 0.5, -0.35));
-        }
-        else
-        {
-            ray.Direction = (hitnormal + RandomUnitInSphere(seed)); //normalize(reflect(rayDirW, hitnormal)); //normalize(float3(0.25, 0.5, -0.35));
-        }
-        ray.TMin = 0.001;
-        ray.TMax = 100000;
-
-        TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-        payload.color *= 0.5;
-    }
-    else
-    {
-        payload.color = float3(0, 0, 0); // SkyboxColour(normalize(rayDirW));
-    }
-}

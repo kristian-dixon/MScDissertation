@@ -133,12 +133,17 @@ void TestGame::LoadShaderPrograms()
 
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
+	ResourceManager::AddHitProgram("TranslucentHitGroup", make_shared<HitProgram>(nullptr, L"translucent", L"TranslucentHitGroup", reflectiveRGS));
+
+
 
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", defaultMatRGS));
+	ResourceManager::AddHitProgram("LambertianHitGroup", make_shared<HitProgram>(nullptr, L"lambertian", L"LambertianHitGroup", defaultMatRGS));
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
+	//TranslucentHitGroup
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
 	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData));
 	//ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss", timeBasicRGS, missData));
