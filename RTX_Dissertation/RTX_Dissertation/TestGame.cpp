@@ -146,10 +146,7 @@ void TestGame::LoadShaderPrograms()
 	//TranslucentHitGroup
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
 	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData));
-	//ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss", timeBasicRGS, missData));
-
 	
-	//ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss"));
 
 
 	ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss"/*, timeBasicRGS, missData*/));

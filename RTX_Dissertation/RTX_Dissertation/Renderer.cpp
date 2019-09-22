@@ -103,37 +103,56 @@ ID3D12ResourcePtr Renderer::CreateIndexBuffer(const std::vector<uint32_t>& verts
 AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 {
 	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
-
+	uint32_t geometryCount = 0;
 	auto& vbos = mesh->GetVBOs();
-	auto& vertexCount = mesh->GetVertexCounts();
 
-	auto& indices = mesh->GetIndices();
-	auto& indexCounts = mesh->GetIndexCounts();
-
-	auto indicesSize = indices.size();
-	uint32_t geometryCount = vbos.size();
-	geomDesc.resize(geometryCount);
-
-	//Setup descriptors for each geometry in the Mesh
-	for (uint32_t i = 0; i < geometryCount; i++)
+	if (!vbos.empty())
 	{
-		geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-		geomDesc[i].Triangles.VertexBuffer.StartAddress = vbos[i]->GetGPUVirtualAddress();
-		geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
-		geomDesc[i].Triangles.VertexCount = vertexCount[i];
-		geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 
-		if(i < indicesSize)
+		auto& vertexCount = mesh->GetVertexCounts();
+
+		auto& indices = mesh->GetIndices();
+		auto& indexCounts = mesh->GetIndexCounts();
+
+		auto indicesSize = indices.size();
+		geometryCount = vbos.size();
+		geomDesc.resize(geometryCount);
+
+		//Setup descriptors for each geometry in the Mesh
+		for (uint32_t i = 0; i < geometryCount; i++)
 		{
-			geomDesc[i].Triangles.IndexBuffer = indices[i]->GetGPUVirtualAddress();
-			geomDesc[i].Triangles.IndexCount = mesh->GetIndexCounts()[i];
-			geomDesc[i].Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+			geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+			geomDesc[i].Triangles.VertexBuffer.StartAddress = vbos[i]->GetGPUVirtualAddress();
+			geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+			geomDesc[i].Triangles.VertexCount = vertexCount[i];
+			geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+
+			if (i < indicesSize)
+			{
+				geomDesc[i].Triangles.IndexBuffer = indices[i]->GetGPUVirtualAddress();
+				geomDesc[i].Triangles.IndexCount = mesh->GetIndexCounts()[i];
+				geomDesc[i].Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+			}
+
+			geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 		}
-
-		geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 	}
+	else
+	{
+		//Intersection AABB 
+		geomDesc.resize(1);
+
+		geomDesc[0].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
+		
+		geomDesc[0].AABBs.AABBCount = 1;
+		geomDesc[0].AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
+		geomDesc[0].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+		geomDesc[0].AABBs.AABBs.StartAddress = mesh->GetAABB()->GetGPUVirtualAddress();
+		geometryCount = 1;
 
 
+	}
 	// Get the size requirements for the scratch and AS buffers
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;

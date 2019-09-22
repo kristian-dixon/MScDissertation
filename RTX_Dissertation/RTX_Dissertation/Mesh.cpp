@@ -4,6 +4,10 @@ Mesh::Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCount
 {
 }
 
+Mesh::Mesh(ID3D12ResourcePtr aabb) : aabbBuffer(aabb)
+{
+}
+
 size_t Mesh::AddInstance(Instance& val)
 {
 	mInstances.push_back(val);

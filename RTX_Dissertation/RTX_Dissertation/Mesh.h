@@ -8,8 +8,9 @@ class Mesh
 {
 public:
 	Mesh(std::vector<ID3D12ResourcePtr>& vbo, std::vector<uint32_t>& vertCounts, std::vector<ID3D12ResourcePtr> &indexPtrs, std::vector<uint32_t>& indexCounts);
+	Mesh(ID3D12ResourcePtr aabb);
+	
 
-	//hmm pass by ref?
 	//**********************************************//
 	//Adds an instance to be uploaded into the TLAS
 	//Returns: index of instance entry
@@ -39,7 +40,7 @@ public:
 	std::vector<ID3D12ResourcePtr>& GetIndices() { return mIndices; };
 	const std::vector<uint32_t>& GetIndexCounts() const { return mIndicesCounts; };
 
-
+	ID3D12ResourcePtr GetAABB() { return aabbBuffer; }
 
 
 private:
@@ -50,6 +51,9 @@ private:
 	//Index data
 	std::vector<ID3D12ResourcePtr> mIndices;
 	std::vector<uint32_t> mIndicesCounts;
+
+	//AABB data
+	ID3D12ResourcePtr aabbBuffer = nullptr;
 
 	//Ptr to the BLAS
 	AccelerationStructureBuffers mBLAS;
