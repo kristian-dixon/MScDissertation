@@ -41,8 +41,16 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	for (int i = 0; i < goList.size(); i++)
 	{
-		test.LoadFromJson(goList[i], worldCB);
+		//test.LoadFromJson(goList[i], worldCB);
 	}
+
+	auto aabbTest = ResourceManager::RequestMesh("Banana");
+
+	auto mat = identity<mat4>();
+	auto empty = vector<ID3D12ResourcePtr>();
+	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup")}, empty };
+
+	aabbTest->AddInstance(k);
 
 	//Create final renderer resources
 	renderer->CreateDXRResources();
@@ -142,6 +150,10 @@ void TestGame::LoadShaderPrograms()
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
+
+	ResourceManager::AddHitProgram("SphereIntersectHitGroup", make_shared<HitProgram>(L"SphereIntersect", L"SphereClosestHit", L"SphereIntersectHitGroup"));
+
+
 
 	//TranslucentHitGroup
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);

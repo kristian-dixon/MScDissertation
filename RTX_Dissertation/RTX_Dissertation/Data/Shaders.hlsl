@@ -79,7 +79,10 @@ struct ShadowPayload
 };
 
 
-
+struct SphereAttribs
+{
+	float3 sphereCenter;
+};
 
 
 
@@ -835,10 +838,36 @@ void shadowMiss (inout ShadowPayload payload)
 
 
 
+/********************************/
+/*Intersection shaders - Get big words or this is sad*/
 
 
+[shader("intersection")]
+void SphereIntersect()
+{
+	float3 sphereCenter = float3(0, 0, 0);
+	float sphereRadius = 2;
 
+	float3 toCenter = WorldRayOrigin() - sphereCenter;
+	float a = dot(WorldRayDirection(), WorldRayDirection());
+	float b = 2.0f * dot(WorldRayDirection(), toCenter);
+	float c = dot(toCenter, toCenter) - sphereRadius * sphereRadius;
 
+	if (b * b >= 4.0f * a * c)
+	{
+		float sqrtVal = sqrt(b * b - 4.0f * a * c);
+		SphereAttribs sphereAttr = { sphereCenter };
+		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
+		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
+	}
+}
+
+[shader("closesthit")]
+void SphereClosestHit(inout RayPayload pay, SphereAttribs attribs)
+{
+	float3 posW = GetWorldHitPosition();
+	pay.color = normalize(posW - attribs.sphereCenter);
+}
 
 
 

@@ -307,22 +307,33 @@ struct Camera
 
 struct HitProgram
 {
-	HitProgram(LPCWSTR ahsExport, const WCHAR* chsExport, const std::wstring name, LocalRootSignature* lrs = nullptr) : exportName(name), localRootSignature(lrs)
+	HitProgram(const WCHAR* intShader, const WCHAR* chsExport, const std::wstring name, LocalRootSignature* lrs = nullptr) : exportName(name), localRootSignature(lrs)
 	{
 		desc = {};
 		desc.AnyHitShaderImport = nullptr;
-		desc.IntersectionShaderImport = nullptr;
+		desc.IntersectionShaderImport = intShader;
 		desc.ClosestHitShaderImport = chsExport;
 		desc.HitGroupExport = exportName.c_str();
 
+		if(intShader != nullptr)
+		{
+			desc.Type = D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE;
+		}
+
 		subObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+
 		subObject.pDesc = &desc;
 
-		exportStr = chsExport;
+		exportAHSStr = L"";//ahsExport;
+		exportINTStr = intShader;
+		exportCHSStr = chsExport;
 	}
 
 	std::wstring exportName;
-	const WCHAR* exportStr;
+	const WCHAR* exportAHSStr;
+	const WCHAR* exportINTStr;
+	const WCHAR* exportCHSStr;
+
 
 	D3D12_HIT_GROUP_DESC desc;
 	D3D12_STATE_SUBOBJECT subObject;

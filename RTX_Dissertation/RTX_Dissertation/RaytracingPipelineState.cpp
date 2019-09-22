@@ -54,17 +54,17 @@ void RaytracingPipelineState::GetEntryPoints(vector<const WCHAR*>& entryPoints)
 	{
 		if(mHitPrograms[i]->desc.AnyHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i]->exportStr);
+			entryPoints.push_back(mHitPrograms[i]->exportAHSStr);
 		}
 
 		if (mHitPrograms[i]->desc.ClosestHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i]->exportStr);
+			entryPoints.push_back(mHitPrograms[i]->exportCHSStr);
 		}
 
 		if (mHitPrograms[i]->desc.IntersectionShaderImport != nullptr)
 		{
-			entryPoints.push_back(mHitPrograms[i]->exportStr);
+			entryPoints.push_back(mHitPrograms[i]->exportINTStr);
 		}
 	}
 
@@ -72,17 +72,17 @@ void RaytracingPipelineState::GetEntryPoints(vector<const WCHAR*>& entryPoints)
 	{
 		if (mEmptyHitPrograms[i]->desc.AnyHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportAHSStr);
 		}
 
 		if (mEmptyHitPrograms[i]->desc.ClosestHitShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportCHSStr);
 		}
 
 		if (mEmptyHitPrograms[i]->desc.IntersectionShaderImport != nullptr)
 		{
-			entryPoints.push_back(mEmptyHitPrograms[i]->exportStr);
+			entryPoints.push_back(mEmptyHitPrograms[i]->exportINTStr);
 		}
 	}
 }	
@@ -155,7 +155,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 		uint32_t hitRootIndex = index++; // 5
 		
-		ExportAssociation association(&hitProgram->exportStr, &(subobjects[hitRootIndex]));
+		ExportAssociation association(&hitProgram->exportCHSStr, &(subobjects[hitRootIndex]));
 
 		exportAssociations[counter].association = association.association;
 
@@ -198,7 +198,12 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	vector<const WCHAR*> empties;
 	for(auto& t : mEmptyHitPrograms)
 	{
-		empties.push_back(t->exportStr);
+		if(t->desc.IntersectionShaderImport != nullptr)
+		{
+			empties.push_back(t->exportINTStr);
+
+		}
+		empties.push_back(t->exportCHSStr);
 	}
 
 	for (auto& t : mEmptyMissPrograms)
@@ -213,7 +218,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	
 	
 	// Bind the payload size to the programs
-	ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 3);
+	ShaderConfig shaderConfig(sizeof(float) * 3, sizeof(float) * 3);
 	subobjects[index] = shaderConfig.subobject; // 10 Shader Config
 
 
