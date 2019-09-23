@@ -327,6 +327,12 @@ struct HitProgram
 		exportAHSStr = L"";//ahsExport;
 		exportINTStr = intShader;
 		exportCHSStr = chsExport;
+
+		if (intShader) { entryPoints.push_back(exportINTStr); };
+		if (desc.AnyHitShaderImport) { entryPoints.push_back(exportAHSStr); };
+
+		entryPoints.push_back(exportCHSStr);
+
 	}
 
 	std::wstring exportName;
@@ -334,6 +340,7 @@ struct HitProgram
 	const WCHAR* exportINTStr;
 	const WCHAR* exportCHSStr;
 
+	std::vector<const WCHAR*> entryPoints;
 
 	D3D12_HIT_GROUP_DESC desc;
 	D3D12_STATE_SUBOBJECT subObject;

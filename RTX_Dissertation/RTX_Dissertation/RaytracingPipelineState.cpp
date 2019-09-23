@@ -154,8 +154,8 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 		subobjects[index] = hitRootSignatures[counter].subobject; // 5 Triangle Hit Root Sig
 
 		uint32_t hitRootIndex = index++; // 5
-		
-		ExportAssociation association(&hitProgram->exportCHSStr, &(subobjects[hitRootIndex]));
+
+		ExportAssociation association(hitProgram->entryPoints.data(), hitProgram->entryPoints.size(), &(subobjects[hitRootIndex]));
 
 		exportAssociations[counter].association = association.association;
 
