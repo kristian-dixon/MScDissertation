@@ -846,7 +846,7 @@ void shadowMiss (inout ShadowPayload payload)
 void SphereIntersect()
 {
 	float3 sphereCenter = float3(0, 0, 0);
-	float sphereRadius = 2;
+	float sphereRadius = 2 + sin(time) * 1;
 
 	float3 toCenter = WorldRayOrigin() - sphereCenter;
 	float a = dot(WorldRayDirection(), WorldRayDirection());
@@ -866,7 +866,7 @@ void SphereIntersect()
 void SphereClosestHit(inout RayPayload pay, SphereAttribs attribs)
 {
 	float3 posW = GetWorldHitPosition();
-	pay.color = normalize(posW - attribs.sphereCenter);
+	pay.color = dot(sunDir, normalize(posW - attribs.sphereCenter));
 }
 
 

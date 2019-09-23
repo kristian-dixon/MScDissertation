@@ -47,7 +47,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	auto aabbTest = ResourceManager::RequestMesh("Banana");
 
 	auto mat = identity<mat4>();
-	auto empty = vector<ID3D12ResourcePtr>();
+	auto empty = vector<ID3D12ResourcePtr>(); empty.push_back(worldCB);
 	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup")}, empty };
 
 	aabbTest->AddInstance(k);
@@ -95,6 +95,28 @@ void TestGame::LoadShaderPrograms()
 		
 	}
 
+
+	vector<D3D12_ROOT_PARAMETER> intRootParams(3);
+	{
+		
+
+		intRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+		intRootParams[0].Descriptor.RegisterSpace = 0;
+		intRootParams[0].Descriptor.ShaderRegister = 0;
+
+
+		intRootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		intRootParams[1].Descriptor.RegisterSpace = 0;
+		intRootParams[1].Descriptor.ShaderRegister = 4;
+
+
+		intRootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		intRootParams[2].Descriptor.RegisterSpace = 0;
+		intRootParams[2].Descriptor.ShaderRegister = 3;
+
+
+	}
+
 	vector<D3D12_ROOT_PARAMETER> metalRootParams(7);
 	{
 		metalRootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -138,6 +160,8 @@ void TestGame::LoadShaderPrograms()
 	LocalRootSignature* defaultMatRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(chsRootParams).desc);
 	LocalRootSignature* reflectiveRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(metalRootParams).desc);
 	LocalRootSignature* timeBasicRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(missRootParams).desc);
+	LocalRootSignature* intRGS = new LocalRootSignature(renderer->GetWindowHandle(), renderer->GetDevice(), RendererUtil::CreateHitRootDesc(intRootParams).desc);
+
 
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
@@ -151,7 +175,7 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
-	ResourceManager::AddHitProgram("SphereIntersectHitGroup", make_shared<HitProgram>(L"SphereIntersect", L"SphereClosestHit", L"SphereIntersectHitGroup"));
+	ResourceManager::AddHitProgram("SphereIntersectHitGroup", make_shared<HitProgram>(L"SphereIntersect", L"SphereClosestHit", L"SphereIntersectHitGroup", intRGS));
 
 
 
