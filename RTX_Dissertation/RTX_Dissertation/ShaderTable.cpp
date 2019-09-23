@@ -89,10 +89,13 @@ void ShaderTable::BuildShaderTable(HWND windowHandle, ID3D12Device5Ptr device, I
 					uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 					assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
 
-					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetVBOs()[0]->GetGPUVirtualAddress();
+					if (!mesh.second->GetVBOs().empty())
+					{
+						*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetVBOs()[0]->GetGPUVirtualAddress();
 
-					pCbDesc += 8; //Wow this actually worked
-					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[0]->GetGPUVirtualAddress();
+						pCbDesc += 8; //Wow this actually worked
+						*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mesh.second->GetIndices()[0]->GetGPUVirtualAddress();
+					}
 
 					pCbDesc += 8;
 					*(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = tlas.pResult->GetGPUVirtualAddress();
