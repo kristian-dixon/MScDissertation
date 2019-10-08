@@ -41,9 +41,10 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	for (int i = 0; i < goList.size(); i++)
 	{
-		//test.LoadFromJson(goList[i], worldCB);
+		test.LoadFromJson(goList[i], worldCB);
 	}
 
+	/*
 	auto aabbTest = ResourceManager::RequestMesh("Banana");
 
 	auto mat = identity<mat4>();
@@ -52,6 +53,11 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	aabbTest->AddInstance(k);
 
+	mat = translate(mat, vec3(10, 10, 0));
+	Instance kd{mat , {ResourceManager::RequestHitProgram("SphereIntersectHitGroup")}, empty };
+
+	aabbTest->AddInstance(kd);
+	*/
 	//Create final renderer resources
 	renderer->CreateDXRResources();
 

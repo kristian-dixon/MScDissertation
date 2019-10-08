@@ -234,7 +234,16 @@ float3 GetWorldHitPosition()
     return posW;
 }
 
+float3 RandomInDisk(float seed)
+{
+	float3 p = 2*float3(random(float2(seed, seed * 421.52)), random(float2((seed + 17312) * 2.124, seed * 421.52)), 0);
 
+	if (dot(p, p) >= 1)
+	{
+		p = normalize(p) * 0.999999f;
+	}
+	return p;
+}
 
 ShadowPayload FireShadowRay(float3 origin, float3 dir)
 {
@@ -271,12 +280,12 @@ void rayGen()
 
 	
 
+
 	// #DXR Extra: Perspective Camera
 	// Perspective
-
     float3 col = float3(0, 0, 0);
 
-	int sampleCount = 4;
+	int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -306,6 +315,8 @@ void rayGen()
 	//col = sqrt(col);
     col = linearToSrgb(col);
     gOutput[launchIndex.xy] = float4(col, 1);
+
+
 }
 
 
@@ -329,7 +340,9 @@ void rayGen()
 [shader("closesthit")]
  void chs(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    payload.color.r -= 1;
+    payload.color.r = 1;
+
+	return;
 
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
     uint vertId = PrimitiveIndex() * 3;
@@ -652,7 +665,7 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 	uint vertId = PrimitiveIndex() * 3;
 
 	float3 outwardNormal;
-	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+	float3 hitnormal = -GetHitNormal(vertId, barycentrics);
 
 	float3 posW = GetWorldHitPosition();
 	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
@@ -760,6 +773,11 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
+	float horizon = 1 - pow(1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5);
+	payload.color = lerp(float3(1, 1, 1), float3(0, 0, 1), horizon);
+
+	return;
+
 	float3 rayDirNormalized = normalize(WorldRayDirection());
     
 	float brightness = dot(sunDir, float3(0, 1, 0));
@@ -775,7 +793,7 @@ void miss(inout RayPayload payload)
 	smallClouds = lerp(float3(0.5, 1, 0.52), float3(.12, 0.031, 1), 1 - pow(1 - frac(cloudMult), 5)) * step(1, cloudMult);
 
 
-	float horizon = 1 - pow(1 - abs(dot(rayDirNormalized, float3(0, 1, 0))), 5);
+	//float horizon = 1 - pow(1 - abs(dot(rayDirNormalized, float3(0, 1, 0))), 5);
 
 	float starsDense = (pow(fbm(rayDirNormalized.xz * 500), 20))* (horizon) * (1-brightness);
 
@@ -791,7 +809,9 @@ void miss(inout RayPayload payload)
 	payload.color += max(0.025, (brightness + .25)) * float3(smallClouds.xx, smallClouds.z);
 
 	payload.color += max(float3(0, 0, 0), sunCol) + (starsDense * (clamp(1 - smallClouds.z, 0, 1)) * smoothstep(0.2,0.8, rayDirNormalized.y));
+	
 
+	//payload.color = float3(0, 0, 0);
 }
 
 [shader("miss")]
