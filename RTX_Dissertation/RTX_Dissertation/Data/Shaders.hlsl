@@ -310,7 +310,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(20, 0, 0);
+        payload.color = float3(10, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -470,7 +470,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
     RayDesc ray;
     ray.Origin = posW;
-    ray.Direction = reflect(WorldRayDirection()/* + RandomUnitInSphere(seed) * scatter*/, hitnormal);
+    ray.Direction = reflect(WorldRayDirection(), hitnormal) + RandomUnitInSphere(seed) * scatter;
     //ray.Direction = reflect(WorldRayDirection(), hitnormal + RandomUnitInSphere(seed) * scatter);
 
     ray.TMin = 0.1;
