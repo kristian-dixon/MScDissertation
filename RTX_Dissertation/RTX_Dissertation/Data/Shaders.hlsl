@@ -24,10 +24,11 @@ cbuffer CameraParams : register(b0)
     float4x4 projectionI;
 }
 
+#define albedo = matColour
 
 cbuffer ColourBuffer : register(b1)
 {
-    float3 matColour;
+    float3 matColour; // aka albedo
     float pad1;
     float3 specularColour;
     float pad2;
@@ -52,10 +53,13 @@ cbuffer WorldBuffer : register(b3)
     float time;
 }
 
+
 cbuffer TransformBuffer : register(b4)
 {
 	float4x4 transform;
 }
+
+
 
 struct STriVertex
 {
@@ -285,7 +289,8 @@ void rayGen()
 	// Perspective
     float3 col = float3(0, 0, 0);
 
-	int sampleCount = 1;
+
+	int sampleCount = 4;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -305,7 +310,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(8, 0, 0);
+        payload.color = float3(20, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -465,7 +470,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
     RayDesc ray;
     ray.Origin = posW;
-    ray.Direction = reflect(WorldRayDirection() + RandomUnitInSphere(seed) * scatter, hitnormal);
+    ray.Direction = reflect(WorldRayDirection()/* + RandomUnitInSphere(seed) * scatter*/, hitnormal);
     //ray.Direction = reflect(WorldRayDirection(), hitnormal + RandomUnitInSphere(seed) * scatter);
 
     ray.TMin = 0.1;
@@ -473,15 +478,19 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 	
 
 	//Reflection ray
-    if (payload.color.r > 0)
+    if (payload.color.r > 0 && dot(ray.Direction, hitnormal))
     {
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+
+		payload.color *= matColour;
     }
     else
     {
         payload.color = float3(0, 0, 0);
     }
 
+
+	/*
 //Shadow ray
 	float softnessScatter = 0.02f;
 
@@ -506,9 +515,9 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }*/
 
 
-    float colour = saturate(dot(hitnormal, sunDir));
+    //float colour = saturate(dot(hitnormal, sunDir));
     
-    payload.color = factor * lerp(payload.color, colour * matColour, 0.25);
+   // payload.color = factor * lerp(payload.color, colour * matColour, 0.25);
 	//payload.color = lerp(payload.color, colour * factor * matColour, 0.75);
 
 }
@@ -729,30 +738,38 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 {
 	payload.color.r--;
 
+	
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float3 target = posW + hitnormal + (RandomUnitInSphere(seed));
+		
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = target - posW;// +RandomUnitInSphere(seed) * 0.05;
+
 	if (payload.color.r > 0)
 	{
-		float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-		uint vertId = PrimitiveIndex() * 3;
-
-		float3 hitnormal = GetHitNormal(vertId, barycentrics);
-
-		float3 posW = GetWorldHitPosition();
-		//float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
-
-		RayDesc ray;
-		ray.Origin = posW;
-		ray.Direction = hitnormal;// +RandomUnitInSphere(seed) * 0.05;
-
 		ray.TMin = 0.01;
 		ray.TMax = 100000;
 
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= 0.5;
+		payload.color *= matColour;
 	}
 	else
 	{
-		payload.color = float3(0, 0, 0);
+		float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
+		payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
+		payload.color = float3(0,0,0);
+		return;
 	}
+	
 }
 
 
@@ -773,8 +790,13 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
+
+	float3 unit_dir = WorldRayDirection();
+	float t = 0.5 * (clamp(unit_dir.y, -1, 1) + 1.0);
+	payload.color = lerp(float3(1, 1, 1), float3(0.5, 0.7, 1.0), t);
+
 	float horizon = 1 - pow(1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5);
-	payload.color = lerp(float3(1, 1, 1), float3(0, 0, 1), horizon);
+	//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
 
 	return;
 
