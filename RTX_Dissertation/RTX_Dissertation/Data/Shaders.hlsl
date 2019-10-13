@@ -471,7 +471,6 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     RayDesc ray;
     ray.Origin = posW;
     ray.Direction = reflect(WorldRayDirection(), hitnormal) + RandomUnitInSphere(seed) * scatter;
-    //ray.Direction = reflect(WorldRayDirection(), hitnormal + RandomUnitInSphere(seed) * scatter);
 
     ray.TMin = 0.1;
     ray.TMax = 100000;
@@ -674,7 +673,7 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 	uint vertId = PrimitiveIndex() * 3;
 
 	float3 outwardNormal;
-	float3 hitnormal = -GetHitNormal(vertId, barycentrics);
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
 
 	float3 posW = GetWorldHitPosition();
 	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
