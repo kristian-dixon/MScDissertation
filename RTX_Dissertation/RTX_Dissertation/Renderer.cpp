@@ -51,7 +51,7 @@ void Renderer::InitDXR()
 	RendererUtil::D3DCall(mWinHandle, CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory)));
 	mpDevice = RendererUtil::CreateDevice(mWinHandle, pDxgiFactory);
 	mpCmdQueue = RendererUtil::CreateCommandQueue(mWinHandle, mpDevice);
-	mpSwapChain = RendererUtil::CreateDxgiSwapChain(mWinHandle, pDxgiFactory, mSwapChainSize.x, mSwapChainSize.y, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
+	mpSwapChain = RendererUtil::CreateDxgiSwapChain(mWinHandle, pDxgiFactory, mSwapChainSize.x , mSwapChainSize.y, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
 
 	
 

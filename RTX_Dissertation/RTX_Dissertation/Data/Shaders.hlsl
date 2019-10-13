@@ -249,6 +249,32 @@ float3 RandomInDisk(float seed)
 	return p;
 }
 
+
+float shlick(float cosine, float ref_idx)
+{
+	float r0 = (1 - ref_idx) / (1 + ref_idx);
+	r0 = r0 * r0;
+	return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
+bool Refract(float3 v, float3 n, float ni_over_nt, inout float3 refracted)
+{
+	float3 uv = normalize(v);
+	float dt = dot(uv, n);
+	float discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
+	if (discriminant > 0)
+	{
+		refracted = ni_over_nt * (uv - n * dt) - n * sqrt(discriminant);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+
 ShadowPayload FireShadowRay(float3 origin, float3 dir)
 {
     ShadowPayload payload;
@@ -279,11 +305,16 @@ ShadowPayload FireShadowRay(float3 origin, float3 dir)
 [shader("raygeneration")]
 void rayGen()
 {
+
+
     uint3 launchIndex = DispatchRaysIndex();
     uint3 launchDim = DispatchRaysDimensions();
-
-	
-
+	/*
+	if (length(((float3)launchIndex / (float3)launchDim).xy - 0.5) > 0.5)
+	{
+		return;
+	}
+	*/
 
 	// #DXR Extra: Perspective Camera
 	// Perspective
@@ -310,7 +341,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(10, 0, 0);
+        payload.color = float3(5, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -521,7 +552,6 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
 }
 
-
 [shader("closesthit")]
 void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -611,7 +641,6 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	//payload.color = float3(r,g,b);
 }
 
-
 [shader("closesthit")] 
 void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -630,7 +659,6 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
     payload.color = float3(x * z, 0, x * z);
 }
 
-
 //Any hit would be faster but it's currently disabled in the TLAS
 [shader("closesthit")] 
 void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
@@ -638,29 +666,6 @@ void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttr
     payload.hit = 0.25;
 }
 
-float shlick(float cosine, float ref_idx)
-{
-	float r0 = (1 - ref_idx) / (1 + ref_idx);
-	r0 = r0 * r0;
-	return r0 + (1 - r0) * pow((1 - cosine), 5);
-}
-
-bool Refract(float3 v, float3 n, float ni_over_nt, inout float3 refracted)
-{
-	float3 uv = normalize(v);
-	float dt = dot(uv, n);
-	float discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
-	if (discriminant > 0)
-	{
-		refracted = ni_over_nt * (uv - n * dt) - n * sqrt(discriminant);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-
-}
 
 [shader("closesthit")]
 void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
@@ -729,6 +734,7 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 	}
 
 	TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+	payload.color *= matColour;
 }
 
 
@@ -736,7 +742,6 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
-
 	
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 	uint vertId = PrimitiveIndex() * 3;
@@ -771,7 +776,11 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	
 }
 
-
+[shader("closesthit")]
+void emissive(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color = matColour;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -790,9 +799,12 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 void miss(inout RayPayload payload)
 {
 
+	payload.color = float3(0, 0, 0);
+	//return;
+
 	float3 unit_dir = WorldRayDirection();
 	float t = 0.5 * (clamp(unit_dir.y, -1, 1) + 1.0);
-	payload.color = lerp(float3(1, 1, 1), float3(0.5, 0.7, 1.0), t);
+	payload.color = lerp(float3(1, 1, 1), float3(0.5, 0.7, 1.0), t) * 0.1f;
 
 	float horizon = 1 - pow(1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5);
 	//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
