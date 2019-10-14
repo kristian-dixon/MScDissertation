@@ -898,7 +898,7 @@ void shadowMiss (inout ShadowPayload payload)
 [shader("intersection")]
 void SphereIntersect()
 {
-	float3 sphereCenter = float3(0, 0, 0);
+	/*float3 sphereCenter = float3(0, 0, 0);
 	float sphereRadius = 2 + sin(time) * 1;
 
 	float3 toCenter = WorldRayOrigin() - sphereCenter;
@@ -912,8 +912,67 @@ void SphereIntersect()
 		SphereAttribs sphereAttr = { sphereCenter };
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
+	}*/
+
+	float3 origin = WorldRayOrigin();
+	float3 rayDir = normalize(WorldRayDirection());
+
+	float3 rayEnd = rayDir * 100;
+
+	//Box dimensions
+	float3 dim = float3(1, 1, 1);
+
+	float tMin = (-dim.x - origin.x) / rayDir.x;
+	float tMax = (dim.x - origin.x) / rayDir.x;
+
+	if (tMax < tMin) 
+	{ 
+		float temp = tMax;
+		tMax = tMin;
+		tMin = temp;
 	}
 
+	float tyMin = (-dim.y - origin.y) / rayDir.y;
+	float tyMax = (dim.y - origin.y) / rayDir.y;
+
+	if (tyMax < tyMin)
+	{
+		float temp = tyMax;
+		tyMax = tyMin;
+		tyMin = temp;
+	}
+
+	if ((tMin > tyMax) || (tyMin > tMax)) return;
+
+	if (tyMin > tMin)
+		tMin = tyMin;
+
+	if (tyMax < tMax)
+		tMax = tyMax;
+
+	//
+
+	float tzMin = (-dim.z - origin.z) / rayDir.z;
+	float tzMax = (dim.z - origin.z) / rayDir.z;
+
+	if (tzMax < tzMin)
+	{
+		float temp = tzMax;
+		tzMax = tzMin;
+		tzMin = temp;
+	}
+
+	if ((tMin > tzMax) || (tzMin > tMax)) return;
+
+	if (tzMin > tMin)
+		tMin = tzMin;
+
+	if (tzMax < tMax)
+		tMax = tzMax;
+
+	SphereAttribs sphereAttr = { float3(0,0,0) };
+	ReportHit(tMin, 0, sphereAttr);
+	ReportHit(tMax, 0, sphereAttr);
 
 }
 
