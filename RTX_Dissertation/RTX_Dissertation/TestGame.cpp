@@ -41,18 +41,18 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	for (int i = 0; i < goList.size(); i++)
 	{
-		//test.LoadFromJson(goList[i], worldCB);
+		test.LoadFromJson(goList[i], worldCB);
 	}
 
 	
 	auto aabbTest = ResourceManager::RequestMesh("Banana");
 
 	auto mat = identity<mat4>();
-	mat = scale(mat, glm::vec3(100, 100, 100));
+	//mat = scale(mat, glm::vec3(100, 100, 100));
 
-	mat = translate(mat, glm::vec3(10, 0, 10));
+	mat = translate(mat, glm::vec3(10, 10, 10));
 	auto empty = vector<ID3D12ResourcePtr>(); empty.push_back(worldCB);
-	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup")}, empty };
+	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup"), ResourceManager::RequestHitProgram("ShadowHitGroup")}, empty };
 
 	aabbTest->AddInstance(k);
 
@@ -180,6 +180,7 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
 	ResourceManager::AddHitProgram("SphereIntersectHitGroup", make_shared<HitProgram>(L"SphereIntersect", L"SphereClosestHit", L"SphereIntersectHitGroup", intRGS));
+
 
 
 

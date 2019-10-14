@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 25;
+	int sampleCount = 2;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -376,10 +376,7 @@ void rayGen()
 [shader("closesthit")]
  void chs(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    payload.color.r = 1;
-
-	return;
-
+    
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
     uint vertId = PrimitiveIndex() * 3;
    
@@ -889,7 +886,12 @@ void shadowMiss (inout ShadowPayload payload)
 
 }
 
-
+//Any hit would be faster but it's currently disabled in the TLAS
+[shader("closesthit")]
+void shadowChsB(inout  ShadowPayload payload, in SphereAttribs b)
+{
+	payload.hit = 0.25;
+}
 
 /********************************/
 /*Intersection shaders - Get big words or this is sad*/
@@ -898,7 +900,7 @@ void shadowMiss (inout ShadowPayload payload)
 [shader("intersection")]
 void SphereIntersect()
 {
-	/*float3 sphereCenter = float3(0, 0, 0);
+	float3 sphereCenter = mul(ObjectToWorld3x4(), float4(0, sin(time), 0,1)).xyz;
 	float sphereRadius = 2 + sin(time) * 1;
 
 	float3 toCenter = WorldRayOrigin() - sphereCenter;
@@ -912,13 +914,13 @@ void SphereIntersect()
 		SphereAttribs sphereAttr = { sphereCenter };
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
-	}*/
-	float3 posW = GetWorldHitPosition();
+	}
+	/*float3 posW = GetWorldHitPosition();
 
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
 
 
-	float3 origin = ObjectRayOrigin();//WorldRayOrigin();
+	float3 origin = WorldRayOrigin();
 	float3 rayDir = normalize(WorldRayDirection());
 
 	float3 rayEnd = rayDir * 1000;
@@ -984,7 +986,7 @@ void SphereIntersect()
 	{
 		SphereAttribs sphereAttr = { float3(0,0,0) };
 		ReportHit(hitDistance, 0, sphereAttr);
-	}
+	}*/
 
 	
 	//ReportHit(tMax, 0, sphereAttr);
@@ -1010,7 +1012,7 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 	{
 		ray.TMin = 0.01;
 		ray.TMax = 100000;
-
+		ray.Direction = sunDir;
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		payload.color *= float3(0.5,0.5,0.5);
 	}
@@ -1021,6 +1023,8 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 		payload.color = float3(0, 0, 0);
 		return;
 	}
+
+	//payload.color = dot(-WorldRayDirection(), sunDir);
 }
 
 
