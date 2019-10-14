@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 4;
+	int sampleCount = 25;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -809,7 +809,7 @@ void miss(inout RayPayload payload)
 	float horizon = 1 - pow(1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5);
 	//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
 
-	return;
+	//return;
 
 	float3 rayDirNormalized = normalize(WorldRayDirection());
     
@@ -913,6 +913,8 @@ void SphereIntersect()
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
 	}
+
+
 }
 
 [shader("closesthit")]
