@@ -809,7 +809,7 @@ void miss(inout RayPayload payload)
 	float horizon = 1 - pow(1 - abs(dot(WorldRayDirection(), float3(0, 1, 0))), 5);
 	//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
 
-	//return;
+	
 
 	float3 rayDirNormalized = normalize(WorldRayDirection());
     
@@ -913,14 +913,18 @@ void SphereIntersect()
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
 	}*/
+	float3 posW = GetWorldHitPosition();
 
-	float3 origin = WorldRayOrigin();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+
+	float3 origin = ObjectRayOrigin();//WorldRayOrigin();
 	float3 rayDir = normalize(WorldRayDirection());
 
-	float3 rayEnd = rayDir * 100;
+	float3 rayEnd = rayDir * 1000;
 
 	//Box dimensions
-	float3 dim = float3(1, 1, 1);
+	float3 dim = float3(1, 1, 1) * 1;
 
 	float tMin = (-dim.x - origin.x) / rayDir.x;
 	float tMax = (dim.x - origin.x) / rayDir.x;
@@ -970,17 +974,53 @@ void SphereIntersect()
 	if (tzMax < tMax)
 		tMax = tzMax;
 
-	SphereAttribs sphereAttr = { float3(0,0,0) };
-	ReportHit(tMin, 0, sphereAttr);
-	ReportHit(tMax, 0, sphereAttr);
+	float density = 0.25;
+
+	//Distance inside bounds
+	float distInsideBounds = (tMax - tMin);
+	float hitDistance = -(1 / density) * log(random(seed));
+
+	if (hitDistance < distInsideBounds)
+	{
+		SphereAttribs sphereAttr = { float3(0,0,0) };
+		ReportHit(hitDistance, 0, sphereAttr);
+	}
+
+	
+	//ReportHit(tMax, 0, sphereAttr);
 
 }
 
 [shader("closesthit")]
-void SphereClosestHit(inout RayPayload pay, SphereAttribs attribs)
+void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 {
+	payload.color.r--;
+
 	float3 posW = GetWorldHitPosition();
-	pay.color = dot(sunDir, normalize(posW - attribs.sphereCenter));
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float3 target = (RandomUnitInSphere(seed));
+
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = target;// +RandomUnitInSphere(seed) * 0.05;
+
+	if (payload.color.r > 0)
+	{
+		ray.TMin = 0.01;
+		ray.TMax = 100000;
+
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		payload.color *= float3(0.5,0.5,0.5);
+	}
+	else
+	{
+		float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
+		payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
+		payload.color = float3(0, 0, 0);
+		return;
+	}
 }
 
 
