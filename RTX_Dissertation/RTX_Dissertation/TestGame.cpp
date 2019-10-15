@@ -55,7 +55,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup"), ResourceManager::RequestHitProgram("ShadowHitGroup")}, empty };
 
 	aabbTest->AddInstance(k);
-
+	
 	
 	//Create final renderer resources
 	renderer->CreateDXRResources();

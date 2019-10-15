@@ -915,7 +915,9 @@ void SphereIntersect()
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
 	}
-	*/float3 posW = GetWorldHitPosition();
+	*/
+	
+	float3 posW = GetWorldHitPosition();
 
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
 
@@ -923,10 +925,10 @@ void SphereIntersect()
 	float3 origin = WorldRayOrigin();
 	float3 rayDir = normalize(WorldRayDirection());
 
-	float3 rayEnd = rayDir * 1000;
+	float3 rayEnd = rayDir * 100;
 
 	//Box dimensions
-	float3 dim = float3(1, 1, 1) * 5;
+	float3 dim = float3(5, 5, 3);
 
 	float tMin = (-dim.x - origin.x) / rayDir.x;
 	float tMax = (dim.x - origin.x) / rayDir.x;
@@ -976,21 +978,26 @@ void SphereIntersect()
 	if (tzMax < tMax)
 		tMax = tzMax;
 
-	float density = 0.25;
+
+	
+	float density = 1;
 
 	//Distance inside bounds
 	float distInsideBounds = (tMax - tMin);
 	float hitDistance = -(1 / density) * log(random(seed));
 
-	if (hitDistance < distInsideBounds)
+	if ((hitDistance) < distInsideBounds)
 	{
 		SphereAttribs sphereAttr = { float3(0,0,0) };
-		ReportHit(hitDistance, 0, sphereAttr);
+		ReportHit(hitDistance + tMin, 0, sphereAttr);
+
+		//ReportHit(tMin, 0, sphereAttr);
+		//ReportHit(tMax, 0, sphereAttr);
 	}
 
 	
 	//ReportHit(tMax, 0, sphereAttr);
-
+	
 }
 
 [shader("closesthit")]
