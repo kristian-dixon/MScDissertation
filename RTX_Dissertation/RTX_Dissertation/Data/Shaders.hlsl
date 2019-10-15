@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 2;
+	int sampleCount = 10;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -900,7 +900,7 @@ void shadowChsB(inout  ShadowPayload payload, in SphereAttribs b)
 [shader("intersection")]
 void SphereIntersect()
 {
-	float3 sphereCenter = mul(ObjectToWorld3x4(), float4(0, sin(time), 0,1)).xyz;
+	/*float3 sphereCenter = mul(ObjectToWorld3x4(), float4(0, sin(time), 0,1)).xyz;
 	float sphereRadius = 2 + sin(time) * 1;
 
 	float3 toCenter = WorldRayOrigin() - sphereCenter;
@@ -915,7 +915,7 @@ void SphereIntersect()
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
 	}
-	/*float3 posW = GetWorldHitPosition();
+	*/float3 posW = GetWorldHitPosition();
 
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
 
@@ -926,7 +926,7 @@ void SphereIntersect()
 	float3 rayEnd = rayDir * 1000;
 
 	//Box dimensions
-	float3 dim = float3(1, 1, 1) * 1;
+	float3 dim = float3(1, 1, 1) * 5;
 
 	float tMin = (-dim.x - origin.x) / rayDir.x;
 	float tMax = (dim.x - origin.x) / rayDir.x;
@@ -986,7 +986,7 @@ void SphereIntersect()
 	{
 		SphereAttribs sphereAttr = { float3(0,0,0) };
 		ReportHit(hitDistance, 0, sphereAttr);
-	}*/
+	}
 
 	
 	//ReportHit(tMax, 0, sphereAttr);
@@ -1006,15 +1006,15 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 
 	RayDesc ray;
 	ray.Origin = posW;
-	ray.Direction = target;// +RandomUnitInSphere(seed) * 0.05;
+	ray.Direction = RandomUnitInSphere(seed);
 
 	if (payload.color.r > 0)
 	{
 		ray.TMin = 0.01;
 		ray.TMax = 100000;
-		ray.Direction = sunDir;
+		//ray.Direction = sunDir;
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= float3(0.5,0.5,0.5);
+		payload.color *= float3(0.005,0.005,0.005);
 	}
 	else
 	{
