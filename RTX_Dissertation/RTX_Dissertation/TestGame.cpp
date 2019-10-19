@@ -44,18 +44,20 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		test.LoadFromJson(goList[i], worldCB);
 	}
 
-	
-	auto aabbTest = ResourceManager::RequestMesh("Banana");
+	if(false)
+	{
+		auto aabbTest = ResourceManager::RequestMesh("Banana");
 
-	auto mat = identity<mat4>();
-	//mat = scale(mat, glm::vec3(100, 100, 100));
+		auto mat = identity<mat4>();
+		//mat = scale(mat, glm::vec3(100, 100, 100));
 
-	//mat = translate(mat, glm::vec3(10, 10, 10));
-	auto empty = vector<ID3D12ResourcePtr>(); empty.push_back(worldCB);
-	Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup"), ResourceManager::RequestHitProgram("ShadowHitGroup")}, empty };
+		//mat = translate(mat, glm::vec3(10, 10, 10));
+		auto empty = vector<ID3D12ResourcePtr>(); empty.push_back(worldCB);
+		Instance k{ mat, {ResourceManager::RequestHitProgram("SphereIntersectHitGroup"), ResourceManager::RequestHitProgram("ShadowHitGroup")}, empty };
 
-	aabbTest->AddInstance(k);
-	
+		aabbTest->AddInstance(k);
+	}
+
 	
 	//Create final renderer resources
 	renderer->CreateDXRResources();
@@ -171,10 +173,15 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("MetalHitGroup", make_shared<HitProgram>(nullptr, L"metal", L"MetalHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("RippleHitGroup", make_shared<HitProgram>(nullptr, L"rippleSurface", L"RippleHitGroup", reflectiveRGS));
 	ResourceManager::AddHitProgram("TranslucentHitGroup", make_shared<HitProgram>(nullptr, L"translucent", L"TranslucentHitGroup", reflectiveRGS));
+	ResourceManager::AddHitProgram("RippleTranslucentHitGroup", make_shared<HitProgram>(nullptr, L"rippleTranslucent", L"RippleTranslucentHitGroup", reflectiveRGS));
+
+
 
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("LambertianHitGroup", make_shared<HitProgram>(nullptr, L"lambertian", L"LambertianHitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("EmissiveHitGroup", make_shared<HitProgram>(nullptr, L"emissive", L"EmissiveHitGroup", defaultMatRGS));
+
+
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));

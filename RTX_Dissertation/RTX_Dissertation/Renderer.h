@@ -49,7 +49,6 @@ private:
 	void CreateAccelerationStructures();
 
 	void CreateShaderResources();
-	void CreateShaderTable();
 	uint32_t BeginFrame();
 
 	void EndFrame(uint32_t rtvIndex);

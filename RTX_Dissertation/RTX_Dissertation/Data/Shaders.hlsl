@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 10;
+	int sampleCount = 1;
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -341,7 +341,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(5, 0, 0);
+        payload.color = float3(25, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -549,6 +549,18 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
 
 }
 
+float3 rippleNormal(float2 uv, float scale)
+{
+	float r = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f)), scale) * pow(fbm(uv - float2(time, time * 0.82f)), scale));
+	float g = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f) + float2(-0.24, .52)), scale) * pow(fbm(uv + float2(0.52, 1) - float2(time, time * 0.82f)), scale));
+	float b = 1;//pow(fbm(-uv + float2(time, time * 0.02f)), 5) * pow(fbm(-uv - float2(time, time * 0.82f)), 5);
+
+
+	float3 bumpMap = (float3(r, g, b) * 2) - 1;
+	float3 normal = bumpMap.x * float3(0, 0, 1) + bumpMap.y * float3(1, 0, 0) + bumpMap.z * float3(0, 1, 0);
+	return normalize(normal);
+}
+
 [shader("closesthit")]
 void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -562,15 +574,10 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	
 
 	float2 uv = posW.xz * 0.5;
-
-	float r = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f)), 2.5) * pow(fbm(uv - float2(time, time * 0.82f)), 2.5));
-	float g = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * 0.02f) + float2(-0.24, .52)), 2.5) * pow(fbm(uv + float2(0.52, 1) - float2(time, time * 0.82f)), 2.5));
-	float b = 1;//pow(fbm(-uv + float2(time, time * 0.02f)), 5) * pow(fbm(-uv - float2(time, time * 0.82f)), 5);
+	float3 normal = rippleNormal(uv, 2.5);
+	
 
 
-	float3 bumpMap = (float3(r, g, b) * 2) - 1;
-	float3 normal = bumpMap.x * float3(0, 0, 1) + bumpMap.y * float3(1, 0, 0) + bumpMap.z * float3(0, 1, 0);
-	normal = normalize(normal);
 	//normal = float3(0, 1, 0);
 	payload.color.r -= 1;
 
@@ -582,7 +589,8 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 		*/
 	// payload.color = hitnormal;
-
+	//payload.color = float3(1,1,1);
+	//return;
 	
 	float seed = dot(posW, posW);
 
@@ -597,6 +605,7 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 	if (payload.color.r > 0)
 	{
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		payload.color *= matColour;
 	}
 	else
 	{
@@ -734,6 +743,98 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 	payload.color *= matColour;
 }
 
+float3 rippleNormal2(float2 uv, float scale)
+{
+	float r = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * scale)), 1.5) * pow(fbm(uv - float2(time, time * 0.82f)), 2.5));
+	float g = 0.5 + 0.5 * (pow(fbm(uv + float2(time, time * scale) + float2(-0.24, .52)), 2.5) * pow(fbm(uv + float2(0.52, 1) - float2(time, time * 0.82f)), 2.5));
+	float b = 1;//pow(fbm(-uv + float2(time, time * 0.02f)), 5) * pow(fbm(-uv - float2(time, time * 0.82f)), 5);
+	b = 0;
+
+
+
+	float3 bumpMap = (float3(r, g, b) * 2) - 1;
+	float3 normal = bumpMap.x * float3(0, 0, 10) + bumpMap.y * float3(10, 0, 0) + bumpMap.z * float3(0, 10, 0) * step(r, 0.5);
+	return normalize(normal);
+}
+
+
+[shader("closesthit")]
+void rippleTranslucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
+{
+	payload.color.r--;
+
+	if (payload.color.r < 1) { payload.color = float3(0, 0, 0); return; }
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 outwardNormal;
+	//float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+
+	float3 posW = GetWorldHitPosition();
+	float2 uv = posW.xz * 0.5;
+	float3 hitnormal = rippleNormal2(uv, 1.5) * sign(GetHitNormal(vertId, barycentrics).y);
+	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
+	
+
+	float3 rayDirN = (WorldRayDirection());
+	float3 reflected = reflect(rayDirN, hitnormal);
+
+	float ni_over_nt;
+
+	float3 attenuation = float3(1, 1, 1);
+
+	float3 refracted;
+	float reflect_prob;
+	float cosine;
+
+	if (dot(rayDirN, hitnormal) > 0)
+	{
+		outwardNormal = -hitnormal;
+		ni_over_nt = scatter;
+		cosine = scatter * dot(rayDirN, hitnormal) / length(rayDirN);
+	}
+	else
+	{
+		outwardNormal = hitnormal;
+		ni_over_nt = 1.0 / scatter;
+		cosine = -dot(rayDirN, hitnormal) / length(rayDirN);
+	}
+
+	if (Refract(rayDirN, outwardNormal, ni_over_nt, refracted))
+	{
+		reflect_prob = shlick(cosine, scatter);
+	}
+	else
+	{
+		reflect_prob = 1.0;
+	}
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.TMin = 0.25;
+	ray.TMax = 100000;
+	if (random(float2(seed * (payload.color.r + 412), seed)) < reflect_prob)
+	{
+		//Fire reflection ray
+		ray.Direction = reflected;
+	}
+	else
+	{
+		//Fire refraction ray
+		ray.Direction = refracted;
+
+		//payload.color = float3(1, 0, 0);
+	}
+
+	TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+	payload.color *= matColour;
+}
+
+
+
+
 
 [shader("closesthit")]
 void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
@@ -779,6 +880,13 @@ void emissive(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes
 	payload.color = matColour;
 }
 
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
   __  __ _____  _____ _____    _____ _    _          _____  ______ _____   _____ 
@@ -797,7 +905,7 @@ void miss(inout RayPayload payload)
 {
 
 	payload.color = float3(0, 0, 0);
-	//return;
+	return;
 
 	float3 unit_dir = WorldRayDirection();
 	float t = 0.5 * (clamp(unit_dir.y, -1, 1) + 1.0);
@@ -893,6 +1001,22 @@ void shadowChsB(inout  ShadowPayload payload, in SphereAttribs b)
 	payload.hit = 0.25;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /********************************/
 /*Intersection shaders - Get big words or this is sad*/
 
@@ -926,11 +1050,13 @@ void SphereIntersect()
 	float3 rayDir = normalize(WorldRayDirection());
 
 	float3 rayEnd = rayDir * 100;
+	float density = 0.001;
 
 	//Box dimensions
-	float3 dim = float3(5, 5, 3);
+	float3 dim = float3(1, 1, 1) * 20;
 
 	float tMin = (-dim.x - origin.x) / rayDir.x;
+
 	float tMax = (dim.x - origin.x) / rayDir.x;
 
 	if (tMax < tMin) 
@@ -939,6 +1065,9 @@ void SphereIntersect()
 		tMax = tMin;
 		tMin = temp;
 	}
+
+	if (tMin < 0) tMin = 0;
+
 
 	float tyMin = (-dim.y - origin.y) / rayDir.y;
 	float tyMax = (dim.y - origin.y) / rayDir.y;
@@ -980,7 +1109,6 @@ void SphereIntersect()
 
 
 	
-	float density = 1;
 
 	//Distance inside bounds
 	float distInsideBounds = (tMax - tMin);
@@ -1019,15 +1147,15 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 	{
 		ray.TMin = 0.01;
 		ray.TMax = 100000;
-		//ray.Direction = sunDir;
+		ray.Direction = sunDir;
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= float3(0.005,0.005,0.005);
+		payload.color *= float3(0.75,0.75,0.75);
 	}
 	else
 	{
-		float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
-		payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
-		payload.color = float3(0, 0, 0);
+		//float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
+		//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
+		payload.color = float3(1, 1, 1);
 		return;
 	}
 

@@ -325,7 +325,7 @@ void RendererUtil::ResourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D1
 
 void Camera::CreateCamera(HWND winHandle, ID3D12Device5Ptr device)
 {
-	Eye = glm::vec3(0, 2, -10.5); //DirectX::XMVectorSet(0.0f, 0.0f, -10.5f, 0.0f);
+	Eye = glm::vec3(0, 0, 0); //DirectX::XMVectorSet(0.0f, 0.0f, -10.5f, 0.0f);
 	Dir = glm::vec3(0, 0, 1);//DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	Up = glm::vec3(0, 1, 0);// DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
