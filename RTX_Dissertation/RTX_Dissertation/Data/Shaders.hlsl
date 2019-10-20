@@ -321,11 +321,11 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 8;
+	int sampleCount = 4;
 
     for (int i = 0; i < sampleCount; i++)
     {
-        float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
+        float2 crd = float2(launchIndex.xy + float2(random(float2(launchIndex.x, launchIndex.y+ 43.135 * i)), random(float2(launchIndex.x + 43.135 * i, launchIndex.y + 24))));
         float2 dims = float2(launchDim.xy);
 
         float2 d = ((crd / dims) * 2.f - 1.f);
@@ -342,7 +342,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(5, 0, 0);
+        payload.color = float3(4, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -850,7 +850,7 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	float3 posW = GetWorldHitPosition();
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
 
-	float3 target = posW + hitnormal + (RandomUnitInSphere(seed));
+	float3 target = posW + hitnormal + RandomUnitInSphere(seed) * (1 - pow(random(seed), 100));
 		
 
 	RayDesc ray;
