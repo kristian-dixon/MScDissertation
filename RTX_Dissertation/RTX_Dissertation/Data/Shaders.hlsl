@@ -321,7 +321,8 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 1;
+	int sampleCount = 8;
+
     for (int i = 0; i < sampleCount; i++)
     {
         float2 crd = float2(launchIndex.xy + float2(random(float2(0, 43.135 * i)), random(float2(43.135 * i, 24))));
@@ -341,7 +342,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(25, 0, 0);
+        payload.color = float3(5, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -678,7 +679,7 @@ void translucent(inout  RayPayload payload, in BuiltInTriangleIntersectionAttrib
 {
 	payload.color.r--;
 
-	if (payload.color.r < 1) { payload.color = float3(0, 0, 0); return; }
+	if (payload.color.r < 1) { payload.color = matColour * 0.01; return; }
 
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 	uint vertId = PrimitiveIndex() * 3;
