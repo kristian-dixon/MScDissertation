@@ -44,7 +44,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 		test.LoadFromJson(goList[i], worldCB);
 	}
 
-	if(false)
+	if(true)
 	{
 		auto aabbTest = ResourceManager::RequestMesh("Banana");
 

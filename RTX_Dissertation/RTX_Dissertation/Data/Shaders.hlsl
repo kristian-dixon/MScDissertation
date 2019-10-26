@@ -85,7 +85,7 @@ struct ShadowPayload
 
 struct SphereAttribs
 {
-	float3 sphereCenter;
+	float3 normal;
 };
 
 
@@ -875,6 +875,9 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	
 }
 
+
+
+
 [shader("closesthit")]
 void emissive(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -1020,6 +1023,69 @@ void shadowChsB(inout  ShadowPayload payload, in SphereAttribs b)
 
 /********************************/
 /*Intersection shaders - Get big words or this is sad*/
+bool IntersectAABB(in RayDesc ray, out float3 hitPos, float3 boxCenter, float3 boxDimensions)
+{
+	float3 origin = ray.Origin;
+	float3 rayEnd = origin * ray.Direction * ray.TMax;
+	float3 rayDir = normalize(ray.Direction);
+
+	
+	float tMin = (-boxDimensions.x - origin.x) / rayDir.x;
+
+	float tMax = (boxDimensions.x - origin.x) / rayDir.x;
+
+	//Swap if ordered incorrectly
+	if (tMax < tMin)
+	{
+		float temp = tMax;
+		tMax = tMin;
+		tMin = temp;
+	}
+
+	float tyMin = (-boxDimensions.y - origin.y) / rayDir.y;
+	float tyMax = (boxDimensions.y - origin.y) / rayDir.y;
+
+	//Swap if ordered incorrectly
+	if (tyMax < tyMin)
+	{
+		float temp = tyMax;
+		tyMax = tyMin;
+		tyMin = temp;
+	}
+
+	if ((tMin > tyMax) || (tyMin > tMax)) return false;
+
+	if (tyMin > tMin)
+		tMin = tyMin;
+
+	if (tyMax < tMax)
+		tMax = tyMax;
+
+	//
+
+	float tzMin = (-boxDimensions.z - origin.z) / rayDir.z;
+	float tzMax = (boxDimensions.z - origin.z) / rayDir.z;
+
+	if (tzMax < tzMin)
+	{
+		float temp = tzMax;
+		tzMax = tzMin;
+		tzMin = temp;
+	}
+
+	if ((tMin > tzMax) || (tzMin > tMax)) return false;
+
+	if (tzMin > tMin)
+		tMin = tzMin;
+
+	if (tzMax < tMax)
+		tMax = tzMax;
+
+	//Return initial collsiion point (min)
+	hitPos = tMin * rayDir + origin;
+
+	return true;
+}
 
 
 [shader("intersection")]
@@ -1045,93 +1111,80 @@ void SphereIntersect()
 	float3 posW = GetWorldHitPosition();
 
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
-
-
-	float3 origin = WorldRayOrigin();
 	float3 rayDir = normalize(WorldRayDirection());
 
-	float3 rayEnd = rayDir * 100;
-	float density = 0.001;
+	float3 dim = float3(1, 1, 1) * 1;
 
-	//Box dimensions
-	float3 dim = float3(1, 1, 1) * 20;
+	float viewDist = 10000;
+	float3 origin = WorldRayOrigin();
+	RayDesc r1;
+	r1.Origin = origin + (-rayDir * viewDist);
+	r1.Direction = rayDir;
+	r1.TMin = 0;
+	r1.TMax = viewDist * 2;
 
-	float tMin = (-dim.x - origin.x) / rayDir.x;
-
-	float tMax = (dim.x - origin.x) / rayDir.x;
-
-	if (tMax < tMin) 
-	{ 
-		float temp = tMax;
-		tMax = tMin;
-		tMin = temp;
-	}
-
-	if (tMin < 0) tMin = 0;
-
-
-	float tyMin = (-dim.y - origin.y) / rayDir.y;
-	float tyMax = (dim.y - origin.y) / rayDir.y;
-
-	if (tyMax < tyMin)
+	float3 ray1HitPos = float3(0, 0, 0);
+	if (IntersectAABB(r1, ray1HitPos, float3(0, 0, 0), dim))
 	{
-		float temp = tyMax;
-		tyMax = tyMin;
-		tyMin = temp;
+		r1.Origin = ray1HitPos + (rayDir * 0.001);
+
+		float3 ray2HitPos = float3(0, 0, 0);
+		if (IntersectAABB(r1, ray2HitPos, float3(0, 0, 0), dim))
+		{
+			float tMin = dot(ray1HitPos - origin, rayDir) * length(ray1HitPos - origin);
+			float tMax = dot(ray2HitPos - origin, rayDir) * length(ray2HitPos - origin);
+
+			if (tMin > tMax)
+			{
+				return;
+			}
+			if (tMin < 0)
+			{
+				tMin = 0;
+			}
+
+
+			float density = 0;
+
+			//Distance inside bounds
+			float distInsideBounds = (tMax - tMin);
+			float hitDistance = -(1 / density) * log(random(seed));
+			SphereAttribs sphereAttr = { float3(1,0,0) };
+
+			if ((hitDistance) < distInsideBounds)
+			{
+				//ReportHit(hitDistance + tMin, 0, sphereAttr);
+
+
+			}
+
+			sphereAttr.normal = float3(0,1,0) ;
+
+
+			ReportHit(tMin, 0, sphereAttr);
+
+			sphereAttr.normal = float3(0,0,1);
+
+			//ReportHit(tMax, 0, sphereAttr);
+
+
+		}
 	}
+	
 
-	if ((tMin > tyMax) || (tyMin > tMax)) return;
 
-	if (tyMin > tMin)
-		tMin = tyMin;
-
-	if (tyMax < tMax)
-		tMax = tyMax;
-
-	//
-
-	float tzMin = (-dim.z - origin.z) / rayDir.z;
-	float tzMax = (dim.z - origin.z) / rayDir.z;
-
-	if (tzMax < tzMin)
-	{
-		float temp = tzMax;
-		tzMax = tzMin;
-		tzMin = temp;
-	}
-
-	if ((tMin > tzMax) || (tzMin > tMax)) return;
-
-	if (tzMin > tMin)
-		tMin = tzMin;
-
-	if (tzMax < tMax)
-		tMax = tzMax;
 
 
 	
-
-	//Distance inside bounds
-	float distInsideBounds = (tMax - tMin);
-	float hitDistance = -(1 / density) * log(random(seed));
-
-	if ((hitDistance) < distInsideBounds)
-	{
-		SphereAttribs sphereAttr = { float3(0,0,0) };
-		ReportHit(hitDistance + tMin, 0, sphereAttr);
-
-		//ReportHit(tMin, 0, sphereAttr);
-		//ReportHit(tMax, 0, sphereAttr);
-	}
-
-	
-	//ReportHit(tMax, 0, sphereAttr);
 	
 }
 
 [shader("closesthit")]
 void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 {
+	payload.color = attribs.normal;
+	
+	return;
 	payload.color.r--;
 
 	float3 posW = GetWorldHitPosition();
@@ -1148,15 +1201,15 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 	{
 		ray.TMin = 0.01;
 		ray.TMax = 100000;
-		ray.Direction = sunDir;
+		//ray.Direction = sunDir;
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= float3(0.75,0.75,0.75);
+		payload.color *= float3(0,0.75,0);
 	}
 	else
 	{
 		//float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
 		//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
-		payload.color = float3(1, 1, 1);
+		payload.color = float3(1, 0, 0);
 		return;
 	}
 
