@@ -186,6 +186,7 @@
     <ClInclude Include="RendererUtil.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="ShaderTable.h" />
+    <ClInclude Include="SinusoidalMotionComponent.h" />
     <ClInclude Include="SystemManager.h" />
     <ClInclude Include="TestGame.h" />
     <ClInclude Include="Vertex.h" />

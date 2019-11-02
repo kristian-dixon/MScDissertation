@@ -191,8 +191,11 @@
     <ClInclude Include="GameSystem.h">
       <Filter>Header Files\Game\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="SinusoidalMotionComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="SystemManager.h">
-      <Filter>Header Files\Managers</Filter>
+      <Filter>Header Files\Game\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

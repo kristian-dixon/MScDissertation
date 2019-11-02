@@ -4,6 +4,7 @@
 #include <chrono>
 #include "ConstantBuffers.h"
 #include "PerformanceCapture.h"
+#include "SystemManager.h"
 
 class TestGame :
 	public Game
@@ -48,5 +49,7 @@ private:
 	ID3D12ResourcePtr worldCB;
 
 	PerformanceCapture mPerfCapture = PerformanceCapture();
+
+	shared_ptr<SystemManager> mSystemManager = nullptr;
 };
 

@@ -29,7 +29,12 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 
 	LoadShaderPrograms();
+
+	mSystemManager = SystemManager::GetInstance();
+
+	//Load systems
 	
+
 	json fileReadTest;
 	std::ifstream("Props.json") >> fileReadTest;
 
