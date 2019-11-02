@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 #include "ResourceManager.h"
+#include "GameComponent.h"
 
 
 class GameObject
@@ -12,6 +13,8 @@ public:
 private:
 	std::string mName = "";
 	shared_ptr<Mesh> mMesh = nullptr;
+	vector<shared_ptr<GameComponent>> mComponents;
+
 	int mRendererInstanceIndex = -1;
 };
 
