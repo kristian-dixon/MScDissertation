@@ -7,24 +7,24 @@ using namespace std;
 class GameSystem
 {
 	int mMask = 0;
-	std::vector<shared_ptr<GameObject>> gameObjects;
+	vector<GameObject*> mGameObjects;
 
 
 public:
-	void AddGameObject(shared_ptr<GameObject> go)
+	void AddGameObject(GameObject* go)
 	{
-		for (int i = 0; i < gameObjects.size(); i++)
+		for (int i = 0; i < mGameObjects.size(); i++)
 		{
-			if(gameObjects[i] == go)
+			if(mGameObjects[i] == go)
 			{
 				return;
 			}
 		}
 	
-		gameObjects.push_back(go);
+		mGameObjects.push_back(go);
 	};
 
-	//Warning -- Not yet implemented
+	//Warning -- Not yet implemented definitely need to now it's raw
 	void RemoveGameObject(shared_ptr<GameObject> go) { /*TODO:: Implement*/ throw std::exception("Not Implemented"); };
 
 	virtual void Run() = 0;

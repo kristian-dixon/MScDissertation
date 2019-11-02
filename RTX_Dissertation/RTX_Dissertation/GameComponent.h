@@ -24,7 +24,7 @@ class GameObject;
 class GameComponent
 {
 public:
-	GameComponent(std::shared_ptr<GameObject> owner, EComponentType componentType) : mOwner(owner), mComponentType(componentType){};
+	GameComponent(GameObject* owner, EComponentType componentType) : mOwner(owner), mComponentType(componentType){};
 	
 	std::shared_ptr<GameObject> GetOwner() const { return mOwner; };
 	EComponentType GetComponentType() const { return mComponentType; };

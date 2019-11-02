@@ -30,9 +30,9 @@ class SinusoidalMotionComponent :
 	public GameComponent
 {
 public:
-	SinusoidalMotionComponent(std::shared_ptr<GameObject> owner, SinusoidalMotionData& data) : GameComponent(owner, EComponentType::SinusoidalMotion), mData(data) {};
+	SinusoidalMotionComponent(GameObject* owner, SinusoidalMotionData& data) : GameComponent(owner, EComponentType::SinusoidalMotion), mData(data) {};
 
-	auto& GetData() { return mData };
+	auto& GetData() { return mData; };
 
 private:
 	SinusoidalMotionData mData;

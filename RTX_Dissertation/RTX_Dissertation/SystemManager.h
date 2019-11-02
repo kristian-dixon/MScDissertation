@@ -11,10 +11,10 @@ class SystemManager
 	static shared_ptr<SystemManager> mInstance;
 
 	vector<shared_ptr<GameSystem>> mSystems;
-	queue<shared_ptr<GameObject>> mDirtyGameobjects;
+	queue<GameObject*> mDirtyGameobjects;
 
 public:
-	static auto GetInstance() const
+	static auto GetInstance()
 	{
 		if(mInstance == nullptr)
 		{
@@ -28,7 +28,7 @@ public:
 
 	//TODO:: Add system removal
 
-	void AddGameObjectToUpdateQueue(shared_ptr<GameObject> go) { mDirtyGameobjects.push(go); };
+	void AddGameObjectToUpdateQueue(GameObject* go) { mDirtyGameobjects.push(go); };
 	void UpdateDirtyGameObjects();
 
 	void Update();

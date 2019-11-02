@@ -1,6 +1,8 @@
 #include "GameObject.h"
 #include "ResourceManager.h"
 #include "ConstantBuffers.h"
+#include "SinusoidalMotionComponent.h"
+#include "SystemManager.h"
 using namespace std;
 void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12ResourcePtr worldCB)
 {
@@ -77,12 +79,44 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 		mRendererInstanceIndex = static_cast<int>(mesh->AddInstance(inst));
 
 
-		//TODO:: Load components
 
 	}
-
 	
+	
+	
+	//TODO:: Load components - make nicer
+	auto componentArray = desc["Components"];
+	for(int i = 0; i < componentArray.size(); i++)
+	{
+		auto componentType = desc.value("Component Type", "");
+
+		if (componentType == "") { continue; }
+
+		shared_ptr<GameComponent> newComponent;
+
+		if(componentType == "SinusoidalMotionComponent")
+		{
+			SinusoidalMotionData componentData = {
+				componentArray[i].value<float>("xSinDtOffset", 0), componentArray[i].value<float>("xSinFreq", 0), componentArray[i].value<float>("xSinAmplitude", 0),
+				componentArray[i].value<float>("xCosDtOffset", 0), componentArray[i].value<float>("xCosFreq", 0), componentArray[i].value<float>("xCosAmplitude", 0),
+				componentArray[i].value<float>("ySinDtOffset", 0), componentArray[i].value<float>("ySinFreq", 0), componentArray[i].value<float>("ySinAmplitude", 0),
+				componentArray[i].value<float>("yCosDtOffset", 0), componentArray[i].value<float>("yCosFreq", 0), componentArray[i].value<float>("yCosAmplitude", 0),
+				componentArray[i].value<float>("zSinDtOffset", 0), componentArray[i].value<float>("zSinFreq", 0), componentArray[i].value<float>("zSinAmplitude", 0),
+				componentArray[i].value<float>("zCosDtOffset", 0), componentArray[i].value<float>("zCosFreq", 0), componentArray[i].value<float>("zCosAmplitude", 0)
+			};
+
+			newComponent = make_shared<SinusoidalMotionComponent>(this, componentData);
+		}
 
 
+		mComponents.push_back(newComponent);
+		mComponentMask |= static_cast<int>(newComponent->GetComponentType());
+		
+	}
+
+	if(!mComponents.empty())
+	{
+		SystemManager::GetInstance()->AddGameObjectToUpdateQueue(this);
+	}
 }
 
