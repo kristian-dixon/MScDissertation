@@ -1091,8 +1091,8 @@ bool IntersectAABB(in RayDesc ray, out float3 hitPos, float3 boxCenter, float3 b
 [shader("intersection")]
 void SphereIntersect()
 {
-	/*float3 sphereCenter = mul(ObjectToWorld3x4(), float4(0, sin(time), 0,1)).xyz;
-	float sphereRadius = 2 + sin(time) * 1;
+	float3 sphereCenter = mul(ObjectToWorld3x4(), float4(0, 0, 0,1)).xyz;
+	float sphereRadius = 0.5f;// +sin(time) * 1;
 
 	float3 toCenter = WorldRayOrigin() - sphereCenter;
 	float a = dot(WorldRayDirection(), WorldRayDirection());
@@ -1106,8 +1106,12 @@ void SphereIntersect()
 		ReportHit((-b - sqrtVal) / (2.0f * a), 0, sphereAttr);
 		ReportHit((-b + sqrtVal) / (2.0f * a), 0, sphereAttr);
 	}
-	*/
-	
+}
+
+
+[shader("intersection")]
+void VolumetricFogIntersection()
+{
 	float3 posW = GetWorldHitPosition();
 
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
