@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="ConstantBuffers.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />

@@ -43,6 +43,9 @@
     <Filter Include="Source Files\IMGUI">
       <UniqueIdentifier>{4d8991d1-7af9-47f4-96ed-a8d0ff0fbc1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Game\Components">
+      <UniqueIdentifier>{18c5ef80-9b4b-4e10-ba24-76e13e0db278}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="PerformanceCapture.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="GameComponent.h">
+      <Filter>Header Files\Game\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
