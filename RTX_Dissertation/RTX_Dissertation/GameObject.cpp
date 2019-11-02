@@ -8,6 +8,13 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 
 	//Load mesh
 	string meshName = desc.value("Mesh", "");
+
+	if(meshName == "")
+	{
+		//TODO:: Load intersection aabb
+		meshName = "IntersectionAABB";
+	}
+
 	auto mesh = ResourceManager::RequestMesh(meshName);
 
 	if(mesh != nullptr)

@@ -34,7 +34,7 @@ shared_ptr<Mesh> ResourceManager::RequestMesh(const string& key)
 			//RendererUtil::DisplayMessage(Renderer::GetInstance()->GetWindowHandle(), key + " mesh could not be found! ", "Warning");
 			//Create dummy intersection shader for now - not great but it'll do for now
 
-			D3D12_RAYTRACING_AABB aabb { -10,-10,-10, 10, 10, 10 };
+			D3D12_RAYTRACING_AABB aabb { -0.5,-0.5,-0.5, 0.5, 0.5, 0.5 };
 			auto buffer = RendererUtil::CreateConstantBuffer(Renderer::GetInstance()->GetWindowHandle(), Renderer::GetInstance()->GetDevice(), &aabb, sizeof(D3D12_RAYTRACING_AABB));
 
 			auto aabbMesh = std::make_shared<Mesh>(buffer);
