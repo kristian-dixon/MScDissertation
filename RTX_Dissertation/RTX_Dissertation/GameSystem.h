@@ -9,14 +9,27 @@ class GameSystem
 	int mMask = 0;
 	std::vector<shared_ptr<GameObject>> gameObjects;
 
-	void AddGameObject(shared_ptr<GameObject> go) { gameObjects.push_back(go); };
+
+public:
+	void AddGameObject(shared_ptr<GameObject> go)
+	{
+		for (int i = 0; i < gameObjects.size(); i++)
+		{
+			if(gameObjects[i] == go)
+			{
+				return;
+			}
+		}
+	
+		gameObjects.push_back(go);
+	};
 
 	//Warning -- Not yet implemented
 	void RemoveGameObject(shared_ptr<GameObject> go) { /*TODO:: Implement*/ throw std::exception("Not Implemented"); };
 
 	virtual void Run() = 0;
 
-	bool CheckMask(int otherMask) const
+	bool CompareMask(int otherMask) const
 	{
 		return ((mMask & otherMask) == mMask);
 	}

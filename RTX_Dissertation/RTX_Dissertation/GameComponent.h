@@ -1,5 +1,4 @@
 #pragma once
-#include "GameObject.h"
 
 enum class EComponentType : int
 {
@@ -19,6 +18,8 @@ enum class EComponentType : int
 	light = 1 << 12,
 	orbit = 1 << 13*/
 };
+
+class GameObject;
 
 class GameComponent
 {
