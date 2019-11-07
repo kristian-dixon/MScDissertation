@@ -3,7 +3,7 @@
 
 void SinusoidalMotionSystem::Run()
 {
-	float elapsedTime = 0; //TODO:: Write time manager
+	elapsedTime += 0.1f; //TODO:: Write time manager
 	
 	for(auto& gameObject : mGameObjects)
 	{

@@ -52,6 +52,6 @@ private:
 
 	shared_ptr<SystemManager> mSystemManager = nullptr;
 
-	vector<GameObject> gameObjects;
+	vector<shared_ptr<GameObject>> gameObjects;
 };
 

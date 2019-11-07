@@ -14,6 +14,7 @@
 
 #include "GameObject.h"
 #include "ObjLoader.h"
+#include "SinusoidalMotionSystem.h"
 
 using json = nlohmann::json;
 
@@ -31,7 +32,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	LoadShaderPrograms();
 
 	mSystemManager = SystemManager::GetInstance();
-
+	mSystemManager->AddSystem(std::make_shared<SinusoidalMotionSystem>());
 	//Load systems
 	
 
@@ -46,8 +47,8 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 	for (int i = 0; i < goList.size(); i++)
 	{
-		gameObjects.emplace_back();
-		gameObjects[i].LoadFromJson(goList[i], worldCB);
+		gameObjects.push_back(make_shared<GameObject>());
+		gameObjects[i]->LoadFromJson(goList[i], worldCB);
 	}
 
 	//Create final renderer resources
@@ -196,6 +197,7 @@ void TestGame::Update()
 	auto thisFrameTime = std::chrono::system_clock::now();
 	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
 
+	mSystemManager->Update();
 
 	auto& camera = Renderer::GetInstance()->GetCamera();
 	//Update Camera

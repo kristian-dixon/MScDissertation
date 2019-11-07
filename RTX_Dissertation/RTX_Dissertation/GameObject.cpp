@@ -18,7 +18,6 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 	}
 
 	auto mesh = ResourceManager::RequestMesh(meshName);
-
 	if(mesh != nullptr)
 	{
 		auto transformArray = desc["Transform"];
@@ -79,7 +78,7 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 
 		Instance inst{ transform, hitGroups, constantBuffers };
 		mRendererInstanceIndex = static_cast<int>(mesh->AddInstance(inst));
-
+		mMesh = mesh;
 
 
 	}

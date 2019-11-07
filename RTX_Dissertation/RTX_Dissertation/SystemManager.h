@@ -31,6 +31,7 @@ public:
 	void AddGameObjectToUpdateQueue(GameObject* go) { mDirtyGameobjects.push(go); };
 	void UpdateDirtyGameObjects();
 
+
 	void Update();
 };
 
