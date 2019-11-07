@@ -90,7 +90,7 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 	auto componentArray = desc["Components"];
 	for(int i = 0; i < componentArray.size(); i++)
 	{
-		auto componentType = desc.value("Component Type", "");
+		auto componentType = componentArray[i].value("ComponentType", "");
 
 		if (componentType == "") { continue; }
 
@@ -118,7 +118,8 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 
 	if(!mComponents.empty())
 	{
-		SystemManager::GetInstance()->AddGameObjectToUpdateQueue(this);
+		if(SystemManager::GetInstance() != nullptr)
+			SystemManager::GetInstance()->AddGameObjectToUpdateQueue(this);
 	}
 }
 

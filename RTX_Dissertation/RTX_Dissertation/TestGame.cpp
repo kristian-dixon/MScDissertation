@@ -40,13 +40,14 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 
 
 	//1018-487
-	GameObject test;
+	
 
 	auto goList = fileReadTest["GameObjects"];
 
 	for (int i = 0; i < goList.size(); i++)
 	{
-		test.LoadFromJson(goList[i], worldCB);
+		gameObjects.emplace_back();
+		gameObjects[i].LoadFromJson(goList[i], worldCB);
 	}
 
 	//Create final renderer resources

@@ -51,5 +51,7 @@ private:
 	PerformanceCapture mPerfCapture = PerformanceCapture();
 
 	shared_ptr<SystemManager> mSystemManager = nullptr;
+
+	vector<GameObject> gameObjects;
 };
 
