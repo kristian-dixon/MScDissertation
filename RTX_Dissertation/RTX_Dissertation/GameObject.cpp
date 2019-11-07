@@ -28,6 +28,8 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 			(float)transformArray.at(12), (float)transformArray.at(13), (float)transformArray.at(14), (float)transformArray.at(15));
 		transform = glm::transpose(transform);
 
+		mOriginalTransform = transform;
+
 		//Load hit groups
 		vector<shared_ptr<HitProgram>> hitGroups;
 		auto hitGroupArray = desc["HitGroups"];

@@ -160,6 +160,7 @@
     <ClCompile Include="RendererUtil.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ShaderTable.cpp" />
+    <ClCompile Include="SinusoidalMotionSystem.cpp" />
     <ClCompile Include="SystemManager.cpp" />
     <ClCompile Include="TestGame.cpp" />
   </ItemGroup>
@@ -187,6 +188,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="ShaderTable.h" />
     <ClInclude Include="SinusoidalMotionComponent.h" />
+    <ClInclude Include="SinusoidalMotionSystem.h" />
     <ClInclude Include="SystemManager.h" />
     <ClInclude Include="TestGame.h" />
     <ClInclude Include="Vertex.h" />

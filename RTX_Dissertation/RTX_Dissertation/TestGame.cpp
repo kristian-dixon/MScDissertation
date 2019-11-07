@@ -268,6 +268,9 @@ void TestGame::KeyDown(int key)
 		zCamVel = -1;
 	}
 
+
+
+
 	/*if(key == 'A')
 	{
 		//MOVE LEFT

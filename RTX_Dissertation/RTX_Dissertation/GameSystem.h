@@ -7,10 +7,15 @@ using namespace std;
 class GameSystem
 {
 	int mMask = 0;
+
+protected:
 	vector<GameObject*> mGameObjects;
 
-
 public:
+	virtual ~GameSystem() = default;
+
+	GameSystem(int mask) : mMask(mask){};
+
 	void AddGameObject(GameObject* go)
 	{
 		for (int i = 0; i < mGameObjects.size(); i++)

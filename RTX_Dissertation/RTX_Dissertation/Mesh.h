@@ -25,6 +25,7 @@ public:
 
 	void UpdateInstance(size_t id, Instance& val) { mInstances[id] = val; }
 	int GetInstanceCount() const { return mInstanceCount; };
+	Instance& GetInstance(int index) { return mInstances[index]; };
 
 
 	//******************************************//
@@ -40,7 +41,7 @@ public:
 	std::vector<ID3D12ResourcePtr>& GetIndices() { return mIndices; };
 	const std::vector<uint32_t>& GetIndexCounts() const { return mIndicesCounts; };
 
-	ID3D12ResourcePtr GetAABB() { return aabbBuffer; }
+	ID3D12ResourcePtr GetAABB() const { return aabbBuffer; }
 
 
 private:
