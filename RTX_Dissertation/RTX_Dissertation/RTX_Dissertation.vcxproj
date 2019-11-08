@@ -163,6 +163,7 @@
     <ClCompile Include="SinusoidalMotionSystem.cpp" />
     <ClCompile Include="SystemManager.cpp" />
     <ClCompile Include="TestGame.cpp" />
+    <ClCompile Include="TimeManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConstantBuffers.h" />
@@ -191,6 +192,7 @@
     <ClInclude Include="SinusoidalMotionSystem.h" />
     <ClInclude Include="SystemManager.h" />
     <ClInclude Include="TestGame.h" />
+    <ClInclude Include="TimeManager.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>

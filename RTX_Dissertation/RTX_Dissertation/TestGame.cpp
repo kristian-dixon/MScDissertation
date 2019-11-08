@@ -15,6 +15,7 @@
 #include "GameObject.h"
 #include "ObjLoader.h"
 #include "SinusoidalMotionSystem.h"
+#include "TimeManager.h"
 
 using json = nlohmann::json;
 
@@ -194,8 +195,8 @@ void TestGame::LoadShaderPrograms()
 
 void TestGame::Update()
 {
-	auto thisFrameTime = std::chrono::system_clock::now();
-	float dt = chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
+	
+	float dt = TimeManager::GetInstance()->GetDT();
 
 	mSystemManager->Update();
 
@@ -207,11 +208,7 @@ void TestGame::Update()
 
 	//mPerfCapture.Update(dt);
 
-
 	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
-
-	mLastFrameTime = std::chrono::system_clock::now();
-
 
 	worldBuffer.time += dt;
 

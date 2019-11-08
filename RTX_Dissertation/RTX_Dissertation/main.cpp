@@ -5,6 +5,7 @@
 #include <d3d12.h>
 #include "TestGame.h"
 #include <Mouse.h>
+#include "TimeManager.h"
 
 HWND gWinHandle = nullptr;
 TestGame game;
@@ -105,6 +106,8 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 
 void msgLoop()
 {
+	auto time = TimeManager::GetInstance();
+
 	MSG msg;
 	while (true)
 	{
@@ -117,6 +120,8 @@ void msgLoop()
 		else
 		{
 			//DO LOGIC AND RENDERING
+			time->Update();
+
 			game.Update();
 			game.Render();
 		}

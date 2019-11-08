@@ -1,9 +1,10 @@
 #include "SinusoidalMotionSystem.h"
 #include "SinusoidalMotionComponent.h"
+#include "TimeManager.h"
 
 void SinusoidalMotionSystem::Run()
 {
-	elapsedTime += 0.1f; //TODO:: Write time manager
+	elapsedTime += TimeManager::GetInstance()->GetDT(); //TODO:: Write time manager
 	
 	for(auto& gameObject : mGameObjects)
 	{

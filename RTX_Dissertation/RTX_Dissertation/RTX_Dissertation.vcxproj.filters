@@ -120,6 +120,9 @@
     <ClCompile Include="SinusoidalMotionSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TimeManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files\Game\Components</Filter>
     </ClInclude>
     <ClInclude Include="SinusoidalMotionSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
