@@ -833,19 +833,92 @@ void rippleTranslucent(inout  RayPayload payload, in BuiltInTriangleIntersection
 	payload.color *= matColour;
 }
 
+struct onb
+{
+	float3 axis[9];
+};
+
+
+float3 random_cosine_direction(float seed)
+{
+	float r1 = random(float2(seed, seed));
+	seed += 2.4124;
+
+	float r2 = random(float2(seed, seed));
+
+	float z = sqrt(1 - r2);
+
+	float phi = 2 * 3.141592f * r1;
+	float x = cos(phi) * 2 * sqrt(r2);
+	float y = sin(phi) * 2 * sqrt(r2);
+
+	return float3(x, y, z);
+}
+
+onb BuildFromW(float3 hitNormal)
+{
+	onb outONB;
+
+	float3 a;
+	outONB.axis[2] = hitNormal;
+	if (abs(hitNormal.x) > 0.9) 
+	{
+		a = float3(0, 1, 0);
+	}
+	else
+	{
+		a = float3(1, 0, 0);
+	}
+
+	outONB.axis[1] = normalize(cross(hitNormal, a));
+	outONB.axis[0] = (cross(hitNormal, outONB.axis[1]));
+
+	return outONB;
+}
+
+float3 onbLocal(onb inOnb, float3 a)
+{
+	return float3(inOnb.axis[0] * a.x + inOnb.axis[1] * a.y + inOnb.axis[2] * a.z);
+}
+
+float Scattering_PDF(float3 hitNormal, RayDesc scatteredRay)
+{
+	float cosine = dot(hitNormal, scatteredRay.Direction);
+	if (cosine < 0) cosine = 0;
+	return cosine / 3.141592f;
+}
+
+/*
 void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scatteredRay, out float pdf, float seed) 
 {
+	//onb uvw = BuildFromW(hitNormal);
+
 	//Get random direction for firing a ray like before
-	float3 target = worldRayHitPosition + hitNormal + RandomUnitInSphere(seed);
+	float3 target = RandomUnitInSphere(seed);
+
+
 	scatteredRay.Origin = worldRayHitPosition;
-	scatteredRay.Direction = normalize(target - worldRayHitPosition);
+	scatteredRay.Direction = normalize(target);
 	scatteredRay.TMin = 0.01;
 	scatteredRay.TMax = 100000;
 
 	//return (dot product of normal against scattered direction) / pi
 	pdf = dot(hitNormal, scatteredRay.Direction) / 3.141592f;
 }
+*/
 
+void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scatteredRay, out float pdf, float seed)
+{
+	onb uvw = BuildFromW(hitNormal);
+	float3 direction = onbLocal(uvw, random_cosine_direction(seed));
+	scatteredRay.Origin = worldRayHitPosition;
+	scatteredRay.Direction = normalize(direction);
+	scatteredRay.TMin = 0.01;
+	scatteredRay.TMax = 100000;
+
+	//return (dot product of normal against scattered direction) / pi
+	pdf = dot(hitNormal, scatteredRay.Direction) / 3.141592f;
+}
 
 
 [shader("closesthit")]
@@ -870,12 +943,12 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	if (payload.color.r > 0)
 	{
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= matColour;
+		payload.color = matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf;
 	}
 	else
 	{
-		float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
-		payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
+		//float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
+		//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
 		payload.color = float3(0,0,0);
 		return;
 	}
