@@ -4,7 +4,7 @@
 
 void SinusoidalMotionSystem::Run()
 {
-	elapsedTime += TimeManager::GetInstance()->GetDT(); //TODO:: Write time manager
+	elapsedTime += TimeManager::GetInstance()->GetDT();
 	
 	for(auto& gameObject : mGameObjects)
 	{
