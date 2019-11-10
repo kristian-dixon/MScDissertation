@@ -833,7 +833,18 @@ void rippleTranslucent(inout  RayPayload payload, in BuiltInTriangleIntersection
 	payload.color *= matColour;
 }
 
+void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scatteredRay, out float pdf, float seed) 
+{
+	//Get random direction for firing a ray like before
+	float3 target = worldRayHitPosition + hitNormal + RandomUnitInSphere(seed);
+	scatteredRay.Origin = worldRayHitPosition;
+	scatteredRay.Direction = normalize(target - worldRayHitPosition);
+	scatteredRay.TMin = 0.01;
+	scatteredRay.TMax = 100000;
 
+	//return (dot product of normal against scattered direction) / pi
+	pdf = dot(hitNormal, scatteredRay.Direction) / 3.141592f;
+}
 
 
 
@@ -850,18 +861,14 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	float3 posW = GetWorldHitPosition();
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
 
-	float3 target = posW + hitnormal + RandomUnitInSphere(seed) * (1 - pow(random(seed), 100));
-		
-
+	float pdf = 0;
 	RayDesc ray;
-	ray.Origin = posW;
-	ray.Direction = target - posW;// +RandomUnitInSphere(seed) * 0.05;
+	Scatter(posW, hitnormal, ray, pdf, seed);
 
+
+	
 	if (payload.color.r > 0)
 	{
-		ray.TMin = 0.01;
-		ray.TMax = 100000;
-
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		payload.color *= matColour;
 	}
