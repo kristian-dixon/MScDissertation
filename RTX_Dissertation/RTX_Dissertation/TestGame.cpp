@@ -38,8 +38,16 @@ void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32
 	
 
 	json fileReadTest;
-	std::ifstream(filePath) >> fileReadTest;
-
+	auto f = std::ifstream(filePath);// >> fileReadTest;
+	if(f.good())
+	{
+		f >> fileReadTest;
+	}
+	else
+	{
+		//Props should always exist as a error thingy
+		std::ifstream("Props.json") >> fileReadTest;
+	}
 
 	//1018-487
 	
