@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 4;
+	int sampleCount = 2;
 
     for (int i = 0; i < sampleCount; i++)
     {
@@ -342,7 +342,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(4, 0, 0);
+        payload.color = float3(8, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -938,7 +938,7 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	RayDesc ray;
 	Scatter(posW, hitnormal, ray, pdf, seed);
 
-
+	ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
 	
 	if (payload.color.r > 0)
 	{
