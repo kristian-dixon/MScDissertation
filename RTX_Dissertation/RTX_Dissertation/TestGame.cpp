@@ -19,7 +19,7 @@
 
 using json = nlohmann::json;
 
-void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
@@ -38,7 +38,7 @@ void TestGame::OnLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 	
 
 	json fileReadTest;
-	std::ifstream("Props.json") >> fileReadTest;
+	std::ifstream(filePath) >> fileReadTest;
 
 
 	//1018-487

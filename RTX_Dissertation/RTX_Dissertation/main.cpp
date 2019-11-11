@@ -130,7 +130,8 @@ void msgLoop()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-	
+	//TODO:: Write a smarter thing to read the filepath
+	auto filePath = lpCmdLine;
 
 	//Minor TODO:: Make this a part of the config file
 	int windowWidth = 1200;
@@ -144,7 +145,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	windowHeight = r.bottom - r.top;
 
 	//Load things
-	game.OnLoad(gWinHandle, windowWidth, windowHeight);
+	game.OnLoad(filePath, gWinHandle, windowWidth, windowHeight);
 
 	//Show window
 	ShowWindow(gWinHandle, SW_SHOWNORMAL);
