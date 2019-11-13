@@ -921,8 +921,42 @@ void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scattered
 }
 
 
+
 [shader("closesthit")]
 void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color.r--;
+	float payloadDepth = payload.color.r;
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float pdf = 0;
+	RayDesc ray;
+	Scatter(posW, hitnormal, ray, pdf, seed);
+
+	if (payload.color.r > 0)
+	{
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		float3 colour = saturate(matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf);
+		payload.color = colour;
+	}
+	else
+	{
+		payload.color = float3(0, 0, 0);
+		return;
+	}
+
+}
+
+
+[shader("closesthit")]
+void lambertianHeavy(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
 	float payloadDepth = payload.color.r;
@@ -939,19 +973,20 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	RayDesc ray;
 	Scatter(posW, hitnormal, ray, pdf, seed);
 
-	//ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
 	
 	if (payload.color.r > 0)
 	{
-		payload.color.r = payloadDepth - abs(payloadDepth - 3);
+		//GI
+		//payload.color.r = payloadDepth - abs(payloadDepth - 4);
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		float3 colour = saturate(matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf);
-		
+
 		//Spotlight
-		payload.color.r = payloadDepth - abs(payloadDepth -1);
-		ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
+		payload.color.r = payloadDepth - abs(payloadDepth - 1);
+		ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= matColour * max(0, dot(ray.Direction, hitnormal)); payload.color += colour;
+		payload.color *= matColour * max(0, dot(ray.Direction, hitnormal));
+		payload.color += colour;
 	}
 	else
 	{
@@ -960,9 +995,49 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 		payload.color = float3(0,0,0);
 		return;
 	}
-	
 }
 
+[shader("closesthit")]
+void lambertianPointLighting(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color.r--;
+	float payloadDepth = payload.color.r;
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float pdf = 0;
+	RayDesc ray;
+	Scatter(posW, hitnormal, ray, pdf, seed);
+
+	//ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
+
+	if (payload.color.r > 0)
+	{
+		//payload.color.r = payloadDepth - abs(payloadDepth - 4);
+		//TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		//float3 colour = saturate(matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf);
+		//payload.color = colour;
+		//Spotlight
+		//payload.color.r = payloadDepth - abs(payloadDepth -4);
+		ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
+		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+		payload.color *= matColour * max(0, dot(ray.Direction, hitnormal));// payload.color += colour;*/
+	}
+	else
+	{
+		//float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
+		//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
+		payload.color = float3(0, 0, 0);
+		return;
+	}
+
+}
 
 
 
