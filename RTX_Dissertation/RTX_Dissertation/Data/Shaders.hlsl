@@ -321,7 +321,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 4;
+	int sampleCount = 2;
 
     for (int i = 0; i < sampleCount; i++)
     {
@@ -925,6 +925,7 @@ void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scattered
 void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
+	float payloadDepth = payload.color.r;
 	
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 	uint vertId = PrimitiveIndex() * 3;
@@ -938,17 +939,19 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 	RayDesc ray;
 	Scatter(posW, hitnormal, ray, pdf, seed);
 
-	ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
+	//ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
 	
 	if (payload.color.r > 0)
 	{
+		payload.color.r = payloadDepth - abs(payloadDepth - 3);
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		float3 colour = saturate(matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf);
-
+		
+		//Spotlight
+		payload.color.r = payloadDepth - abs(payloadDepth -1);
 		ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		payload.color *= matColour * min(0,dot(ray.Direction, hitnormal)); payload.color += colour;
-
+		payload.color *= matColour * max(0, dot(ray.Direction, hitnormal)); payload.color += colour;
 	}
 	else
 	{
