@@ -16,6 +16,7 @@
 #include "ObjLoader.h"
 #include "SinusoidalMotionSystem.h"
 #include "TimeManager.h"
+#include "PointLightSystem.h"
 
 using json = nlohmann::json;
 
@@ -34,6 +35,7 @@ void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32
 
 	mSystemManager = SystemManager::GetInstance();
 	mSystemManager->AddSystem(std::make_shared<SinusoidalMotionSystem>());
+	mSystemManager->AddSystem(std::make_shared<PointLightSystem>(worldBuffer));
 	//Load systems
 	
 
@@ -181,8 +183,11 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("LambertianHitGroup", make_shared<HitProgram>(nullptr, L"lambertian", L"LambertianHitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("EmissiveHitGroup", make_shared<HitProgram>(nullptr, L"emissive", L"EmissiveHitGroup", defaultMatRGS));
+	ResourceManager::AddHitProgram("LambertianPointLightHitGroup", make_shared<HitProgram>(nullptr, L"lambertianPointLighting", L"LambertianPointLightHitGroup", defaultMatRGS));
+	ResourceManager::AddHitProgram("LambertianHeavyHitGroup", make_shared<HitProgram>(nullptr, L"lambertianHeavy", L"LambertianHeavyHitGroup", defaultMatRGS));
 
 
+	
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));

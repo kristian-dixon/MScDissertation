@@ -933,7 +933,7 @@ void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scattered
 
 
 [shader("closesthit")]
-void lambertianRandom(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
 	float payloadDepth = payload.color.r;
@@ -1008,7 +1008,7 @@ void lambertianHeavy(inout RayPayload payload, in BuiltInTriangleIntersectionAtt
 }
 
 [shader("closesthit")]
-void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void lambertianPointLighting(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
 	float payloadDepth = payload.color.r;
@@ -1029,13 +1029,7 @@ void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
 	if (payload.color.r > 0)
 	{
-		//payload.color.r = payloadDepth - abs(payloadDepth - 4);
-		//TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
-		//float3 colour = saturate(matColour * Scattering_PDF(hitnormal, ray) * payload.color / pdf);
-		//payload.color = colour;
-		//Spotlight
-		//payload.color.r = payloadDepth - abs(payloadDepth -4);
-		ray.Direction = normalize(float3(25, 0, 0) - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
+		ray.Direction = normalize(spotLights[0].position.xyz - posW) + RandomUnitInSphere(seed) * pdf;// +(pdf * randomInUnitSphere(seed));
 		TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
 		payload.color *= matColour * max(0, dot(ray.Direction, hitnormal));// payload.color += colour;*/
 	}
