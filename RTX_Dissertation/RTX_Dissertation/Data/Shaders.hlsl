@@ -26,6 +26,8 @@ cbuffer CameraParams : register(b0)
 
 #define albedo = matColour
 
+
+
 cbuffer ColourBuffer : register(b1)
 {
     float3 matColour; // aka albedo
@@ -43,6 +45,10 @@ cbuffer MetalBuffer : register(b2)
     float3 pad4;
 }
 
+struct SpotLight
+{
+	float4 position;
+};
 
 cbuffer WorldBuffer : register(b3)
 {
@@ -51,6 +57,10 @@ cbuffer WorldBuffer : register(b3)
     float3 sunColour;
     float pad6;
     float time;
+	float3 pad7;
+	
+	SpotLight  spotLights[5];
+	int lightCount;
 }
 
 
@@ -321,7 +331,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 2;
+	int sampleCount = 1;
 
     for (int i = 0; i < sampleCount; i++)
     {
@@ -342,7 +352,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(4, 0, 0);
+        payload.color = float3(10, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -923,7 +933,7 @@ void Scatter(float3 worldRayHitPosition, float3 hitNormal, out RayDesc scattered
 
 
 [shader("closesthit")]
-void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void lambertianRandom(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
 	float payloadDepth = payload.color.r;
@@ -998,7 +1008,7 @@ void lambertianHeavy(inout RayPayload payload, in BuiltInTriangleIntersectionAtt
 }
 
 [shader("closesthit")]
-void lambertianPointLighting(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void lambertian(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
 	payload.color.r--;
 	float payloadDepth = payload.color.r;

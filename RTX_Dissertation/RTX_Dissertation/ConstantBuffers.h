@@ -1,6 +1,11 @@
 #pragma once
 #include "Renderer.h"
 
+struct PointLight
+{
+	glm::vec4 position;
+};
+
 //This buffer contains light and time information
 struct WorldBuffer
 {
@@ -11,6 +16,11 @@ struct WorldBuffer
 	//TODO::An array of all light sources and positions
 
 	float time;
+	glm::vec3 pad3;
+
+	PointLight pointLights[5];
+
+	int pointLightCount = 0;
 	//Seed?
 };
 

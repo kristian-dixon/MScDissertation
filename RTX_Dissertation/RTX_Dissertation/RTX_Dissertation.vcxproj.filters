@@ -123,6 +123,9 @@
     <ClCompile Include="TimeManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PointLightSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -197,16 +200,22 @@
     <ClInclude Include="GameSystem.h">
       <Filter>Header Files\Game\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="SinusoidalMotionComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SystemManager.h">
       <Filter>Header Files\Game\Components</Filter>
     </ClInclude>
-    <ClInclude Include="SinusoidalMotionSystem.h">
+    <ClInclude Include="TimeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TimeManager.h">
+    <ClInclude Include="SinusoidalMotionComponent.h">
+      <Filter>Header Files\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLightComponent.h">
+      <Filter>Header Files\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SinusoidalMotionSystem.h">
+      <Filter>Header Files\Game\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLightSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

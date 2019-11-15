@@ -3,6 +3,8 @@
 #include "ConstantBuffers.h"
 #include "SinusoidalMotionComponent.h"
 #include "SystemManager.h"
+#include "PointLightComponent.h"
+
 using namespace std;
 void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12ResourcePtr worldCB)
 {
@@ -107,6 +109,10 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 			};
 
 			newComponent = make_shared<SinusoidalMotionComponent>(this, componentData);
+		}
+		else if(componentType == "PointLightComponent")
+		{
+			newComponent = make_shared<PointLightComponent>(this);
 		}
 
 

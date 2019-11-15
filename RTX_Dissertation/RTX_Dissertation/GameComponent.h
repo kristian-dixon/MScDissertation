@@ -4,6 +4,7 @@ enum class EComponentType : int
 {
 	NONE = 0,
 	SinusoidalMotion = 1 << 0,
+	PointLight = 1 << 1
 	/*material = 1 << 1,
 	physics = 1 << 2,
 	sphereCollider = 1 << 3,
