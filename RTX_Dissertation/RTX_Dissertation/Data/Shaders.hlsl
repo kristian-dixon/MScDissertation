@@ -492,6 +492,121 @@ void rayGen()
     //payload.color = specular.rrr;
 }
 
+float Random(float2 p)
+{
+	return frac(sin(dot(p.xy, float2(12.9898, 78.233))) * 31276.5122371);
+}
+
+float Noise(float2 p)
+{
+	float2 grid = floor(p);
+	float2 f = frac(p);
+
+	float2 uv = f * f * (3 - 2 * f);
+	float n1, n2, n3, n4;
+	n1 = Random(grid);
+	n2 = Random(grid + float2(1, 0));
+	n3 = Random(grid + float2(0, 1));
+	n4 = Random(grid + float2(1, 1));
+
+	n1 = lerp(n1, n2, uv.x);
+	n2 = lerp(n3, n4, uv.x);
+	n1 = lerp(n1, n2, uv.y);
+	return n1;//2*(2.0*n1 - 1.0);
+
+}
+
+float3 TerrainColour(float3 pos, float height)
+{
+	float3 col;
+
+	//pos.z += time.x * 20;
+	float noise = Noise(pos.xz * 0.5);
+
+	//Grass
+	float3 baseGrass = float3(0, .5 + (Noise(pos.xz * 0.1)) * .5, 0);
+	float3 smallGrass = float3(0, .8 + (Noise(pos.xz * 10)) * .1, 0);
+	col = baseGrass * smallGrass * .75;
+
+	//Stone
+	float3 baseStone = float3((0.3 + 0.02 * pow(Noise(pos.xz * 0.45), 2)).rrr);
+
+	col = lerp(col, baseStone, smoothstep(0, 31 + noise, height + 2 * Noise(pos.xz * 0.3)));
+
+
+	float snowStrength = smoothstep(3, 20, height);
+
+	//Snow
+	float3 baseSnow = float3(1, 1, 1) * (pow(Noise(pos.xz * 6), 5) + (snowStrength * (1 - pow(Noise(pos.xz * 2), height))));
+
+	baseSnow = clamp(baseSnow, 0.3, 1);
+
+	//col = lerp(col, baseSnow, smoothstep(10, 15, height + 5 * pow(Noise(-pos.xz * 0.7), 2)));
+
+
+
+	return col;
+
+	if (height > 12)
+	{
+		col = float3(1, 1, 1);
+
+	}
+	else
+	{
+		col = float3(0.3, 0.3, 0.3);
+	}
+	return col;
+}
+
+[shader("closesthit")]
+void TerrainCHS(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	// Find the world-space hit position
+	float3 posW = GetWorldHitPosition();
+
+	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
+
+
+	//Shadow ray
+	float softnessScatter = 0;//0.02f;
+
+	ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
+	float factor = shadowPayload.hit;
+
+
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = float3(1, 1, 1);
+	ray.TMin = 1;
+	ray.TMax = 100000;
+
+	//AO ray
+	ray.Origin = posW;
+	ray.TMin = 1;
+	ray.TMax = 0.005;
+
+
+	//float factor = 1;
+	float3 lightColour = saturate(max(0.0, dot(hitnormal, sunDir))) * sunColour * step(dot(sunDir, float3(0, 1, 0)), 1.);
+	float3 lightSpecular = saturate(pow(dot(reflect(sunDir, hitnormal), WorldRayDirection()), specularPower)) * sunColour;
+
+	//Texturing
+
+	posW.y += fbm(posW.xz);
+
+	float3 finalColour = TerrainColour(posW, posW.y);
+	
+	payload.color = lightColour * factor * finalColour;
+	
+}
+
+
 [shader("closesthit")]
 void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -1076,7 +1191,7 @@ void miss(inout RayPayload payload)
 {
 
 	payload.color = float3(0, 0, 0);
-	return;
+	//return;
 
 	float3 unit_dir = WorldRayDirection();
 	float t = 0.5 * (clamp(unit_dir.y, -1, 1) + 1.0);

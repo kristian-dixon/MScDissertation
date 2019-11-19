@@ -181,13 +181,15 @@ void TestGame::LoadShaderPrograms()
 
 
 	ResourceManager::AddHitProgram("HitGroup", make_shared<HitProgram>(nullptr, L"chs", L"HitGroup", defaultMatRGS));
+	ResourceManager::AddHitProgram("TerrainHitGroup", make_shared<HitProgram>(nullptr, L"TerrainCHS", L"TerrainHitGroup", defaultMatRGS));
+
 	ResourceManager::AddHitProgram("LambertianHitGroup", make_shared<HitProgram>(nullptr, L"lambertian", L"LambertianHitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("EmissiveHitGroup", make_shared<HitProgram>(nullptr, L"emissive", L"EmissiveHitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("LambertianPointLightHitGroup", make_shared<HitProgram>(nullptr, L"lambertianPointLighting", L"LambertianPointLightHitGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("LambertianHeavyHitGroup", make_shared<HitProgram>(nullptr, L"lambertianHeavy", L"LambertianHeavyHitGroup", defaultMatRGS));
 
 
-	
+	//
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", nullptr));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
