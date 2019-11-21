@@ -572,7 +572,7 @@ void TerrainCHS(inout  RayPayload payload, in BuiltInTriangleIntersectionAttribu
 
 	float seed = random(posW.xy) + random(posW.yz) + random(posW.zx);
 
-
+	hitnormal += RandomUnitInSphere(seed) * 0.1;
 	//Shadow ray
 	float softnessScatter = 0;//0.02f;
 
