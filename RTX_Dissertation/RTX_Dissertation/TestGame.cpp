@@ -22,8 +22,27 @@ using json = nlohmann::json;
 
 void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
+	json sceneInfo;
+	auto f = std::ifstream(filePath);// >> fileReadTest;
+	if (f.good())
+	{
+		f >> sceneInfo;
+	}
+	else
+	{
+		//Props should always exist as a error thingy
+		std::ifstream("Data/Scenes/ErrorScene.json") >> sceneInfo;
+	}
+
+	json renderingSettings;
+	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("RendererSettingsFilename", "ErrorScene_RenderingSettings.json")) >> renderingSettings;
+
+	json props;
+	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("PropsFilepath", "ErrorScene_Props.json")) >> props;
+
+	
 	//Initialise renderer
-	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight);
+	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight, renderingSettings);
 	renderer->InitDXR();
 
 	worldBuffer = { vec3(-0.2, 0.5, -0.5), 0, vec3(2, 1.9f, 1.5f), 0,0 };
@@ -39,22 +58,9 @@ void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32
 	//Load systems
 	
 
-	json fileReadTest;
-	auto f = std::ifstream(filePath);// >> fileReadTest;
-	if(f.good())
-	{
-		f >> fileReadTest;
-	}
-	else
-	{
-		//Props should always exist as a error thingy
-		std::ifstream("Props.json") >> fileReadTest;
-	}
-
-	//1018-487
 	
-
-	auto goList = fileReadTest["GameObjects"];
+	//1018-487
+	auto goList = props["GameObjects"];
 
 	for (int i = 0; i < goList.size(); i++)
 	{

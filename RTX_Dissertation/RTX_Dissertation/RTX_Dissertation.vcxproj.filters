@@ -226,6 +226,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Props.json" />
   </ItemGroup>
 </Project>

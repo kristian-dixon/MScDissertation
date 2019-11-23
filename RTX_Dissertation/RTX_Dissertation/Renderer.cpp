@@ -7,13 +7,14 @@
 #include "RaytracingPipelineState.h"
 #include "ShaderTable.h"
 #include "TimeManager.h"
+#include <nlohmann/json.hpp>
 Renderer* Renderer::mInstance = nullptr;
 
 
 
 const uint32_t Renderer::k_RtvHeapSize = 3;
 
-Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohmann::basic_json<>::value_type& desc)
 {
 	if (mInstance)
 	{
@@ -22,15 +23,17 @@ Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t w
 	}
 	else
 	{
-		mInstance = new Renderer(winHandle, winWidth, winHeight);
+		mInstance = new Renderer(winHandle, winWidth, winHeight, desc);
 	}
 	return mInstance;
 }
 
 
 
-Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight) : mWinHandle(winHandle), mSwapChainSize(winWidth, winHeight), mFenceEvent()
+Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohmann::basic_json<>::value_type& desc) : mWinHandle(winHandle), mSwapChainSize(winWidth, winHeight), mFenceEvent()
 {
+
+
 }
 
 

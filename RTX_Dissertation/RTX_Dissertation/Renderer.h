@@ -5,6 +5,7 @@
 #include <map>
 #include "Vertex.h"
 #include "ShaderTable.h"
+#include <nlohmann/json.hpp>
 
 using namespace glm;
 
@@ -21,7 +22,7 @@ class Mesh;
 class Renderer
 {
 public:
-	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
+	static Renderer* CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohmann::basic_json<>::value_type& desc);
 	static Renderer* GetInstance() { return mInstance; };
 
 	void Render();
@@ -39,7 +40,7 @@ public:
 	ID3D12Device5Ptr GetDevice() { return mpDevice; };
 
 private:
-	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
+	Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohmann::basic_json<>::value_type& desc);
 
 
 	struct
