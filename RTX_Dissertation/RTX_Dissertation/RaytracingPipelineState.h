@@ -9,7 +9,7 @@ using namespace std;
 class RaytracingPipelineState
 {
 public:
-	RaytracingPipelineState(wstring& shaderFileName);
+	RaytracingPipelineState(wstring& shaderFileName, int recursionDepth);
 
 	void AddHitProgram(shared_ptr<HitProgram> hitProgram);
 	void AddMissProgram(shared_ptr<MissProgram> missProgram);
@@ -33,5 +33,7 @@ private:
 	ID3D12RootSignaturePtr mEmptyRootSignature;
 
 	ID3D12StateObjectPtr mPipelineStateObject;
+
+	int mRecursionDepth = 5;
 };
 

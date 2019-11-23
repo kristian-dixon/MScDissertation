@@ -367,11 +367,10 @@ void Renderer::CreateDXRResources()
 {
 	CreateAccelerationStructures();   
 
-	wstring shaderName = L"Data/Shaders.hlsl";
 	//CreateRTPipelineState();                   
 
 	
-	RaytracingPipelineState rtspo = RaytracingPipelineState(shaderName);
+	RaytracingPipelineState rtspo = RaytracingPipelineState(mShaderFileName, mRecursionDepth);
 
 	{
 		LocalRootSignature rgsRootSignature(mWinHandle, mpDevice, RendererUtil::CreateRayGenRootDesc().desc);

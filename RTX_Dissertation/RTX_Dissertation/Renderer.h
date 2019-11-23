@@ -8,6 +8,14 @@
 
 using namespace glm;
 
+enum class TLASUpdateStyle : int
+{
+	NONE = 0,
+	Refit  = 1,
+	Rebuild = 2,
+	Mix = 3
+};
+
 class Mesh;
 
 class Renderer
@@ -55,6 +63,11 @@ private:
 
 	//Properties
 private:
+	std::wstring mShaderFileName = L"Data/Shaders.hlsl";
+	TLASUpdateStyle mTLASUpdateStyle = TLASUpdateStyle::NONE;
+	int mRecursionDepth = 5;
+	float rebuildFrequency = 1;
+
 	ID3D12ResourcePtr mTestCbuffer;
 
 

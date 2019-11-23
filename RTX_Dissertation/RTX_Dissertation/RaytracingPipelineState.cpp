@@ -1,10 +1,11 @@
 #include "RaytracingPipelineState.h"
 
 
-RaytracingPipelineState::RaytracingPipelineState(wstring& shaderFileName) : 
+RaytracingPipelineState::RaytracingPipelineState(wstring& shaderFileName, int recursionDepth) : 
 	mShaderFileName(shaderFileName), 
 	mShaderConfig(sizeof(float) * 2, sizeof(float) * 3),
-	mPipelineConfig(2)
+	mPipelineConfig(recursionDepth),
+	mRecursionDepth(recursionDepth)
 {
 }
 
@@ -218,7 +219,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	
 	
 	// Bind the payload size to the programs
-	ShaderConfig shaderConfig(sizeof(float) * 3, sizeof(float) * 3);
+	ShaderConfig shaderConfig(sizeof(float) * 3, sizeof(float) * 4);
 	subobjects[index] = shaderConfig.subobject; // 10 Shader Config
 
 
@@ -231,7 +232,7 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 	subobjects[index++] = configAssociation.subobject; //11 Associate Shader Config to Miss, CHS, RGS
 
 	// Create the pipeline config
-	PipelineConfig config(30);
+	PipelineConfig config(mRecursionDepth);
 	subobjects[index++] = config.subobject; //12
 
 	// Create the global root signature and store the empty signature
