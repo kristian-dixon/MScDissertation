@@ -32,8 +32,10 @@ Renderer* Renderer::CreateInstance(HWND winHandle, uint32_t winWidth, uint32_t w
 
 Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohmann::basic_json<>::value_type& desc) : mWinHandle(winHandle), mSwapChainSize(winWidth, winHeight), mFenceEvent()
 {
-
-
+	mTLASUpdateStyle = static_cast<TLASUpdateStyle>(desc.value<int>("TLASUpdateType", 0));
+	mRecursionDepth = desc.value<int>("RecursionDepth", 5);
+	mShaderFileName = RendererUtil::string_2_wstring(desc.value<string>("MainShaderName","Data/Shaders.hlsl"));
+	rebuildFrequency = desc.value<float>("RebuildTLASFrequency", 0.f);
 }
 
 

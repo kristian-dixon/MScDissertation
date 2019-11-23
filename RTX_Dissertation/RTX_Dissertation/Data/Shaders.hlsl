@@ -352,7 +352,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(10, 0, 0);
+        payload.color = float3(5, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
