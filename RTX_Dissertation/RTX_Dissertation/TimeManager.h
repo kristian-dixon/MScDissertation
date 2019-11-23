@@ -14,7 +14,7 @@ class TimeManager
 	system_clock::time_point mLastFrameTime;
 	system_clock::time_point mStartTime;
 	float mDT = 0.016f;
-
+	float mElapsedTime = 0;
 public:
 	static TimeManager* GetInstance()
 	{
@@ -28,6 +28,7 @@ public:
 
 	void Update();
 
-	auto GetDT() const { return mDT; };
+	auto GetDT() const { return mDT; }
+	float GetElapsedTime() const { return mElapsedTime; };
 };
 

@@ -67,6 +67,7 @@ private:
 	TLASUpdateStyle mTLASUpdateStyle = TLASUpdateStyle::NONE;
 	int mRecursionDepth = 5;
 	float rebuildFrequency = 1;
+	float mLastRebuildTime = 0;
 
 	ID3D12ResourcePtr mTestCbuffer;
 

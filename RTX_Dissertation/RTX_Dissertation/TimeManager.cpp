@@ -14,4 +14,6 @@ void TimeManager::Update()
 	auto thisFrameTime = std::chrono::system_clock::now();
 	mDT = std::chrono::duration<float>(thisFrameTime - mLastFrameTime).count();
 	mLastFrameTime = thisFrameTime;
+
+	mElapsedTime += mDT;
 }

@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 #include "RaytracingPipelineState.h"
 #include "ShaderTable.h"
+#include "TimeManager.h"
 Renderer* Renderer::mInstance = nullptr;
 
 
@@ -416,7 +417,33 @@ void Renderer::CreateDXRResources()
 uint32_t Renderer::BeginFrame()
 {
 	mCamera.UpdateCamera();
-	BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, true, mTLAS);
+
+	//Update TLAS
+	switch(mTLASUpdateStyle)
+	{
+	case(TLASUpdateStyle::NONE):
+		break;
+	case(TLASUpdateStyle::Refit):
+		BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, true, mTLAS);
+		break;
+	case(TLASUpdateStyle::Rebuild):
+		BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, false, mTLAS);
+		break;
+	case(TLASUpdateStyle::Mix):
+		const float timeSinceLastRebuild = (TimeManager::GetInstance()->GetElapsedTime() - mLastRebuildTime);
+
+		if(timeSinceLastRebuild > rebuildFrequency)
+		{
+			BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, false, mTLAS);
+			mLastRebuildTime = TimeManager::GetInstance()->GetElapsedTime();
+		}
+		else
+		{
+			BuildTLAS(ResourceManager::GetMeshDB(), mTlasSize, true, mTLAS);
+		}
+		
+		break;
+	}
 
 	
 	// Bind the descriptor heaps

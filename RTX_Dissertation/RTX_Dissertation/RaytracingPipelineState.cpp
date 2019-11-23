@@ -224,8 +224,6 @@ void RaytracingPipelineState::BuildPipeline(HWND winHandle, ID3D12Device5Ptr dev
 
 
 
-	
-
 
 	uint32_t shaderConfigIndex = index++; // 10
 	ExportAssociation configAssociation(shaderEntryPoints.data(), static_cast<int>(shaderEntryPoints.size()), &(subobjects[shaderConfigIndex]));
