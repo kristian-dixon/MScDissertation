@@ -195,6 +195,8 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
 
 	ResourceManager::AddHitProgram("SphereIntersectHitGroup", make_shared<HitProgram>(L"SphereIntersect", L"SphereClosestHit", L"SphereIntersectHitGroup", intRGS));
+	ResourceManager::AddHitProgram("FogIntersectHitGroup", make_shared<HitProgram>(L"VolumetricFogIntersection", L"VolumetricClosestHit", L"FogIntersectHitGroup", intRGS));
+
 
 
 

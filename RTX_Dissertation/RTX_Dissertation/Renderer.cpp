@@ -308,7 +308,6 @@ void Renderer::CreateAccelerationStructures()
 
 	BuildTLAS(db, mTlasSize, false, mTLAS);
 	//TODO:: Think about below. 
-	// The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
 	mFenceValue = RendererUtil::SubmitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
 	mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
 	WaitForSingleObject(mFenceEvent, INFINITE);
