@@ -108,6 +108,7 @@ private:
 
 	ID3D12ResourcePtr testCB;
 
+	ID3D12ResourcePtr raytraceSettings;
 
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;

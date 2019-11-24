@@ -69,6 +69,10 @@ cbuffer TransformBuffer : register(b4)
 	float4x4 transform;
 }
 
+cbuffer RaytraceSettingsBuffer : register(b5)
+{
+	int recursionLimit;
+}
 
 
 struct STriVertex
@@ -352,7 +356,7 @@ void rayGen()
         ray.TMax = 100000;
 
         RayPayload payload;
-        payload.color = float3(5, 0, 0);
+        payload.color = float3(recursionLimit, 0, 0);
         TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
         col += payload.color;
     }
@@ -387,7 +391,9 @@ void rayGen()
 [shader("closesthit")]
  void chs(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    
+	payload.color.r -= 1;
+
+
     float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
     uint vertId = PrimitiveIndex() * 3;
    
@@ -407,9 +413,13 @@ void rayGen()
 	//Shadow ray
 	float softnessScatter = 0.02f;
 
-    ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
-    float factor = shadowPayload.hit;
-
+	float factor = 1; 
+	ShadowPayload shadowPayload;
+	if (payload.color.r > 0)
+	{
+		shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
+		factor = shadowPayload.hit;
+	}
 
     RayDesc ray;
     ray.Origin = posW;
@@ -422,6 +432,7 @@ void rayGen()
     ray.TMin = 1;
     ray.TMax = 0.005;
 
+	if(payload.color.r > 0)
     for (int i = 0; i < 1; ++i)
     {
         float3 rndRayDir = RandomUnitInSphere(seed * (i + 1));
@@ -518,6 +529,7 @@ float Noise(float2 p)
 
 float3 TerrainColour(float3 pos, float height)
 {
+
 	float3 col;
 
 	//pos.z += time.x * 20;
@@ -562,6 +574,9 @@ float3 TerrainColour(float3 pos, float height)
 [shader("closesthit")]
 void TerrainCHS(inout  RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
+	payload.color.r -= 1;
+
+
 	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
 	uint vertId = PrimitiveIndex() * 3;
 
@@ -576,9 +591,13 @@ void TerrainCHS(inout  RayPayload payload, in BuiltInTriangleIntersectionAttribu
 	//Shadow ray
 	float softnessScatter = 0;//0.02f;
 
-	ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
-	float factor = shadowPayload.hit;
+	float factor = 1; 
 
+	if (payload.color.r > 0)
+	{
+		ShadowPayload shadowPayload = FireShadowRay(posW, sunDir + RandomUnitInSphere(seed) * softnessScatter);
+		factor = shadowPayload.hit;
+	}
 
 	RayDesc ray;
 	ray.Origin = posW;
@@ -745,9 +764,13 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 
 	//Shadow ray
 	float softnessScatter = 0.02f;
+	float factor = 1;
 
-	ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
-	float factor = shadowPayload.hit;
+	if (payload.color.r > 0)
+	{
+		ShadowPayload shadowPayload = FireShadowRay(posW, normalize(sunDir + RandomUnitInSphere(seed) * softnessScatter));
+		factor = shadowPayload.hit;
+	}
 
 	//AO ray
 	ray.Origin = posW;

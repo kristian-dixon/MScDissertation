@@ -339,7 +339,7 @@ void Renderer::CreateShaderResources()
 	RendererUtil::D3DCall(mWinHandle, mpDevice->CreateCommittedResource(&RendererUtil::kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
 	// Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output and 1 for the camera cbv
-	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 3, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+	mpSrvUavHeap = RendererUtil::CreateDescriptorHeap(mWinHandle, mpDevice, 4, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
 	// Create the UAV. Based on the root signature we created it should be the first entry
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -364,6 +364,24 @@ void Renderer::CreateShaderResources()
 	cbvDesc.SizeInBytes = mCamera.mCameraBufferSize;
 	mpDevice->CreateConstantBufferView(&cbvDesc, srvHandle);
 
+	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	struct RaytracingSettings
+	{
+		int recursionDepth;
+		glm::vec3 paddingVec3;
+		float padding[12 + 16 + 16 + 16];
+	};
+
+	auto test = sizeof(RaytracingSettings);
+
+	RaytracingSettings rts; rts.recursionDepth = mRecursionDepth;
+	raytraceSettings = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice, &rts, sizeof(RaytracingSettings));
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc2 = {};
+	cbvDesc2.BufferLocation = raytraceSettings->GetGPUVirtualAddress();
+	cbvDesc2.SizeInBytes = sizeof(RaytracingSettings);
+	mpDevice->CreateConstantBufferView(&cbvDesc2, srvHandle);
 }
 
 

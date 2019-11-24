@@ -239,7 +239,7 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 {
 	// Create the root-signature
 	RootSignatureDesc desc;
-	desc.range.resize(3);
+	desc.range.resize(4);
 	// gOutput
 	desc.range[0].BaseShaderRegister = 0;
 	desc.range[0].NumDescriptors = 1;
@@ -261,9 +261,16 @@ RootSignatureDesc RendererUtil::CreateRayGenRootDesc()
 	desc.range[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 	desc.range[2].OffsetInDescriptorsFromTableStart = 2;
 
+	//CBV
+	desc.range[3].BaseShaderRegister = 5;
+	desc.range[3].NumDescriptors = 1;
+	desc.range[3].RegisterSpace = 0;
+	desc.range[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	desc.range[3].OffsetInDescriptorsFromTableStart = 3;
+
 	desc.rootParams.resize(1);
 	desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 3;
+	desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 4;
 	desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
 	// Create the desc
