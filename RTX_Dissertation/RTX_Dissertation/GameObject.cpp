@@ -23,7 +23,7 @@ void GameObject::LoadFromJson(nlohmann::basic_json<>::value_type& desc, ID3D12Re
 	if(mesh != nullptr)
 	{
 		auto transformArray = desc["Transform"];
-		glm::mat4 transform((float)transformArray[0], (float)transformArray.at(1), (float)transformArray.at(2), -(float)transformArray.at(3),
+		glm::mat4 transform((float)transformArray[0], (float)transformArray.at(1), (float)transformArray.at(2), (float)transformArray.at(3),
 			(float)transformArray.at(4), (float)transformArray.at(5), (float)transformArray.at(6), (float)transformArray.at(7),
 			(float)transformArray.at(8), (float)transformArray.at(9), (float)transformArray.at(10), (float)transformArray[11],
 			(float)transformArray.at(12), (float)transformArray.at(13), (float)transformArray.at(14), (float)transformArray.at(15));

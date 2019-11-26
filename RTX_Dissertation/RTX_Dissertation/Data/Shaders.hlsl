@@ -335,7 +335,7 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 1;
+	int sampleCount = 4;
 
     for (int i = 0; i < sampleCount; i++)
     {
@@ -811,8 +811,6 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
 
 	// Find the world-space hit position
     float3 pos = rayOriginW + hitT * rayDirW;
-
-   
 
 
 	float x = step(frac(pos.x), 0.9);
