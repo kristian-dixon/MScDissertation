@@ -111,7 +111,7 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 	int height = r.bottom - r.top;
 
 	std::wstring wTitle = string_2_wstring("RTX Dissertation");
-	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr, wc.hInstance, nullptr);
+	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, 500, 100, width, height, nullptr, nullptr, wc.hInstance, nullptr);
 
 	if(hWnd == nullptr)
 	{
@@ -125,7 +125,7 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 HWND OpenWindow2(int windowWidth, int windowHeight)
 {
 	//Create window
-	const WCHAR* className = L"BananaClass";
+	const WCHAR* className = L"SettingsWindow";
 	DWORD winStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 
 	WNDCLASS wc = {};
@@ -146,7 +146,7 @@ HWND OpenWindow2(int windowWidth, int windowHeight)
 	int height = r.bottom - r.top;
 
 	std::wstring wTitle = string_2_wstring("RTX Dissertation");
-	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr, wc.hInstance, nullptr);
+	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, 0, 0, width, height, nullptr, nullptr, wc.hInstance, nullptr);
 
 	if (hWnd == nullptr)
 	{
@@ -195,7 +195,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	int windowWidth = 1200;
 	int windowHeight = 720;
 
-	auto secondaryWindow = OpenWindow2(500, 500);
+	auto secondaryWindow = OpenWindow2(1200, 720);
 	//ShowWindow(secondaryWindow, SW_SHOWNORMAL);
 
 	IMGUI_Implementation::CreateIMGUIWindow(secondaryWindow);

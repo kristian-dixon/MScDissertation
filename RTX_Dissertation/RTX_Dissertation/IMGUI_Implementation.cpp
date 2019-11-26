@@ -1,5 +1,6 @@
 #include "IMGUI_Implementation.h"
-
+#include <functional>
+#include <vector>
 
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;
@@ -68,19 +69,41 @@ bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 void IMGUI_Implementation::Update(MSG msg)
 {
-	
-
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (show_demo_window)
-		ImGui::ShowDemoWindow(&show_demo_window);
+	static float number = 1;
+	static int intNumber = 1;
 
-	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	std::vector< std::function<bool()>> sliderList;
+
+	sliderList.push_back( std::bind(ImGui::SliderFloat, "Slider", &number, 0, 100, "%3f", 1));
+	sliderList.push_back(std::bind(ImGui::SliderInt, "Slider2", &intNumber, 0, 100, "%d"));
+
+	
 	{
+		static int recursionDepth = 5;
+
+		ImGui::Begin("Test");
+		ImGui::SetWindowSize(ImVec2(400, 500));
+
+		for(int i = 0; i < sliderList.size(); i++)
+		{
+			sliderList[i]();
+		}
+
+		
+
+		ImGui::End();
+	}
+
+	static bool b = true;
+	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	if(b)
+	{
+		b = false;
 		static float f = 0.0f;
 		static int counter = 0;
 
