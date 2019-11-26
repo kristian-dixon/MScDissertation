@@ -803,15 +803,25 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
     float3 rayDirW = WorldRayDirection();
     float3 rayOriginW = WorldRayOrigin();
 
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+
+	uint vertId = PrimitiveIndex() * 3;
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+
 	// Find the world-space hit position
-    float3 posW = rayOriginW + hitT * rayDirW;
+    float3 pos = rayOriginW + hitT * rayDirW;
 
-    float x = sin(posW.x * 10);
-    float z = sin(posW.y * 10);
-
+   
 
 
-    payload.color = float3(x * z, 0, x * z);
+	float x = step(frac(pos.x), 0.9);
+	float y = step(frac(pos.y), 0.9);
+	float z = step(frac(pos.z), 0.9);
+
+	float lighting = 1 - pow(1 - max(0, dot(sunDir, hitnormal)), 2);
+
+    payload.color = float3(x, y, z) * lighting;
 }
 
 //Any hit would be faster but it's currently disabled in the TLAS

@@ -63,12 +63,12 @@ void IMGUI_Implementation::CreateIMGUIWindow(HWND hwnd)
 
 	return;
 }
-
+bool show_demo_window = true;
+bool show_another_window = false;
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 void IMGUI_Implementation::Update(MSG msg)
 {
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	
 
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();

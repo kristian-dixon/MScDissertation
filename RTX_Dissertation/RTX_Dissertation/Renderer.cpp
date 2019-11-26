@@ -369,8 +369,7 @@ void Renderer::CreateShaderResources()
 	struct RaytracingSettings
 	{
 		int recursionDepth;
-		glm::vec3 paddingVec3;
-		float padding[12 + 16 + 16 + 16];
+		float padding[15 + 16 + 16 + 16];
 	};
 
 	auto test = sizeof(RaytracingSettings);
