@@ -6,6 +6,8 @@
 #include "TestGame.h"
 #include <Mouse.h>
 #include "TimeManager.h"
+#include "IMGUI_Implementation.h"
+
 
 HWND gWinHandle = nullptr;
 TestGame game;
@@ -55,6 +57,23 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 	}
 }
 
+
+static LRESULT CALLBACK msgProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		return 0;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	default:
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+}
+
+
 void msgBox(const std::string& msg)
 {
 	MessageBoxA(gWinHandle, msg.c_str(), "Error", MB_OK);
@@ -68,7 +87,6 @@ std::wstring string_2_wstring(const std::string& s)
 	return ws;
 }
 
-//MOVE TO RENDERERUTIL
 HWND OpenWindow(int windowWidth, int windowHeight)
 {
 	//Create window
@@ -104,6 +122,41 @@ HWND OpenWindow(int windowWidth, int windowHeight)
 	return hWnd;
 }
 
+HWND OpenWindow2(int windowWidth, int windowHeight)
+{
+	//Create window
+	const WCHAR* className = L"BananaClass";
+	DWORD winStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+
+	WNDCLASS wc = {};
+	wc.lpfnWndProc = msgProc2;
+	wc.hInstance = GetModuleHandle(nullptr);
+	wc.lpszClassName = className;
+
+	if (RegisterClass(&wc) == 0)
+	{
+		msgBox("RegisterClass() failed");
+		return nullptr;
+	}
+
+	RECT r{ 0,0, (LONG)windowWidth, (LONG)windowHeight };
+	AdjustWindowRect(&r, winStyle, false);
+
+	int width = r.right - r.left;
+	int height = r.bottom - r.top;
+
+	std::wstring wTitle = string_2_wstring("RTX Dissertation");
+	HWND hWnd = CreateWindowEx(0, className, wTitle.c_str(), winStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr, wc.hInstance, nullptr);
+
+	if (hWnd == nullptr)
+	{
+		msgBox("CreateWindowEX() has failed");
+		return nullptr;
+	}
+
+	return hWnd;
+}
+
 void msgLoop()
 {
 	auto time = TimeManager::GetInstance();
@@ -119,11 +172,16 @@ void msgLoop()
 		}
 		else
 		{
+
+			IMGUI_Implementation::Update(msg);
+			IMGUI_Implementation::Render();
+
 			//DO LOGIC AND RENDERING
 			time->Update();
 
 			game.Update();
 			game.Render();
+
 		}
 	}
 }
@@ -136,6 +194,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//Minor TODO:: Make this a part of the config file
 	int windowWidth = 1200;
 	int windowHeight = 720;
+
+	auto secondaryWindow = OpenWindow2(500, 500);
+	//ShowWindow(secondaryWindow, SW_SHOWNORMAL);
+
+	IMGUI_Implementation::CreateIMGUIWindow(secondaryWindow);
+
+
+	
 
 	gWinHandle = OpenWindow(windowWidth, windowHeight);
 
@@ -150,6 +216,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//Show window
 	ShowWindow(gWinHandle, SW_SHOWNORMAL);
 
+	
 	
 	//Start message loop
 	msgLoop();

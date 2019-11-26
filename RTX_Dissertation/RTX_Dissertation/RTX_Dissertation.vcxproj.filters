@@ -126,6 +126,12 @@
     <ClCompile Include="PointLightSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IMGUI_Implementation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_dx11.cpp">
+      <Filter>Header Files\IMGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -217,6 +223,12 @@
     </ClInclude>
     <ClInclude Include="PointLightSystem.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMGUI_Implementation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_dx11.h">
+      <Filter>Header Files\IMGUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
