@@ -8,6 +8,7 @@
 #include "ShaderTable.h"
 #include "TimeManager.h"
 #include <nlohmann/json.hpp>
+#include "IMGUI_Implementation.h"
 Renderer* Renderer::mInstance = nullptr;
 
 
@@ -36,6 +37,8 @@ Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohma
 	mRecursionDepth = desc.value<int>("RecursionDepth", 5);
 	mShaderFileName = RendererUtil::string_2_wstring(desc.value<string>("MainShaderName","Data/Shaders.hlsl"));
 	rebuildFrequency = desc.value<float>("RebuildTLASFrequency", 0.f);
+
+	IMGUI_Implementation::imguiObjects.push_back(std::bind(ImGui::SliderInt, "Recursion Depth", &mRecursionDepth, 1, mRecursionDepth, "%d"));
 }
 
 
@@ -366,20 +369,15 @@ void Renderer::CreateShaderResources()
 
 	srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	struct RaytracingSettings
-	{
-		int recursionDepth;
-		float padding[15 + 16 + 16 + 16];
-	};
+	
 
-	auto test = sizeof(RaytracingSettings);
 
-	RaytracingSettings rts; rts.recursionDepth = mRecursionDepth;
-	raytraceSettings = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice, &rts, sizeof(RaytracingSettings));
+	rts.recursionDepth = mRecursionDepth;
+	raytraceSettings = RendererUtil::CreateConstantBuffer(mWinHandle, mpDevice, &rts, sizeof(RaytracingSettingsConstantBuffer));
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc2 = {};
 	cbvDesc2.BufferLocation = raytraceSettings->GetGPUVirtualAddress();
-	cbvDesc2.SizeInBytes = sizeof(RaytracingSettings);
+	cbvDesc2.SizeInBytes = sizeof(RaytracingSettingsConstantBuffer);
 	mpDevice->CreateConstantBufferView(&cbvDesc2, srvHandle);
 }
 
@@ -439,6 +437,14 @@ void Renderer::CreateDXRResources()
 uint32_t Renderer::BeginFrame()
 {
 	mCamera.UpdateCamera();
+
+	if (rts.recursionDepth != mRecursionDepth)
+	{
+		rts.recursionDepth = mRecursionDepth;
+
+		RendererUtil::UpdateConstantBuffer(raytraceSettings, &rts, sizeof(rts));
+	}
+
 
 	//Update TLAS
 	switch(mTLASUpdateStyle)

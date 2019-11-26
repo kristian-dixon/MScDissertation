@@ -110,6 +110,14 @@ private:
 
 	ID3D12ResourcePtr raytraceSettings;
 
+	struct RaytracingSettingsConstantBuffer
+	{
+		int recursionDepth;
+		float padding[15 + 16 + 16 + 16];
+	};
+
+	RaytracingSettingsConstantBuffer rts;
+
 	//CONSTANTS
 	static const D3D12_HEAP_PROPERTIES kUploadHeapProps;
 	static const D3D12_HEAP_PROPERTIES kDefaultHeapProps;

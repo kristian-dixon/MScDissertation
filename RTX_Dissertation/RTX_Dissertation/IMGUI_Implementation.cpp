@@ -14,6 +14,8 @@ void CleanupDeviceD3D();
 void CreateRenderTarget();
 void CleanupRenderTarget();
 
+std::vector<std::function<bool()>> IMGUI_Implementation::imguiObjects;
+
 void IMGUI_Implementation::CreateIMGUIWindow(HWND hwnd)
 {
 	// Initialize Direct3D
@@ -77,10 +79,8 @@ void IMGUI_Implementation::Update(MSG msg)
 	static float number = 1;
 	static int intNumber = 1;
 
-	std::vector< std::function<bool()>> sliderList;
 
-	sliderList.push_back( std::bind(ImGui::SliderFloat, "Slider", &number, 0, 100, "%3f", 1));
-	sliderList.push_back(std::bind(ImGui::SliderInt, "Slider2", &intNumber, 0, 100, "%d"));
+	//imguiObjects.push_back( std::bind(ImGui::SliderFloat, "Slider", &number, 0, 100, "%3f", 1));
 
 	
 	{
@@ -89,9 +89,9 @@ void IMGUI_Implementation::Update(MSG msg)
 		ImGui::Begin("Test");
 		ImGui::SetWindowSize(ImVec2(400, 500));
 
-		for(int i = 0; i < sliderList.size(); i++)
+		for(int i = 0; i < imguiObjects.size(); i++)
 		{
-			sliderList[i]();
+			imguiObjects[i]();
 		}
 
 		

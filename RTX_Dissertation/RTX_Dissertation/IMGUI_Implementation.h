@@ -7,10 +7,14 @@
 //#define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #include <tchar.h>
+#include <vector>
+#include <functional>
 
 class IMGUI_Implementation
 {
 public:
+	static std::vector< std::function<bool()>> imguiObjects;
+
 
 	static void CreateIMGUIWindow(HWND hwnd);
 
