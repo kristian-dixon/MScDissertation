@@ -37,6 +37,8 @@ private:
 	int zCamVel = 0;
 	int xCamVel = 0;
 
+	string mMissShaderName;
+	wstring mMissShaderWide;
 
 	std::chrono::system_clock::time_point mLastFrameTime;
 

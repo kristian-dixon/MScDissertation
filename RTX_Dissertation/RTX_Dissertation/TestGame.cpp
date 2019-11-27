@@ -40,7 +40,8 @@ void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32
 	json props;
 	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("PropsFilepath", "Error_Props.json")) >> props;
 
-	
+	mMissShaderName = renderingSettings.value("MissShaderName", "miss");
+	mMissShaderWide = RendererUtil::string_2_wstring(mMissShaderName);
 	//Initialise renderer
 	auto renderer = Renderer::CreateInstance(winHandle, winWidth, winHeight, renderingSettings);
 	renderer->InitDXR();
@@ -209,7 +210,7 @@ void TestGame::LoadShaderPrograms()
 
 	//TranslucentHitGroup
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
-	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(L"miss", timeBasicRGS, missData));
+	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(mMissShaderWide.c_str(), timeBasicRGS, missData));
 	
 
 
