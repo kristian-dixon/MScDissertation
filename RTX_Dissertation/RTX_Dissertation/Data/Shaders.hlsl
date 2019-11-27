@@ -72,6 +72,7 @@ cbuffer TransformBuffer : register(b4)
 cbuffer RaytraceSettingsBuffer : register(b5)
 {
 	int recursionLimit;
+	int sampleCount;
 }
 
 
@@ -335,10 +336,11 @@ void rayGen()
     float3 col = float3(0, 0, 0);
 
 
-	int sampleCount = 4;
+	
 
     for (int i = 0; i < sampleCount; i++)
     {
+		
         float2 crd = float2(launchIndex.xy + float2(random(float2(launchIndex.x, launchIndex.y+ 43.135 * i)), random(float2(launchIndex.x + 43.135 * i, launchIndex.y + 24))));
         float2 dims = float2(launchDim.xy);
 
@@ -645,7 +647,7 @@ void metal (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     ray.Origin = posW;
     ray.Direction = reflect(WorldRayDirection(), hitnormal) + RandomUnitInSphere(seed) * scatter;
 
-    ray.TMin = 0.1;
+    ray.TMin = 0.001;
     ray.TMax = 100000;
 	
 

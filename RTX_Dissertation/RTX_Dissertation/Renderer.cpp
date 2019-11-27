@@ -39,6 +39,8 @@ Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohma
 	rebuildFrequency = desc.value<float>("RebuildTLASFrequency", 0.f);
 
 	IMGUI_Implementation::imguiObjects.push_back(std::bind(ImGui::SliderInt, "Recursion Depth", &mRecursionDepth, 1, mRecursionDepth, "%d"));
+	IMGUI_Implementation::imguiObjects.push_back(std::bind(ImGui::SliderInt, "Sampple Count", &mSampleCount, 1, 64, "%d"));
+
 }
 
 
@@ -438,10 +440,10 @@ uint32_t Renderer::BeginFrame()
 {
 	mCamera.UpdateCamera();
 
-	if (rts.recursionDepth != mRecursionDepth)
+	if (rts.recursionDepth != mRecursionDepth || rts.sampleCount != mSampleCount)
 	{
 		rts.recursionDepth = mRecursionDepth;
-
+		rts.sampleCount = mSampleCount;
 		RendererUtil::UpdateConstantBuffer(raytraceSettings, &rts, sizeof(rts));
 	}
 

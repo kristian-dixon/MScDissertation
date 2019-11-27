@@ -67,6 +67,7 @@ private:
 	std::wstring mShaderFileName = L"Data/Shaders.hlsl";
 	TLASUpdateStyle mTLASUpdateStyle = TLASUpdateStyle::NONE;
 	int mRecursionDepth = 5;
+	int mSampleCount = 1;
 	float rebuildFrequency = 1;
 	float mLastRebuildTime = 0;
 
@@ -113,7 +114,8 @@ private:
 	struct RaytracingSettingsConstantBuffer
 	{
 		int recursionDepth;
-		float padding[15 + 16 + 16 + 16];
+		int sampleCount = 1;
+		float padding[14 + 16 + 16 + 16];
 	};
 
 	RaytracingSettingsConstantBuffer rts;

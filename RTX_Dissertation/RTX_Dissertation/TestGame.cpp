@@ -31,14 +31,14 @@ void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32
 	else
 	{
 		//Props should always exist as a error thingy
-		std::ifstream("Data/Scenes/ErrorScene.json") >> sceneInfo;
+		std::ifstream("Data/Scenes/Error_Scene.json") >> sceneInfo;
 	}
 
 	json renderingSettings;
-	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("RendererSettingsFilename", "ErrorScene_RenderingSettings.json")) >> renderingSettings;
+	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("RendererSettingsFilename", "Error_RenderingSettings.json")) >> renderingSettings;
 
 	json props;
-	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("PropsFilepath", "ErrorScene_Props.json")) >> props;
+	std::ifstream("Data/Scenes/" + sceneInfo.value<string>("PropsFilepath", "Error_Props.json")) >> props;
 
 	
 	//Initialise renderer
