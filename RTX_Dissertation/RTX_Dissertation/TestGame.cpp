@@ -197,6 +197,9 @@ void TestGame::LoadShaderPrograms()
 
 
 	//
+	ResourceManager::AddHitProgram("AO_OneShotGroup", make_shared<HitProgram>(nullptr, L"AO_OneShot", L"AO_OneShotGroup", defaultMatRGS));
+	ResourceManager::AddHitProgram("AO_OneShot_IgnoreCHSGroup", make_shared<HitProgram>(nullptr, L"AO_OneShot_IgnoreCHS", L"AO_OneShot_IgnoreCHSGroup", defaultMatRGS));
+
 
 	ResourceManager::AddHitProgram("GridGroup", make_shared<HitProgram>(nullptr, L"grid", L"GridGroup", defaultMatRGS));
 	ResourceManager::AddHitProgram("ShadowHitGroup", make_shared<HitProgram>(nullptr, L"shadowChs", L"ShadowHitGroup"));
@@ -205,10 +208,9 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddHitProgram("FogIntersectHitGroup", make_shared<HitProgram>(L"VolumetricFogIntersection", L"VolumetricClosestHit", L"FogIntersectHitGroup", intRGS));
 
 
+	//AO_OneShot
 
 
-
-	//TranslucentHitGroup
 	vector<ID3D12ResourcePtr> missData; missData.push_back(worldCB);
 	ResourceManager::AddMissProgram("miss", make_shared<MissProgram>(mMissShaderWide.c_str(), timeBasicRGS, missData));
 	

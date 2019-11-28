@@ -828,7 +828,7 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
 [shader("closesthit")] 
 void shadowChs (inout  ShadowPayload payload, in BuiltInTriangleIntersectionAttributes  attribs)
 {
-    payload.hit = 0.25;
+    payload.hit = 0;
 }
 
 
@@ -1199,7 +1199,78 @@ void emissive(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes
 	payload.color = matColour;
 }
 
+[shader("closesthit")]
+void AO_OneShot(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	float payloadDepth = payload.color.r;
 
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float pdf = 0;
+	RayDesc ray;
+	ray.TMin = 0.01;
+	ray.TMax = 10000;
+	ray.Origin = posW;
+	ray.Direction = RandomUnitInSphere(seed) + hitnormal;
+
+
+	if (payload.color.r > 0)
+	{
+		ShadowPayload sPayload;
+		TraceRay(gRtScene, 0, 0xFF, 1, 0, 1, ray, sPayload);
+		payload.color = float3(1, 1, 1) * sPayload.hit;
+	}
+	else
+	{
+		payload.color = float3(0, 0, 0);
+		return;
+	}
+	//payload.color = matColour;
+}
+
+[shader("closesthit")]
+void AO_OneShot_IgnoreCHS(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	float payloadDepth = payload.color.r;
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+	uint vertId = PrimitiveIndex() * 3;
+
+	float3 hitnormal = GetHitNormal(vertId, barycentrics);
+
+	float3 posW = GetWorldHitPosition();
+	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
+
+	float pdf = 0;
+	RayDesc ray;
+	ray.TMin = 0.01;
+	ray.TMax = 10000;
+	ray.Origin = posW;
+	ray.Direction = RandomUnitInSphere(seed) + hitnormal;
+	
+
+	if (payload.color.r > 0)
+	{
+		ShadowPayload sPayload;
+		//sPayload.hit = 0.25;
+		TraceRay(gRtScene, RAY_FLAG_FORCE_OPAQUE
+			| RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH
+			| RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, ray, sPayload);
+		payload.color = float3(1, 1, 1) * sPayload.hit;
+	}
+	else
+	{
+		payload.color = float3(0, 0, 0);
+		return;
+	}
+	//payload.color = matColour;
+}
 
 
 
@@ -1303,6 +1374,9 @@ void skyrim(inout RayPayload payload)
 
 }
 
+
+
+
 [shader("miss")] 
 void shadowMiss (inout ShadowPayload payload)
 {
@@ -1317,6 +1391,8 @@ void shadowMiss (inout ShadowPayload payload)
 	payload.hit = 1;
 
 }
+
+
 
 //Any hit would be faster but it's currently disabled in the TLAS
 [shader("closesthit")]
