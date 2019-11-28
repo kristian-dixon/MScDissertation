@@ -59,12 +59,14 @@ bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-std::string IMGUI_Implementation::ShowSceneSelect()
+std::string IMGUI_Implementation::ShowMainMenu(int& windowWidth, int& windowHeight)
 {
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+
 
 	if(mSceneNames.empty())
 	{
@@ -77,9 +79,14 @@ std::string IMGUI_Implementation::ShowSceneSelect()
 		}
 	}
 
-	ImGui::Begin("Scene Selection");
+	ImGui::Begin("Menu");
 	ImGui::SetWindowSize(ImVec2(400, 500));
 
+	ImGui::Text("Resolution Settings");
+	ImGui::SliderInt("Render Width", &windowWidth, 640, 3840);
+	ImGui::SliderInt("Render Height", &windowHeight, 480, 2160);
+
+	ImGui::Text("Scene Selection");
 	for(auto& name : mSceneNames)
 	{
 		if(ImGui::Button(name.c_str() + 12, ImVec2(400,50)))

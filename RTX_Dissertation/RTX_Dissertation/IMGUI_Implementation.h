@@ -21,7 +21,7 @@ public:
 
 	static void CreateIMGUIWindow(HWND hwnd);
 
-	static std::string ShowSceneSelect();
+	static std::string ShowMainMenu(int& windowWidth, int& windowHeight);
 
 	static void Update(MSG msg);
 

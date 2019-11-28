@@ -42,8 +42,9 @@ Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohma
 	IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderInt, "Sample Count", &mSampleCount, 1, 64, "%d"));
 
 	//IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::lis))
-	
-	//IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderFloat, "Rebuild TLAS Frequency", &rebuildFrequency, 0.1f, 60.f, "%f", 1));
+
+	if(mTLASUpdateStyle == TLASUpdateStyle::Mix)
+		IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderFloat, "Rebuild TLAS Frequency", &rebuildFrequency, 0.1f, 60.f, "%f", 1));
 
 
 }

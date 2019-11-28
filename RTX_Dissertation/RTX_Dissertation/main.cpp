@@ -193,7 +193,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	int windowWidth = 1200;
 	int windowHeight = 720;
 
-	auto secondaryWindow = OpenWindow2(1200, 720);
+	auto secondaryWindow = OpenWindow2(600, 720);
 	//ShowWindow(secondaryWindow, SW_SHOWNORMAL);
 
 	IMGUI_Implementation::CreateIMGUIWindow(secondaryWindow);
@@ -202,10 +202,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	while(filePath == "")
 	{
 		//Scene selector
-		filePath = IMGUI_Implementation::ShowSceneSelect();
+		filePath = IMGUI_Implementation::ShowMainMenu(windowWidth, windowHeight);
 		IMGUI_Implementation::Render();
 	}
-
 
 	gWinHandle = OpenWindow(windowWidth, windowHeight);
 
