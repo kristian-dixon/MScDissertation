@@ -104,6 +104,7 @@ std::string IMGUI_Implementation::ShowMainMenu(int& windowWidth, int& windowHeig
 
 void IMGUI_Implementation::Update(MSG msg)
 {
+	auto frameRate = ImGui::GetIO().Framerate;
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -126,7 +127,7 @@ void IMGUI_Implementation::Update(MSG msg)
 		{
 			mImguiObjects[i]();
 		}
-
+		ImGui::Text("Frame Rate%f", frameRate);
 		
 
 		ImGui::End();

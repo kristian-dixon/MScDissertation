@@ -219,41 +219,21 @@ void TestGame::LoadShaderPrograms()
 	ResourceManager::AddMissProgram("shadowMiss", make_shared<MissProgram>(L"shadowMiss"/*, timeBasicRGS, missData*/));
 }
 
+bool pauseFrame = false;
 void TestGame::Update()
 {
 	
 	float dt = TimeManager::GetInstance()->GetDT();
 
 	mSystemManager->Update();
-
-	auto& camera = Renderer::GetInstance()->GetCamera();
+	
 	//Update Camera
+	auto& camera = Renderer::GetInstance()->GetCamera();
 	camera.Eye += (glm::cross(mForward, vec3(0, xCamVel, 0)) + mForward * (float)zCamVel) * mMovSpeed * dt;
-
-
-
-	//mPerfCapture.Update(dt);
-
-	SetWindowTextA(Renderer::GetInstance()->GetWindowHandle(), to_string(1.f / dt).c_str());
 
 	worldBuffer.time += dt;
 
-
 	RendererUtil::UpdateConstantBuffer(worldCB, &worldBuffer, sizeof(WorldBuffer));
-
-
-
-
-
-	/*
-	//TODO::Update things
-	shitTimer += 1 / 60.f;
-
-	auto mesh = ResourceManager::RequestMesh("SPHERE");
-
-	auto animPos = translate(mat4(), vec3(10, 5 + sin(1 * shitTimer) * 10, 10));
-
-	mesh->GetInstances()[animationTestHook].SetTransform(animPos);*/
 }
 
 void TestGame::Render()

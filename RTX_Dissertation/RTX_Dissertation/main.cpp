@@ -174,11 +174,18 @@ void msgLoop()
 		else
 		{
 
-			IMGUI_Implementation::Update(msg);
-			IMGUI_Implementation::Render();
+			static bool skip = false;
+			
+			if(!skip)
+			{
+				IMGUI_Implementation::Update(msg);
+				IMGUI_Implementation::Render();
+			}
 
+			skip != skip;
 			//DO LOGIC AND RENDERING
 			time->Update();
+
 
 			game.Update();
 			game.Render();
