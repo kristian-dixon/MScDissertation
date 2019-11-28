@@ -7,12 +7,13 @@
 #include <Mouse.h>
 #include "TimeManager.h"
 #include "IMGUI_Implementation.h"
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 
-
+using namespace std;
 HWND gWinHandle = nullptr;
 TestGame game;
-
-
 static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -188,9 +189,6 @@ void msgLoop()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-	//TODO:: Write a smarter thing to read the filepath
-	auto filePath = lpCmdLine;
-
 	//Minor TODO:: Make this a part of the config file
 	int windowWidth = 1200;
 	int windowHeight = 720;
@@ -200,8 +198,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	IMGUI_Implementation::CreateIMGUIWindow(secondaryWindow);
 
+	string filePath = "";
+	while(filePath == "")
+	{
+		//Scene selector
+		filePath = IMGUI_Implementation::ShowSceneSelect();
+		IMGUI_Implementation::Render();
+	}
 
-	
 
 	gWinHandle = OpenWindow(windowWidth, windowHeight);
 

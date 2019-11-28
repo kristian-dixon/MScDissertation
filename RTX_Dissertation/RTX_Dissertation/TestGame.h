@@ -11,7 +11,7 @@ class TestGame :
 {
 public:
 	~TestGame() override = default;
-	void OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight) override;
+	void OnLoad(string& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight) override;
 	void LoadShaderPrograms();
 	void Update() override;
 	void Render() override;

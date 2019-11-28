@@ -9,21 +9,25 @@
 #include <tchar.h>
 #include <vector>
 #include <functional>
+#include <string>
 
 class IMGUI_Implementation
 {
 public:
-	static std::vector< std::function<bool()>> imguiObjects;
+	static std::vector< std::function<bool()>> mImguiObjects;
+	static std::vector<std::string> mSceneNames;
+	static bool mShowSceneSelect;
 
 
 	static void CreateIMGUIWindow(HWND hwnd);
+
+	static std::string ShowSceneSelect();
 
 	static void Update(MSG msg);
 
 	static void Render();
 
 	static void Cleanup();
-
 
 	
 

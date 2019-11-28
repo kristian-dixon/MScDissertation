@@ -38,8 +38,13 @@ Renderer::Renderer(HWND winHandle, uint32_t winWidth, uint32_t winHeight, nlohma
 	mShaderFileName = RendererUtil::string_2_wstring(desc.value<string>("MainShaderName","Data/Shaders.hlsl"));
 	rebuildFrequency = desc.value<float>("RebuildTLASFrequency", 0.f);
 
-	IMGUI_Implementation::imguiObjects.push_back(std::bind(ImGui::SliderInt, "Recursion Depth", &mRecursionDepth, 1, mRecursionDepth, "%d"));
-	IMGUI_Implementation::imguiObjects.push_back(std::bind(ImGui::SliderInt, "Sampple Count", &mSampleCount, 1, 64, "%d"));
+	IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderInt, "Recursion Depth", &mRecursionDepth, 1, mRecursionDepth, "%d"));
+	IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderInt, "Sample Count", &mSampleCount, 1, 64, "%d"));
+
+	//IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::lis))
+	
+	//IMGUI_Implementation::mImguiObjects.push_back(std::bind(ImGui::SliderFloat, "Rebuild TLAS Frequency", &rebuildFrequency, 0.1f, 60.f, "%f", 1));
+
 
 }
 

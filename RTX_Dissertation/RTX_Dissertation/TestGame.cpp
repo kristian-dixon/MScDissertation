@@ -20,7 +20,7 @@
 
 using json = nlohmann::json;
 
-void TestGame::OnLoad(LPSTR& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+void TestGame::OnLoad(string& filePath, HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
 	json sceneInfo;
 	auto f = std::ifstream(filePath);// >> fileReadTest;
