@@ -1,1 +1,1 @@
-{"TLASUpdateType":0,"RecursionDepth":5,"MainShaderName":"Data/Shaders.hlsl","RebuildTLASFrequency":0.0}
+{"TLASUpdateType":0,"RecursionDepth":5,"MainShaderName":"Data/Shaders.hlsl","RebuildTLASFrequency":0.0,"MissShaderName":"missSky"}

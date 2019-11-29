@@ -127,7 +127,9 @@ void IMGUI_Implementation::Update(MSG msg)
 		{
 			mImguiObjects[i]();
 		}
-		ImGui::Text("Frame Rate%f", frameRate);
+		ImGui::Text("Frame Rate (Per Second): %f", frameRate);
+		ImGui::Text("Delta Time: %f", ImGui::GetIO().DeltaTime);
+
 		
 
 		ImGui::End();
