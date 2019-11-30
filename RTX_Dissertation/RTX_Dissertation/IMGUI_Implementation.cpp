@@ -118,9 +118,7 @@ void IMGUI_Implementation::Update(MSG msg)
 
 	
 	{
-		static int recursionDepth = 5;
-
-		ImGui::Begin("Test");
+		ImGui::Begin("Settings");
 		ImGui::SetWindowSize(ImVec2(400, 500));
 
 		for(int i = 0; i < mImguiObjects.size(); i++)
