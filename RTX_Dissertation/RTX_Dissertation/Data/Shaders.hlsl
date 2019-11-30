@@ -103,8 +103,38 @@ struct SphereAttribs
 	float3 normal;
 };
 
+float Random(float2 p)
+{
+	return frac(sin(dot(p.xy, float2(12.9898, 78.233))) * 31276.5122371);
+}
 
+float PerlinNoise(float2 p)
+{
+	float2 grid = floor(p);
+	float2 f = frac(p);
 
+	float2 uv = f * f * (3 - 2 * f);
+	float n1, n2, n3, n4;
+	n1 = Random(grid);
+	n2 = Random(grid + float2(1, 0));
+	n3 = Random(grid + float2(0, 1));
+	n4 = Random(grid + float2(1, 1));
+
+	n1 = lerp(n1, n2, uv.x);
+	n2 = lerp(n3, n4, uv.x);
+	n1 = lerp(n1, n2, uv.y);
+	return n1;//2*(2.0*n1 - 1.0);
+
+}
+
+float SmoothPerlin(float2 p)
+{
+	float val = PerlinNoise(p);
+	float val2 = PerlinNoise(p + float2(10, 0));
+	val = lerp(val, val2, 0.5);
+
+	return val;
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 /*
@@ -240,8 +270,7 @@ float3 GetHitNormal(int vertId, float3 barycentrics)
 		BTriVertex[indices[vertId + 1]].normal.xyz * barycentrics.y +
 		BTriVertex[indices[vertId + 2]].normal.xyz * barycentrics.z;
 
-    return hitnormal = normalize(mul(transform, float4(hitnormal, 0)));
-
+	return hitnormal = normalize(mul(float3(hitnormal), WorldToObject3x4()).xyz);
 }
 
 float3 GetWorldHitPosition()
@@ -505,29 +534,9 @@ void rayGen()
     //payload.color = specular.rrr;
 }
 
-float Random(float2 p)
-{
-	return frac(sin(dot(p.xy, float2(12.9898, 78.233))) * 31276.5122371);
-}
 
-float Noise(float2 p)
-{
-	float2 grid = floor(p);
-	float2 f = frac(p);
 
-	float2 uv = f * f * (3 - 2 * f);
-	float n1, n2, n3, n4;
-	n1 = Random(grid);
-	n2 = Random(grid + float2(1, 0));
-	n3 = Random(grid + float2(0, 1));
-	n4 = Random(grid + float2(1, 1));
 
-	n1 = lerp(n1, n2, uv.x);
-	n2 = lerp(n3, n4, uv.x);
-	n1 = lerp(n1, n2, uv.y);
-	return n1;//2*(2.0*n1 - 1.0);
-
-}
 
 float3 TerrainColour(float3 pos, float height)
 {
@@ -535,27 +544,27 @@ float3 TerrainColour(float3 pos, float height)
 	float3 col;
 
 	//pos.z += time.x * 20;
-	float noise = Noise(pos.xz * 0.5);
+	float noise = PerlinNoise(pos.xz * 0.5);
 
 	//Grass
-	float3 baseGrass = float3(0, .5 + (Noise(pos.xz * 0.1)) * .5, 0);
-	float3 smallGrass = float3(0, .8 + (Noise(pos.xz * 10)) * .1, 0);
+	float3 baseGrass = float3(0, .5 + (PerlinNoise(pos.xz * 0.1)) * .5, 0);
+	float3 smallGrass = float3(0, .8 + (PerlinNoise(pos.xz * 10)) * .1, 0);
 	col = baseGrass * smallGrass * .75;
 
 	//Stone
-	float3 baseStone = float3((0.3 + 0.02 * pow(Noise(pos.xz * 0.45), 2)).rrr);
+	float3 baseStone = float3((0.3 + 0.02 * pow(PerlinNoise(pos.xz * 0.45), 2)).rrr);
 
-	col = lerp(col, baseStone, smoothstep(0, 31 + noise, height + 2 * Noise(pos.xz * 0.3)));
+	col = lerp(col, baseStone, smoothstep(0, 31 + noise, height + 2 * PerlinNoise(pos.xz * 0.3)));
 
 
 	float snowStrength = smoothstep(3, 20, height);
 
 	//Snow
-	float3 baseSnow = float3(1, 1, 1) * (pow(Noise(pos.xz * 6), 5) + (snowStrength * (1 - pow(Noise(pos.xz * 2), height))));
+	float3 baseSnow = float3(1, 1, 1) * (pow(PerlinNoise(pos.xz * 6), 5) + (snowStrength * (1 - pow(PerlinNoise(pos.xz * 2), height))));
 
 	baseSnow = clamp(baseSnow, 0.3, 1);
 
-	//col = lerp(col, baseSnow, smoothstep(10, 15, height + 5 * pow(Noise(-pos.xz * 0.7), 2)));
+	//col = lerp(col, baseSnow, smoothstep(10, 15, height + 5 * pow(PerlinNoise(-pos.xz * 0.7), 2)));
 
 
 
@@ -801,6 +810,7 @@ void rippleSurface(inout RayPayload payload, in BuiltInTriangleIntersectionAttri
 [shader("closesthit")] 
 void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
+	payload.color.r -= 1;
     float hitT = RayTCurrent();
     float3 rayDirW = WorldRayDirection();
     float3 rayOriginW = WorldRayOrigin();
@@ -821,7 +831,82 @@ void grid (inout RayPayload payload, in BuiltInTriangleIntersectionAttributes at
 
 	float lighting = 1 - pow(1 - max(0, dot(sunDir, hitnormal)), 2);
 
-    payload.color = float3(x, y, z) * lighting;
+	float3 reflectionColour = float3(1, 1, 1);
+	if (payload.color.r > 1)
+	{
+		float seed = dot(pos, pos);
+
+		RayDesc ray;
+		ray.Origin = pos;
+		ray.Direction = reflect(WorldRayDirection(), hitnormal + RandomUnitInSphere(seed) * 0.001);
+
+		ray.TMin = 0.001;
+		ray.TMax = 100000;
+
+		
+
+		//Reflection ray
+		if (payload.color.r > 0 && dot(ray.Direction, hitnormal))
+		{
+			TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+
+			reflectionColour = payload.color;
+		}
+	}
+
+    payload.color =  lerp(float3(x, y, z), reflectionColour, step(PerlinNoise(pos.xz), 0.5)) * lighting ;
+}
+
+[shader("closesthit")]
+void gridPuddle(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+	payload.color.r -= 1;
+	float hitT = RayTCurrent();
+	float3 rayDirW = WorldRayDirection();
+	float3 rayOriginW = WorldRayOrigin();
+	float3 pos = rayOriginW + hitT * rayDirW;
+
+	float3 barycentrics = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+
+	uint vertId = PrimitiveIndex() * 3;
+	//float3 hitnormal = GetHitNormal(vertId, barycentrics);
+	float2 uv = pos.xz;
+	float3 hitnormal = float3(0, 1, 0); 
+
+	// Find the world-space hit position
+
+
+	float x = step(frac(pos.x), 0.9);
+	float y = step(frac(pos.y), 0.9);
+	float z = step(frac(pos.z), 0.9);
+
+	float lighting = 1 - pow(1 - max(0, dot(sunDir, hitnormal)), 2);
+
+	float3 reflectionColour = float3(1, 1, 1);
+	if (payload.color.r > 1)
+	{
+		float seed = dot(pos, pos);
+		hitnormal = rippleNormal(uv, 5);
+
+		RayDesc ray;
+		ray.Origin = pos;
+		ray.Direction = reflect(WorldRayDirection(), hitnormal);//; +RandomUnitInSphere(seed) * 0.001);
+
+		ray.TMin = 0.001;
+		ray.TMax = 100000;
+
+
+
+		//Reflection ray
+		if (payload.color.r > 0 && dot(ray.Direction, hitnormal))
+		{
+			TraceRay(gRtScene, 0, 0xFF, 0, 0, 0, ray, payload);
+
+			reflectionColour = payload.color;
+		}
+	}
+
+	payload.color = lerp(float3(x, y, z), reflectionColour, min(pow(smoothstep(SmoothPerlin(pos.xz), 0.25,0.5),2), 0.25)) * lighting;
 }
 
 //Any hit would be faster but it's currently disabled in the TLAS
