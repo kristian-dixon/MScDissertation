@@ -75,7 +75,7 @@ void TestGame::OnLoad(string& filePath, HWND winHandle, uint32_t winWidth, uint3
 	mLastFrameTime = std::chrono::system_clock::now();
 
 	SetMouse(winHandle);
-
+	mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 }
 
 void TestGame::LoadShaderPrograms()
@@ -345,6 +345,18 @@ void TestGame::KeyUp(int key)
 	{
 		zCamVel = 0;
 	}
+
+	if(key == 'U')
+	{
+		if(mMouse->GetState().positionMode == DirectX::Mouse::MODE_RELATIVE)
+		{
+			mMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+		}
+		else
+		{
+			mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
+		}
+	}
 }
 
 
@@ -352,11 +364,11 @@ void TestGame::MouseInput()
 {
 	if (mMouse)
 	{
-		mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
-
+		//if (mMouse->GetState().positionMode == DirectX::Mouse::MODE_ABSOLUTE) { return; }
+		
 		auto state = mMouse->GetState();
-		cameraYaw += state.x * 0.001f;
-		cameraPitch += state.y * 0.001f;
+		cameraYaw += state.x * 0.001f * state.positionMode;
+		cameraPitch += state.y * 0.001f * state.positionMode;
 
 	
 		auto forward = glm::vec3(0, 0, 1);

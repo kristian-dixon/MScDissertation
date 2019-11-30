@@ -14,8 +14,16 @@
 using namespace std;
 HWND gWinHandle = nullptr;
 TestGame game;
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+	{
+		return true;
+	}
+
 	switch (msg)
 	{
 	
@@ -58,9 +66,13 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 	}
 }
 
-
 static LRESULT CALLBACK msgProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if(ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+	{
+		return true;
+	}
+
 	switch (msg)
 	{
 	case WM_CLOSE:
@@ -208,6 +220,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	string filePath = "";
 	while(filePath == "")
 	{
+		MSG msg;
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT) break;
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
 		//Scene selector
 		filePath = IMGUI_Implementation::ShowMainMenu(windowWidth, windowHeight);
 		IMGUI_Implementation::Render();
