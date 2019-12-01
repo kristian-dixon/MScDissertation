@@ -1660,16 +1660,16 @@ void VolumetricFogIntersection()
 	float density = 0.025;
 
 	//Distance inside bounds
-	tMin = max(tMin, 0);
+	tMin = max(tMin, 1);
 	float distInsideBounds = (tMax - tMin);
 	
 	SphereAttribs sphereAttr = { float3(distInsideBounds,0,0) };
 
 
-	float3 hitPos = origin + rayDir * (tMin + hitDistance);
+	float3 hitPos = origin + rayDir * (tMin);
 
 
-	if (hitDistance < distInsideBounds)
+	//if (hitDistance < distInsideBounds)
 	{
 		float hit = distance(WorldRayOrigin(), hitPos);
 		if(hit > 0)
@@ -1718,45 +1718,50 @@ void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 [shader("closesthit")]
 void VolumetricClosestHit(inout RayPayload payload, SphereAttribs attribs)
 {
-	//payload.color = attribs.normal; //float3(1, 0, 0);//attribs.normal;
-	//return;
-	/*
-
+	payload.color.r--;
 	float3 posW = GetWorldHitPosition();
-	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
-
-	float3 target = (RandomUnitInSphere(seed));
-	//payload.color = posW; return;
-
-	RayDesc ray;
-	ray.Origin = posW;
-	ray.Direction = sunDir; // RandomUnitInSphere(seed);
-
+	
 	if (payload.color.r > 0)
 	{
-		ray.TMin = 0;
-		ray.TMax = 100000;
 
-		/*ShadowPayload shadowPayload;
-		shadowPayload.hit = 0;
-		//ray.Direction = sunDir;
-		TraceRay(gRtScene, RAY_FLAG_FORCE_OPAQUE
-			| RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH
-			| RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 0, 1, ray, shadowPayload);
-		
-		payload.color = 1 - shadowPayload.hit.rrr;*/
+		float shadowing = 0; //Miss will make it = 1
+		float3 valToAdd = WorldRayDirection() * (attribs.normal.x / 10.f);
 
-	/*
+		RayDesc shadowRay;
+		shadowRay.Origin = posW;
+		shadowRay.Direction = sunDir;
+		shadowRay.TMin = 0.1;//attribs.normal.r + 0.1;
+		shadowRay.TMax = 10000;
+		for (int i = 0; i < 10; i++)
+		{
+			shadowRay.Origin += valToAdd * i + valToAdd * (noise(DispatchRaysIndex().xy));
+
+			ShadowPayload shadowPayload;
+			shadowPayload.hit = 0;
+
+			TraceRay(gRtScene, RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH| RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+				0xff, 0, 0, 1, shadowRay, shadowPayload);
+
+			shadowing += ((1 - shadowPayload.hit) / 10.f);
+		}
+	
+		RayDesc ray;
+		ray.Origin = posW;
+		ray.Direction = WorldRayDirection();
+		ray.TMin = 0.1;//attribs.normal.r + 0.1;
+		ray.TMax = 10000;
+
+		TraceRay(gRtScene, RAY_FLAG_CULL_NON_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+
+		payload.color *= (1 - saturate(shadowing));// *= pow(1 - saturate(attribs.normal.r / 50.f), 5) + 0.01;
 	}
 	else
 	{
-		//float horizon = 1 - pow(1 - abs(dot(ray.Direction, float3(0, 1, 0))), 5);
-		//payload.color = lerp(float3(1, 1, 1), float3(.5, .5, 1), horizon);
-		payload.color = float3(1, 0, 0);
-		return;
+		payload.color = float3(1, 1, 0);
 	}
-	*/
-	payload.color.r--;
+
+
+	/*
 
 	float3 posW = GetWorldHitPosition();
 	float seed = noise(DispatchRaysIndex().xy + random(posW.xy) + random(posW.yz) + random(posW.zx));
@@ -1789,6 +1794,8 @@ void VolumetricClosestHit(inout RayPayload payload, SphereAttribs attribs)
 		return;
 	}
 	//payload.color = dot(-WorldRayDirection(), sunDir);
+
+	*/
 }
 
 

@@ -163,7 +163,7 @@ AccelerationStructureBuffers Renderer::CreateBLAS(std::shared_ptr<Mesh> mesh)
 		
 		geomDesc[0].AABBs.AABBCount = 1;
 		geomDesc[0].AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
-		geomDesc[0].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+		geomDesc[0].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
 
 		geomDesc[0].AABBs.AABBs.StartAddress = mesh->GetAABB()->GetGPUVirtualAddress();
 		geometryCount = 1;
