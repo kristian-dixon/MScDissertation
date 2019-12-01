@@ -351,10 +351,12 @@ void TestGame::KeyUp(int key)
 		if(mMouse->GetState().positionMode == DirectX::Mouse::MODE_RELATIVE)
 		{
 			mMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+			mMouse->SetVisible(true);
 		}
 		else
 		{
 			mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
+			mMouse->SetVisible(false);
 		}
 	}
 }
