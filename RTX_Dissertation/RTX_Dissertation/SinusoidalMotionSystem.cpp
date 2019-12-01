@@ -19,7 +19,9 @@ void SinusoidalMotionSystem::Run()
 		float y = (sin((elapsedTime + data.ySinDtOffset) * data.ySinFreq) * data.ySinAmplitude) + (cos((elapsedTime + data.yCosDtOffset) * data.yCosFreq) * data.yCosAmplitude);
 		float z = (sin((elapsedTime + data.zSinDtOffset) * data.zSinFreq) * data.zSinAmplitude) + (cos((elapsedTime + data.zCosDtOffset) * data.zCosFreq) * data.zCosAmplitude);
 
-		gameObject->SetTransform( translate(originalTransform, vec3(x, y, z)));
+
+		glm::mat4 transform = translate(originalTransform, vec3(x, y, z));
+		gameObject->SetTransform(transform);
 
 	}
 }
