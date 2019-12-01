@@ -1724,15 +1724,17 @@ void VolumetricClosestHit(inout RayPayload payload, SphereAttribs attribs)
 	if (payload.color.r > 0)
 	{
 
+		int stepCount = 4;
+
 		float shadowing = 0; //Miss will make it = 1
-		float3 valToAdd = WorldRayDirection() * (attribs.normal.x / 10.f);
+		float3 valToAdd = WorldRayDirection() * (attribs.normal.x / stepCount);
 
 		RayDesc shadowRay;
 		shadowRay.Origin = posW;
 		shadowRay.Direction = sunDir;
 		shadowRay.TMin = 0.1;//attribs.normal.r + 0.1;
 		shadowRay.TMax = 10000;
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < stepCount; i++)
 		{
 			shadowRay.Origin += valToAdd * i + valToAdd * (noise(DispatchRaysIndex().xy));
 
@@ -1742,7 +1744,7 @@ void VolumetricClosestHit(inout RayPayload payload, SphereAttribs attribs)
 			TraceRay(gRtScene, RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH| RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
 				0xff, 0, 0, 1, shadowRay, shadowPayload);
 
-			shadowing += ((1 - shadowPayload.hit) / 10.f);
+			shadowing += ((1 - shadowPayload.hit) / stepCount);
 		}
 	
 		RayDesc ray;
