@@ -356,7 +356,7 @@ void TestGame::KeyUp(int key)
 		else
 		{
 			mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
-			mMouse->SetVisible(false);
+		//	mMouse->SetVisible(false);
 		}
 	}
 }
