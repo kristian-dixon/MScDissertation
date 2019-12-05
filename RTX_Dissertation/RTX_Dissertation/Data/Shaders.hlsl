@@ -1681,7 +1681,7 @@ void VolumetricFogIntersection()
 [shader("closesthit")]
 void SphereClosestHit(inout RayPayload payload, SphereAttribs attribs)
 {
-	payload.color = attribs.normal;
+	payload.color = float3(1,0,0);
 	
 	return;
 	payload.color.r--;
