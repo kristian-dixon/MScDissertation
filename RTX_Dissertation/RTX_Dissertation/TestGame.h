@@ -19,6 +19,7 @@ public:
 
 	void KeyDown(int key) override;
 	void KeyUp(int key) override;
+	void ChangeCamera();
 
 	void SetMouse(HWND winHandle) { mMouse = std::make_unique<DirectX::Mouse>(); mMouse->SetWindow(winHandle); };// mMouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 
@@ -26,6 +27,10 @@ public:
 
 	size_t animationTestHook;
 private:
+	vector<tuple<glm::vec3, glm::vec3>> mCameras;
+
+	int mCamSelection = -1;
+
 	float mMovSpeed = 1.2f;
 	float cameraYaw = 0;
 	float cameraPitch = 0;
@@ -42,7 +47,9 @@ private:
 
 	std::chrono::system_clock::time_point mLastFrameTime;
 
-	glm::vec3 mForward;
+	glm::vec3 mForward = vec3(0,0,1);
+	glm::vec3 mUp = vec3(0, 1, 0);
+
 	glm::vec3 mSunDir;
 
 	std::unique_ptr<DirectX::Mouse> mMouse;

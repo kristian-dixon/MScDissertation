@@ -60,13 +60,25 @@ void TestGame::OnLoad(string& filePath, HWND winHandle, uint32_t winWidth, uint3
 	
 
 	
-	//1018-487
 	auto goList = props["GameObjects"];
 
 	for (int i = 0; i < goList.size(); i++)
 	{
 		gameObjects.push_back(make_shared<GameObject>());
 		gameObjects[i]->LoadFromJson(goList[i], worldCB);
+	}
+
+	auto camList = props["Cameras"];
+	for (int i = 0; i < camList.size(); i++)
+	{
+		auto pos = camList[i]["Position"];
+		glm::vec3 camPos = glm::vec3(pos["x"], pos["y"], pos["z"]);
+
+
+		auto fwd = camList[i]["Forward"];
+		glm::vec3 camFwd = glm::vec3(fwd["x"], fwd["y"], fwd["z"]);
+
+		mCameras.push_back(make_tuple(camPos, camFwd));
 	}
 
 	//Create final renderer resources
@@ -359,8 +371,30 @@ void TestGame::KeyUp(int key)
 		//	mMouse->SetVisible(false);
 		}
 	}
+
+	if(key == 187)
+	{
+		mCamSelection = (mCamSelection + 1) % mCameras.size();
+		ChangeCamera();
+	}
+
+	if(key == 189)
+	{
+		mCamSelection = (mCamSelection - 1) % mCameras.size();
+		ChangeCamera();
+	}
 }
 
+void TestGame::ChangeCamera()
+{
+	if (mCameras.empty())return;
+
+	auto& camera = Renderer::GetInstance()->GetCamera();
+	camera.Eye = get<0>(mCameras[mCamSelection]);
+	mForward = get<1>(mCameras[mCamSelection]);
+
+	camera.Dir = mForward;
+}
 
 void TestGame::MouseInput()
 {
@@ -373,8 +407,8 @@ void TestGame::MouseInput()
 		cameraPitch += state.y * 0.001f * state.positionMode;
 
 	
-		auto forward = glm::vec3(0, 0, 1);
-		auto up = glm::vec3(0, 1, 0);
+		auto forward = vec3(0,0,1);
+
 
 		mat4 yawRot = glm::rotate(-cameraYaw, vec3(0, 1, 0));
 		mat4 pitchRot = glm::rotate(cameraPitch, vec3(1, 0, 0));
