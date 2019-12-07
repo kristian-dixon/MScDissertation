@@ -403,15 +403,16 @@ void TestGame::MouseInput()
 		//if (mMouse->GetState().positionMode == DirectX::Mouse::MODE_ABSOLUTE) { return; }
 		
 		auto state = mMouse->GetState();
-		cameraYaw += state.x * 0.001f * state.positionMode;
-		cameraPitch += state.y * 0.001f * state.positionMode;
+		cameraYaw = state.x * 0.001f * state.positionMode;
+		cameraPitch = -state.y * 0.001f * state.positionMode;
 
 	
-		auto forward = vec3(0,0,1);
+		auto forward = mForward;
 
+		auto right = glm::cross(forward, vec3(0, 1, 0));
 
 		mat4 yawRot = glm::rotate(-cameraYaw, vec3(0, 1, 0));
-		mat4 pitchRot = glm::rotate(cameraPitch, vec3(1, 0, 0));
+		mat4 pitchRot = glm::rotate(cameraPitch, right);
 
 		forward = mat3(pitchRot) * forward;
 		forward = mat3(yawRot) * forward;
