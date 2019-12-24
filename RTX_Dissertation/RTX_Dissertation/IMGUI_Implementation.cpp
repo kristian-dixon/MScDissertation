@@ -1,6 +1,8 @@
 #include "IMGUI_Implementation.h"
 #include <functional>
 #include <vector>
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+
 #include <experimental/filesystem>
 
 // Data
